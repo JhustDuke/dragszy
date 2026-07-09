@@ -1,14 +1,12 @@
 <template>
-	<div>
-		<div>{{ test + 1 }}</div>
-		<div class="yellow p-1 mt-4">
-			<div class="container-fluid"> testing bs 5</div>
-		</div>
+	<div class="grey lighten-3 vh-100 main">
+		<ToolBar />
 	</div>
 </template>
 
 <script setup lang="ts">
-	const test = 3;
+	// @ts-ignore
+	import ToolBar from "./components/toolbar/Toolbar.vue";
 </script>
 
 <style scoped></style>
