@@ -2,7 +2,7 @@
 	<div
 		class="container mt-4"
 		style="min-height: 500px"
-		@click="handleCanvasClick">
+		@dblclick="handleCanvasClick">
 		<CanvasElement
 			v-for="elem in canvasElemsStore.elems"
 			:key="elem.id"

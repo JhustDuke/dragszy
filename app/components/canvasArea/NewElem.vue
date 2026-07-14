@@ -14,7 +14,8 @@
 
 				<!-- Right -->
 				<div
-					class="xy position-absolute top-50 start-100 translate-middle rounded-circle border border-primary bg-white"></div>
+					class="xy position-absolute top-50 start-100 translate-middle rounded-circle border border-primary bg-white"
+					@mousedown="handleRightMouseDown"></div>
 
 				<!-- Bottom -->
 				<div
@@ -47,11 +48,33 @@
 		event.stopPropagation();
 		canvasElemsStore.setActiveElem(props.nodeInfo.id);
 	}
+
+	function handleRightMouseDown(event: MouseEvent): void {
+		event.stopPropagation();
+
+		const startX = event.clientX;
+		const startWidth = props.nodeInfo.width ?? 0;
+
+		function handleMouseMove(event: MouseEvent): void {
+			const deltaX = event.clientX - startX;
+
+			props.nodeInfo.width = startWidth + deltaX;
+		}
+
+		function handleMouseUp(): void {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+		}
+
+		window.addEventListener("mousemove", handleMouseMove);
+		window.addEventListener("mouseup", handleMouseUp);
+	}
 </script>
 
 <style scoped>
 	.xy {
 		width: 14px;
 		height: 14px;
+		cursor: ew-resize;
 	}
 </style>
