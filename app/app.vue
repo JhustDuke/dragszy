@@ -1,6 +1,6 @@
 <template>
 	<!-- App root: toolbar + canvas + viewport toggle -->
-	<div class="grey lighten-3 vh-100 main">
+	<div class="grey lighten-3 min-vh-100">
 		<ToolBar />
 
 		<!-- Desktop: full width, no backdrop -->
@@ -36,7 +36,7 @@
 	// @ts-ignore
 	import ToolBar from "./components/toolbar/Toolbar.vue";
 	import ToggleView from "./components/viewportToggle.vue";
-	import CanvasArea from "./components/canvas/CanvasArea.vue";
+	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
 
 	import { useViewportStore } from "./store";
 
