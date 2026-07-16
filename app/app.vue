@@ -14,15 +14,11 @@
 		<div
 			v-else
 			class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-			style="
-				background: rgba(0, 0, 0, 0.5);
-				z-index: 998;
-				scrollbar-width: none;
-			"
+			style="background: rgba(0, 0, 0, 0.5); z-index: 998"
 			@click.self="viewportStore.setDesktop()">
 			<!-- Preview box: bordered, scrollable, fixed height so surrounding backdrop stays visible -->
 			<div
-				class="bg-white shadow border p-1 overflow-y-scroll rounded-3"
+				class="white red lighten-3 shadow border p-1 rounded-3 overflow-auto"
 				:style="{ width: viewportStore.activeWidth, height: '600px' }">
 				<CanvasArea />
 			</div>

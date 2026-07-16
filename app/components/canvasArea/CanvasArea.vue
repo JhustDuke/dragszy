@@ -6,7 +6,7 @@
 		<CanvasElement
 			v-for="elem in canvasElemsStore.elems"
 			:key="elem.id"
-			:nodeInfo="elem" />
+			:newElemInfo="elem" />
 	</div>
 </template>
 

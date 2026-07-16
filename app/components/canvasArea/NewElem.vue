@@ -3,14 +3,15 @@
 		<div
 			class="position-relative border border-dark"
 			:style="{
-				height: nodeInfo.height + nodeInfo.heightUnit,
-				width: nodeInfo.width + nodeInfo.widthUnit,
+				height: newElemInfo.height + newElemInfo.heightUnit,
+				width: newElemInfo.width + newElemInfo.widthUnit,
 			}"
 			@click="handleElemClick">
 			<template v-if="isSelected">
 				<!-- Top -->
 				<div
-					class="y position-absolute top-0 start-50 translate-middle rounded-circle border border-primary bg-white"></div>
+					class="y position-absolute top-0 start-50 translate-middle rounded-circle border border-primary bg-white"
+					@mousedown="handleTopMouseDown"></div>
 
 				<!-- Right -->
 				<div
@@ -24,7 +25,8 @@
 
 				<!-- Left -->
 				<div
-					class="x position-absolute top-50 start-0 translate-middle rounded-circle border border-primary bg-white"></div>
+					class="x position-absolute top-50 start-0 translate-middle rounded-circle border border-primary bg-white"
+					@mousedown="handleLeftMouseDown"></div>
 			</template>
 		</div>
 	</div>
@@ -36,60 +38,138 @@
 	import { useCanvasElemsStore } from "~/store";
 
 	const props = defineProps<{
-		nodeInfo: CanvasElem;
+		newElemInfo: CanvasElem;
 	}>();
 
 	const canvasElemsStore = useCanvasElemsStore();
 
 	const isSelected = computed(function () {
-		return canvasElemsStore.activeElemId === props.nodeInfo.id;
+		return canvasElemsStore.activeElemId === props.newElemInfo.id;
 	});
 
 	function handleElemClick(event: MouseEvent): void {
 		event.stopPropagation();
-		canvasElemsStore.setActiveElem(props.nodeInfo.id);
+		canvasElemsStore.setActiveElem(props.newElemInfo.id);
 	}
 
 	function handleRightMouseDown(event: MouseEvent): void {
 		event.stopPropagation();
 
-		const startX = event.clientX;
-		const startWidth = props.nodeInfo.width ?? 0;
+		const dragStartX = event.clientX;
+		const initialWidth = props.newElemInfo.width ?? 0;
 
-		function handleMouseMove(event: MouseEvent): void {
-			const deltaX = event.clientX - startX;
+		const handleResizeDrag = function (event: MouseEvent): void {
+			// Moving right increases width.
+			// Moving left decreases width.
 
-			props.nodeInfo.width = startWidth + deltaX;
-		}
+			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
+			const dragDistanceX = Math.abs(event.clientX - dragStartX);
 
-		function handleMouseUp(): void {
-			window.removeEventListener("mousemove", handleMouseMove);
-			window.removeEventListener("mouseup", handleMouseUp);
-		}
+			if (isDraggingTowardsPositiveX) {
+				props.newElemInfo.width = initialWidth + dragDistanceX;
+				return;
+			}
 
-		window.addEventListener("mousemove", handleMouseMove);
-		window.addEventListener("mouseup", handleMouseUp);
+			props.newElemInfo.width = initialWidth - dragDistanceX;
+		};
+
+		const stopResizeDrag = function (): void {
+			document.removeEventListener("mousemove", handleResizeDrag);
+			document.removeEventListener("mouseup", stopResizeDrag);
+		};
+
+		document.addEventListener("mousemove", handleResizeDrag);
+		document.addEventListener("mouseup", stopResizeDrag);
 	}
 
 	function handleBottomMouseDown(event: MouseEvent): void {
 		event.stopPropagation();
 
-		const startY = event.clientY;
-		const startHeight = props.nodeInfo.height ?? 0;
+		const dragStartY = event.clientY;
+		const initialHeight = props.newElemInfo.height ?? 0;
 
-		function handleMouseMove(event: MouseEvent): void {
-			const deltaY = event.clientY - startY;
+		const handleResizeDrag = function (event: MouseEvent): void {
+			// Moving down increases height.
+			// Moving up decreases height.
 
-			props.nodeInfo.height = startHeight + deltaY;
-		}
+			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
+			const dragDistanceY = Math.abs(event.clientY - dragStartY);
 
-		function handleMouseUp(): void {
-			window.removeEventListener("mousemove", handleMouseMove);
-			window.removeEventListener("mouseup", handleMouseUp);
-		}
+			if (isDraggingTowardsPositiveY) {
+				props.newElemInfo.height = initialHeight + dragDistanceY;
+				return;
+			}
 
-		window.addEventListener("mousemove", handleMouseMove);
-		window.addEventListener("mouseup", handleMouseUp);
+			props.newElemInfo.height = initialHeight - dragDistanceY;
+		};
+
+		const stopResizeDrag = function (): void {
+			document.removeEventListener("mousemove", handleResizeDrag);
+			document.removeEventListener("mouseup", stopResizeDrag);
+		};
+
+		document.addEventListener("mousemove", handleResizeDrag);
+		document.addEventListener("mouseup", stopResizeDrag);
+	}
+
+	function handleLeftMouseDown(event: MouseEvent): void {
+		event.stopPropagation();
+
+		const dragStartX = event.clientX;
+		const initialWidth = props.newElemInfo.width ?? 0;
+
+		const handleResizeDrag = function (event: MouseEvent): void {
+			// Moving right decreases width.
+			// Moving left increases width.
+
+			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
+			const dragDistanceX = Math.abs(event.clientX - dragStartX);
+
+			if (isDraggingTowardsPositiveX) {
+				props.newElemInfo.width = initialWidth - dragDistanceX;
+				return;
+			}
+
+			props.newElemInfo.width = initialWidth + dragDistanceX;
+		};
+
+		const stopResizeDrag = function (): void {
+			document.removeEventListener("mousemove", handleResizeDrag);
+			document.removeEventListener("mouseup", stopResizeDrag);
+		};
+
+		document.addEventListener("mousemove", handleResizeDrag);
+		document.addEventListener("mouseup", stopResizeDrag);
+	}
+
+	function handleTopMouseDown(event: MouseEvent): void {
+		event.stopPropagation();
+
+		const dragStartY = event.clientY;
+		const initialHeight = props.newElemInfo.height ?? 0;
+
+		const handleResizeDrag = function (event: MouseEvent): void {
+			// Moving down decreases height.
+			// Moving up increases height.
+
+			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
+			const dragDistanceY = Math.abs(event.clientY - dragStartY);
+
+			if (isDraggingTowardsPositiveY) {
+				props.newElemInfo.height = initialHeight - dragDistanceY;
+				return;
+			}
+
+			props.newElemInfo.height = initialHeight + dragDistanceY;
+		};
+
+		const stopResizeDrag = function (): void {
+			document.removeEventListener("mousemove", handleResizeDrag);
+			document.removeEventListener("mouseup", stopResizeDrag);
+		};
+
+		document.addEventListener("mousemove", handleResizeDrag);
+		document.addEventListener("mouseup", stopResizeDrag);
 	}
 </script>
 

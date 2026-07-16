@@ -37,5 +37,11 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		setActiveElem: function (id: string | null) {
 			this.activeElemId = id;
 		},
+		updateElemWidthOrHeight: function (
+			changes: Partial<Pick<CanvasElem, "width" | "height">>
+		): void {
+			if (!this.activeElem) return;
+			Object.assign(this.activeElem, changes);
+		},
 	},
 });
