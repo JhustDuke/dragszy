@@ -7,6 +7,14 @@
 				width: newElemInfo.width + newElemInfo.widthUnit,
 			}"
 			@click="handleElemClick">
+			<!-- shows the live width value, centered inside the elem -->
+			<span
+				v-if="isSelected"
+				class="position-absolute top-50 start-50 translate-middle badge black">
+				W:{{ activeWidth }}{{ newElemInfo.widthUnit }} <br />
+				H:{{ activeHeight }}{{ newElemInfo.heightUnit }}
+			</span>
+
 			<template v-if="isSelected">
 				<!-- Top -->
 				<div
@@ -45,6 +53,17 @@
 
 	const isSelected = computed(function () {
 		return canvasElemsStore.activeElemId === props.newElemInfo.id;
+	});
+
+	// tracks newElemInfo.width live — since width is mutated directly during
+	// drag (props.newElemInfo.width = ...), this computed re-evaluates on
+	// every mousemove tick automatically, no manual syncing needed
+	const activeWidth = computed(function () {
+		return props.newElemInfo.width ?? 0;
+	});
+
+	const activeHeight = computed(function () {
+		return props.newElemInfo.height ?? 0;
 	});
 
 	function handleElemClick(event: MouseEvent): void {
