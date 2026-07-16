@@ -7,12 +7,11 @@
 				width: newElemInfo.width + newElemInfo.widthUnit,
 			}"
 			@click="handleElemClick">
-			<!-- shows the live width value, centered inside the elem -->
 			<span
 				v-if="isSelected"
-				class="position-absolute top-50 start-50 translate-middle badge black">
-				W:{{ activeWidth }}{{ newElemInfo.widthUnit }} <br />
-				H:{{ activeHeight }}{{ newElemInfo.heightUnit }}
+				class="position-absolute top-50 start-50 translate-middle badge bg-dark">
+				w:{{ activeWidth }}{{ newElemInfo.widthUnit }} h:{{ activeHeight
+				}}{{ newElemInfo.heightUnit }}
 			</span>
 
 			<template v-if="isSelected">
@@ -43,25 +42,22 @@
 <script setup lang="ts">
 	import { computed } from "vue";
 	import type { CanvasElem } from "~/types";
-	import { useCanvasElemsStore } from "~/store";
+	import { useCanvasElemsStore, useAppActionStore } from "~/store";
 
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
 	}>();
 
 	const canvasElemsStore = useCanvasElemsStore();
+	const appActionStore = useAppActionStore();
 
 	const isSelected = computed(function () {
 		return canvasElemsStore.activeElemId === props.newElemInfo.id;
 	});
 
-	// tracks newElemInfo.width live — since width is mutated directly during
-	// drag (props.newElemInfo.width = ...), this computed re-evaluates on
-	// every mousemove tick automatically, no manual syncing needed
 	const activeWidth = computed(function () {
 		return props.newElemInfo.width ?? 0;
 	});
-
 	const activeHeight = computed(function () {
 		return props.newElemInfo.height ?? 0;
 	});
@@ -72,15 +68,15 @@
 	}
 
 	function handleRightMouseDown(event: MouseEvent): void {
+		// resize handles only do anything while "resize" is the active action
+		if (appActionStore.getActiveAction !== "resize") return;
+
 		event.stopPropagation();
 
 		const dragStartX = event.clientX;
 		const initialWidth = props.newElemInfo.width ?? 0;
 
 		const handleResizeDrag = function (event: MouseEvent): void {
-			// Moving right increases width.
-			// Moving left decreases width.
-
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
 			const dragDistanceX = Math.abs(event.clientX - dragStartX);
 
@@ -102,15 +98,14 @@
 	}
 
 	function handleBottomMouseDown(event: MouseEvent): void {
+		if (appActionStore.getActiveAction !== "resize") return;
+
 		event.stopPropagation();
 
 		const dragStartY = event.clientY;
 		const initialHeight = props.newElemInfo.height ?? 0;
 
 		const handleResizeDrag = function (event: MouseEvent): void {
-			// Moving down increases height.
-			// Moving up decreases height.
-
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
 			const dragDistanceY = Math.abs(event.clientY - dragStartY);
 
@@ -132,15 +127,14 @@
 	}
 
 	function handleLeftMouseDown(event: MouseEvent): void {
+		if (appActionStore.getActiveAction !== "resize") return;
+
 		event.stopPropagation();
 
 		const dragStartX = event.clientX;
 		const initialWidth = props.newElemInfo.width ?? 0;
 
 		const handleResizeDrag = function (event: MouseEvent): void {
-			// Moving right decreases width.
-			// Moving left increases width.
-
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
 			const dragDistanceX = Math.abs(event.clientX - dragStartX);
 
@@ -162,15 +156,14 @@
 	}
 
 	function handleTopMouseDown(event: MouseEvent): void {
+		if (appActionStore.getActiveAction !== "resize") return;
+
 		event.stopPropagation();
 
 		const dragStartY = event.clientY;
 		const initialHeight = props.newElemInfo.height ?? 0;
 
 		const handleResizeDrag = function (event: MouseEvent): void {
-			// Moving down decreases height.
-			// Moving up increases height.
-
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
 			const dragDistanceY = Math.abs(event.clientY - dragStartY);
 
