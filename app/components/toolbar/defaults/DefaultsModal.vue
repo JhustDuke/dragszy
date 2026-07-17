@@ -145,6 +145,82 @@
 						</div>
 					</div>
 				</div>
+
+				<div class="d-flex gap-4 mt-3">
+					<!-- Default Padding X -->
+					<div>
+						<label class="form-label mb-1">Padding X</label>
+
+						<div class="d-flex gap-2 align-items-end">
+							<input
+								type="number"
+								class="form-control border-0 border-bottom rounded-0 shadow-none"
+								style="width: 90px"
+								:value="defaultNudgeStore.getDefaultPaddingX"
+								@input="
+									defaultNudgeStore.setDefaultPaddingX(
+										Number(($event.target as HTMLInputElement).value)
+									)
+								" />
+						</div>
+					</div>
+
+					<!-- Default Padding Y -->
+					<div>
+						<label class="form-label mb-1">Padding Y</label>
+
+						<div class="d-flex gap-2 align-items-end">
+							<input
+								type="number"
+								class="form-control border-0 border-bottom rounded-0 shadow-none"
+								style="width: 90px"
+								:value="defaultNudgeStore.getDefaultPaddingY"
+								@input="
+									defaultNudgeStore.setDefaultPaddingY(
+										Number(($event.target as HTMLInputElement).value)
+									)
+								" />
+						</div>
+					</div>
+				</div>
+
+				<div class="d-flex gap-4 mt-3">
+					<!-- Default Margin X -->
+					<div>
+						<label class="form-label mb-1">Margin X</label>
+
+						<div class="d-flex gap-2 align-items-end">
+							<input
+								type="number"
+								class="form-control border-0 border-bottom rounded-0 shadow-none"
+								style="width: 90px"
+								:value="defaultNudgeStore.getDefaultMarginX"
+								@input="
+									defaultNudgeStore.setDefaultMarginX(
+										Number(($event.target as HTMLInputElement).value)
+									)
+								" />
+						</div>
+					</div>
+
+					<!-- Default Margin Y -->
+					<div>
+						<label class="form-label mb-1">Margin Y</label>
+
+						<div class="d-flex gap-2 align-items-end">
+							<input
+								type="number"
+								class="form-control border-0 border-bottom rounded-0 shadow-none"
+								style="width: 90px"
+								:value="defaultNudgeStore.getDefaultMarginY"
+								@input="
+									defaultNudgeStore.setDefaultMarginY(
+										Number(($event.target as HTMLInputElement).value)
+									)
+								" />
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

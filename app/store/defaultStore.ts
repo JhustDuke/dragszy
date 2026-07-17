@@ -11,6 +11,10 @@ export const useDefaultNudgeStore = defineStore("defaultNudge", {
 			defaultMeasurementY: "px" as Measurement,
 			defaultWidth: 100,
 			defaultHeight: 100,
+			defaultPaddingX: 8,
+			defaultPaddingY: 8,
+			defaultMarginX: 8,
+			defaultMarginY: 8,
 		};
 	},
 
@@ -38,6 +42,22 @@ export const useDefaultNudgeStore = defineStore("defaultNudge", {
 		getDefaultHeight: function (state): number {
 			return state.defaultHeight;
 		},
+
+		getDefaultPaddingX: function (state): number {
+			return state.defaultPaddingX;
+		},
+
+		getDefaultPaddingY: function (state): number {
+			return state.defaultPaddingY;
+		},
+
+		getDefaultMarginX: function (state): number {
+			return state.defaultMarginX;
+		},
+
+		getDefaultMarginY: function (state): number {
+			return state.defaultMarginY;
+		},
 	},
 
 	actions: {
@@ -63,6 +83,22 @@ export const useDefaultNudgeStore = defineStore("defaultNudge", {
 
 		setDefaultHeight: function (value: number): void {
 			this.defaultHeight = value;
+		},
+
+		setDefaultPaddingX: function (value: number): void {
+			this.defaultPaddingX = value;
+		},
+
+		setDefaultPaddingY: function (value: number): void {
+			this.defaultPaddingY = value;
+		},
+
+		setDefaultMarginX: function (value: number): void {
+			this.defaultMarginX = value;
+		},
+
+		setDefaultMarginY: function (value: number): void {
+			this.defaultMarginY = value;
 		},
 	},
 });
