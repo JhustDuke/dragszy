@@ -5,14 +5,16 @@
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
 		}"
+		@mousemove="dragging"
+		@mousedown="dragStarted"
 		@click="handleElemClick">
 		<!-- Width and height badge -->
-		<span
+		<small
 			v-if="isSelected"
 			class="position-absolute top-50 start-50 translate-middle badge bg-dark">
 			w:{{ activeWidth }}{{ newElemInfo.widthUnit }} h:{{ activeHeight
 			}}{{ newElemInfo.heightUnit }}
-		</span>
+		</small>
 
 		<template v-if="isSelected">
 			<!-- Top -->
@@ -41,8 +43,8 @@
 <script setup lang="ts">
 	import { computed } from "vue";
 	import type { CanvasElem } from "~/types";
-	import { useCanvasElemsStore, useAppActionStore } from "~/store";
-	import { createResize } from "~/utils";
+	import { useCanvasElemsStore, useAppActionStore } from "../../store";
+	import { createResize } from "../../utils";
 
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
@@ -71,11 +73,80 @@
 
 	function handleElemClick(event: MouseEvent): void {
 		event.stopPropagation();
+
 		canvasElemsStore.setActiveElem(props.newElemInfo.id);
 	}
+
+	/**
+	 * what do i want,
+	 * when i drag a selected elem
+	 * it should follow me with the mouse
+	 * any place i lift up my hand
+	 * that place should become its new position
+	 * to do this...i need to
+	 * know the activeElem...which is the elem being dragged
+	 * know its currentPosition on the dom
+	 * i need to know the current parent of this elem
+	 *
+	 * fft
+	 * now if its in the same parent should i change it to absolute?
+	 *
+	 *
+	 */
+
+	//whats on my mind?
+	//i want to know the elem the mouse currently entered
+	//to do that i'd
+	//need to know
+	//when i clicked
+
+	//i need to get all dynamically created elem
+	//n with each mouse movement i ask
+	//i'm i an elem in the store when the mouse enters me
+	//if i am an elem in the store set me to currentEntered by getting my id
+	//if i lift up my mouse then remove the carried elem from the all elem and append him into my children stack
+
+	const dragStarted = function (ev: MouseEvent) {
+		ev.preventDefault();
+		const elem = ev.currentTarget as HTMLElement;
+		canvasElemsStore.setCurrentlyDragged(elem);
+		document.addEventListener("mouseup", handleGlobalMouseUp);
+	};
+
+	//whats the problem
+	//i dont like this handleGlobalMOuseup
+	//what can i do.
+	//i could make it truly global vue way via emit
+	//
+	//i want something i can quickly reason about
+	//////////
+	//next step is to create a drag shadow so the user
+	//has a visual of whats going on where his dragged item is
+	const dragging = function (ev: MouseEvent) {
+		if (!canvasElemsStore.currentlyDragged) return;
+		const elem = ev.currentTarget as HTMLElement;
+
+		if (canvasElemsStore.currentlyHovered === elem) {
+			console.log("same elem hovered");
+		} else {
+			canvasElemsStore.setCurrentlyHovered(elem);
+			console.log("new elem hovered:", elem.id);
+		}
+	};
+	const draggingReleased = function (ev: MouseEvent) {
+		const elem = ev.currentTarget;
+	};
+
+	const handleGlobalMouseUp = function () {
+		canvasElemsStore.setCurrentlyDragged(null);
+		document.removeEventListener("mouseup", handleGlobalMouseUp);
+	};
 </script>
 
 <style scoped>
+	.position-relative {
+		user-select: none !important;
+	}
 	.x {
 		width: 14px;
 		height: 14px;

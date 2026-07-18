@@ -6,6 +6,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
 		return {
 			elems: [] as CanvasElem[],
+			currentlyDragged: null as HTMLElement | null,
+			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
 		};
 	},
@@ -42,6 +44,12 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		): void {
 			if (!this.activeElem) return;
 			Object.assign(this.activeElem, changes);
+		},
+		setCurrentlyDragged: function (draggedElem: HTMLElement | null) {
+			this.currentlyDragged = draggedElem;
+		},
+		setCurrentlyHovered: function (hoveredElem: HTMLElement) {
+			this.currentlyHovered = hoveredElem;
 		},
 	},
 });
