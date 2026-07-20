@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed } from "vue";
+	import { computed, ref } from "vue";
 	import type { CanvasElem } from "~/types";
 	import { useCanvasElemsStore, useAppActionStore } from "../../store";
 	import { createResize } from "../../utils";
@@ -94,25 +94,26 @@
 	 *
 	 */
 
+	//////////
+	//next step is to create a drag shadow so the user
+	//has a visual of whats going on where his dragged item is
+	//to do this i need to create a temp div
+	//give it a small width/height: make its position
+	//relative to clientX and clientY
+
 	const dragStarted = function (ev: MouseEvent) {
 		ev.preventDefault();
 		const elem = ev.currentTarget as HTMLElement;
 		canvasElemsStore.setCurrentlyDragged(elem);
 	};
 
-	//////////
-	//next step is to create a drag shadow so the user
-	//has a visual of whats going on where his dragged item is
 	const dragging = function (ev: MouseEvent) {
 		if (!canvasElemsStore.currentlyDragged) return;
 		const elem = ev.currentTarget as HTMLElement;
 
-		if (canvasElemsStore.currentlyHovered === elem) {
-			console.log("same elem hovered");
-		} else {
-			canvasElemsStore.setCurrentlyHovered(elem);
-			console.log("new elem hovered:", elem.id);
-		}
+		if (canvasElemsStore.currentlyHovered === elem) return;
+
+		canvasElemsStore.setCurrentlyHovered(elem);
 	};
 </script>
 
