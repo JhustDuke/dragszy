@@ -94,31 +94,12 @@
 	 *
 	 */
 
-	//whats on my mind?
-	//i want to know the elem the mouse currently entered
-	//to do that i'd
-	//need to know
-	//when i clicked
-
-	//i need to get all dynamically created elem
-	//n with each mouse movement i ask
-	//i'm i an elem in the store when the mouse enters me
-	//if i am an elem in the store set me to currentEntered by getting my id
-	//if i lift up my mouse then remove the carried elem from the all elem and append him into my children stack
-
 	const dragStarted = function (ev: MouseEvent) {
 		ev.preventDefault();
 		const elem = ev.currentTarget as HTMLElement;
 		canvasElemsStore.setCurrentlyDragged(elem);
-		document.addEventListener("mouseup", handleGlobalMouseUp);
 	};
 
-	//whats the problem
-	//i dont like this handleGlobalMOuseup
-	//what can i do.
-	//i could make it truly global vue way via emit
-	//
-	//i want something i can quickly reason about
 	//////////
 	//next step is to create a drag shadow so the user
 	//has a visual of whats going on where his dragged item is
@@ -132,14 +113,6 @@
 			canvasElemsStore.setCurrentlyHovered(elem);
 			console.log("new elem hovered:", elem.id);
 		}
-	};
-	const draggingReleased = function (ev: MouseEvent) {
-		const elem = ev.currentTarget;
-	};
-
-	const handleGlobalMouseUp = function () {
-		canvasElemsStore.setCurrentlyDragged(null);
-		document.removeEventListener("mouseup", handleGlobalMouseUp);
 	};
 </script>
 

@@ -8,9 +8,26 @@
 
 <!-- CanvasArea.vue -->
 <script setup lang="ts">
+	import { onMounted, onUnmounted } from "vue";
 	import { useCanvasElemsStore } from "../../store";
-	// stores initialized first, before any functions/logic below
+	import CanvasElement from "./NewElem.vue";
+
 	const canvasElemsStore = useCanvasElemsStore();
 
-	import CanvasElement from "./NewElem.vue";
+	onMounted(function () {
+		document.addEventListener("mouseup", handleCanvasMouseUp);
+	});
+
+	onUnmounted(function () {
+		document.removeEventListener("mouseup", handleCanvasMouseUp);
+	});
+
+	const handleCanvasMouseUp = function () {
+		const elem = canvasElemsStore.currentlyDragged;
+		if (!elem) {
+			return;
+		}
+
+		canvasElemsStore.setCurrentlyDragged(null);
+	};
 </script>
