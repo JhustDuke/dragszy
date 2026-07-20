@@ -1,6 +1,8 @@
 <template>
 	<div
+		ref="elemRef"
 		class="position-relative border border-dark my-2"
+		:class="{ 'border border-3': isHoveredWhileDragging }"
 		:style="{
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
@@ -71,35 +73,19 @@
 		return props.newElemInfo.height ?? 0;
 	});
 
+	const elemRef = ref<HTMLElement | null>(null);
+
+	const isHoveredWhileDragging = computed(function () {
+		return canvasElemsStore.currentlyHovered === elemRef.value;
+	});
+
+	// now add a button after a br in the div which when clicks deletes the elem and removes all reference of it from the store too and if it was the currently selected give it to the next elem in the elems array or leave it empty if elems array is empt
+
 	function handleElemClick(event: MouseEvent): void {
 		event.stopPropagation();
 
 		canvasElemsStore.setActiveElem(props.newElemInfo.id);
 	}
-
-	/**
-	 * what do i want,
-	 * when i drag a selected elem
-	 * it should follow me with the mouse
-	 * any place i lift up my hand
-	 * that place should become its new position
-	 * to do this...i need to
-	 * know the activeElem...which is the elem being dragged
-	 * know its currentPosition on the dom
-	 * i need to know the current parent of this elem
-	 *
-	 * fft
-	 * now if its in the same parent should i change it to absolute?
-	 *
-	 *
-	 */
-
-	//////////
-	//next step is to create a drag shadow so the user
-	//has a visual of whats going on where his dragged item is
-	//to do this i need to create a temp div
-	//give it a small width/height: make its position
-	//relative to clientX and clientY
 
 	const dragStarted = function (ev: MouseEvent) {
 		ev.preventDefault();

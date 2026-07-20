@@ -37,6 +37,11 @@
 		document.removeEventListener("mousemove", trackDragPosition);
 	});
 
+	//what do i want?
+	//i want the currently hovered elem to
+	//have a thicker border
+	//
+
 	let dragX = ref(0);
 	let dragY = ref(0);
 	const isDragging = ref(false);
