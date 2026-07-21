@@ -33,23 +33,130 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				widthUnit: defaultNudgeStore.getDefaultMeasurementX,
 				heightUnit: defaultNudgeStore.getDefaultMeasurementY,
 			};
+
 			this.elems.push(newElem);
 			this.activeElemId = newElem.id;
 		},
+
 		setActiveElem: function (id: string | null) {
 			this.activeElemId = id;
 		},
+
 		updateElemWidthOrHeight: function (
 			changes: Partial<Pick<CanvasElem, "width" | "height">>
 		): void {
 			if (!this.activeElem) return;
+
 			Object.assign(this.activeElem, changes);
 		},
+
 		setCurrentlyDragged: function (draggedElem: HTMLElement | null) {
 			this.currentlyDragged = draggedElem;
 		},
-		setCurrentlyHovered: function (hoveredElem: HTMLElement) {
+
+		setCurrentlyHovered: function (hoveredElem: HTMLElement | null) {
 			this.currentlyHovered = hoveredElem;
+		},
+
+		appendToNewParent: function (draggedId: string, parentId: string): void {
+			if (draggedId === parentId) return;
+
+			const draggedResult = findElemAndContainer(this.elems, draggedId);
+			if (!draggedResult) return;
+
+			const parentResult = findElemAndContainer(this.elems, parentId);
+			if (!parentResult) return;
+
+			// Prevent creating circular trees.
+			if (containsChild(draggedResult.elem, parentId)) return;
+
+			const draggedIndex = draggedResult.container.findIndex(function (elem) {
+				return elem.id === draggedId;
+			});
+
+			if (draggedIndex === -1) return;
+
+			const draggedElem = draggedResult.container.splice(draggedIndex, 1)[0];
+
+			if (draggedElem) {
+				parentResult.elem.children.push(draggedElem);
+			}
+		},
+
+		unparentElem: function (id: string): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			// already top-level, nothing to do
+			if (result.container === this.elems) return;
+
+			const index = result.container.findIndex(function (elem) {
+				return elem.id === id;
+			});
+
+			if (index === -1) return;
+
+			const movedElem = result.container.splice(index, 1)[0];
+
+			if (movedElem) {
+				this.elems.push(movedElem);
+			}
+		},
+
+		deleteElem: function (id: string) {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			const index = result.container.findIndex(function (elem) {
+				return elem.id === id;
+			});
+
+			if (index === -1) return;
+
+			result.container.splice(index, 1);
+
+			if (this.activeElemId === id) {
+				this.activeElemId =
+					result.container.length > 0 ? result.container[0]?.id ?? null : null;
+			}
 		},
 	},
 });
+
+function findElemAndContainer(
+	elems: CanvasElem[],
+	id: string
+): { elem: CanvasElem; container: CanvasElem[] } | null {
+	for (const elem of elems) {
+		if (elem.id === id) {
+			return {
+				elem: elem,
+				container: elems,
+			};
+		}
+
+		if (elem.children.length > 0) {
+			const found = findElemAndContainer(elem.children, id);
+
+			if (found) {
+				return found;
+			}
+		}
+	}
+
+	return null;
+}
+
+function containsChild(parent: CanvasElem, childId: string): boolean {
+	for (const child of parent.children) {
+		if (child.id === childId) {
+			return true;
+		}
+
+		if (containsChild(child, childId)) {
+			return true;
+		}
+	}
+
+	return false;
+}

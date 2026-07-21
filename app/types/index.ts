@@ -6,7 +6,7 @@ export interface CanvasElem {
 	id: string;
 	width?: number;
 	height?: number;
-	isSelected?: boolean;
+
 	elemType: string;
 	widthUnit: string;
 

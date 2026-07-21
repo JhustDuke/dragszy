@@ -1,14 +1,14 @@
 <template>
 	<div
 		ref="elemRef"
-		class="position-relative border border-dark my-2"
+		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
 		:class="{ 'border border-3': isHoveredWhileDragging }"
 		:style="{
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
 		}"
-		@mousemove="dragging"
-		@mousedown="dragStarted"
+		@mousemove="onMouseMove"
+		@mousedown="onMouseDown"
 		@click="handleElemClick">
 		<!-- Width and height badge -->
 		<small
@@ -17,6 +17,15 @@
 			w:{{ activeWidth }}{{ newElemInfo.widthUnit }} h:{{ activeHeight
 			}}{{ newElemInfo.heightUnit }}
 		</small>
+
+		<!-- delete elem button -->
+		<button
+			id=""
+			style="right: 0; bottom: 0"
+			class="deleteBtn red position-absolute white-text"
+			@click.stop="deleteNode">
+			X
+		</button>
 
 		<template v-if="isSelected">
 			<!-- Top -->
@@ -39,6 +48,12 @@
 				class="x position-absolute top-50 start-0 translate-middle rounded-circle border border-primary bg-white"
 				@mousedown="resize.left"></button>
 		</template>
+
+		<NewElem
+			v-for="child in newElemInfo.children"
+			:key="child.id"
+			:id="child.id"
+			:newElemInfo="child" />
 	</div>
 </template>
 
@@ -79,22 +94,26 @@
 		return canvasElemsStore.currentlyHovered === elemRef.value;
 	});
 
-	// now add a button after a br in the div which when clicks deletes the elem and removes all reference of it from the store too and if it was the currently selected give it to the next elem in the elems array or leave it empty if elems array is empt
+	const deleteNode = function (ev: MouseEvent) {
+		canvasElemsStore.deleteElem(props.newElemInfo.id);
+	};
 
-	function handleElemClick(event: MouseEvent): void {
+	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();
 
 		canvasElemsStore.setActiveElem(props.newElemInfo.id);
-	}
+	};
 
-	const dragStarted = function (ev: MouseEvent) {
+	const onMouseDown = function (ev: MouseEvent) {
 		ev.preventDefault();
+		ev.stopPropagation();
 		const elem = ev.currentTarget as HTMLElement;
 		canvasElemsStore.setCurrentlyDragged(elem);
 	};
 
-	const dragging = function (ev: MouseEvent) {
+	const onMouseMove = function (ev: MouseEvent) {
 		if (!canvasElemsStore.currentlyDragged) return;
+		ev.stopPropagation();
 		const elem = ev.currentTarget as HTMLElement;
 
 		if (canvasElemsStore.currentlyHovered === elem) return;
@@ -112,7 +131,10 @@
 		height: 14px;
 		cursor: ew-resize;
 	}
-
+	.deleteBtn:hover {
+		background-color: white !important;
+		color: red !important;
+	}
 	.y {
 		width: 14px;
 		height: 14px;

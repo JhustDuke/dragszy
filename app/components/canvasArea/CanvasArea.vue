@@ -28,13 +28,13 @@
 	const canvasElemsStore = useCanvasElemsStore();
 
 	onMounted(function () {
-		document.addEventListener("mouseup", handleCanvasMouseUp);
-		document.addEventListener("mousemove", trackDragPosition);
+		document.addEventListener("mouseup", handleCanvasMouseUp, true);
+		document.addEventListener("mousemove", trackDragPosition, true);
 	});
 
 	onUnmounted(function () {
-		document.removeEventListener("mouseup", handleCanvasMouseUp);
-		document.removeEventListener("mousemove", trackDragPosition);
+		document.removeEventListener("mouseup", handleCanvasMouseUp, true);
+		document.removeEventListener("mousemove", trackDragPosition, true);
 	});
 
 	//what do i want?
@@ -54,12 +54,19 @@
 	};
 
 	const handleCanvasMouseUp = function () {
-		const elem = canvasElemsStore.currentlyDragged;
-		if (!elem) {
-			return;
+		const draggedNode = canvasElemsStore.currentlyDragged;
+		const hoveredNode = canvasElemsStore.currentlyHovered;
+
+		if (draggedNode && draggedNode.id) {
+			if (hoveredNode && hoveredNode.id) {
+				canvasElemsStore.appendToNewParent(draggedNode.id, hoveredNode.id);
+			} else {
+				canvasElemsStore.unparentElem(draggedNode.id);
+			}
 		}
 
 		canvasElemsStore.setCurrentlyDragged(null);
+		canvasElemsStore.setCurrentlyHovered(null);
 		isDragging.value = false;
 	};
 </script>
