@@ -5,7 +5,7 @@
 		:id="elem.id"
 		:newElemInfo="elem" />
 
-	<template v-if="isDragging">
+	<template v-if="canvasElemsStore.isDragging">
 		<div
 			class="position-fixed p-2 grey border border-3"
 			style="border-style: dotted !important"
@@ -37,36 +37,44 @@
 		document.removeEventListener("mousemove", trackDragPosition, true);
 	});
 
-	//what do i want?
-	//i want the currently hovered elem to
-	//have a thicker border
-	//
-
 	let dragX = ref(0);
 	let dragY = ref(0);
-	const isDragging = ref(false);
 
 	const trackDragPosition = function (ev: MouseEvent) {
 		if (!canvasElemsStore.currentlyDragged) return;
 		dragX.value = ev.clientX;
 		dragY.value = ev.clientY;
-		isDragging.value = true;
+		canvasElemsStore.setIsDragging(true);
+
+		const target = ev.target as HTMLElement;
+		if (!target.closest("[data-canvas-elem]")) {
+			canvasElemsStore.setCurrentlyHovered(null);
+		}
 	};
 
 	const handleCanvasMouseUp = function () {
 		const draggedNode = canvasElemsStore.currentlyDragged;
 		const hoveredNode = canvasElemsStore.currentlyHovered;
 
-		if (draggedNode && draggedNode.id) {
+		if (canvasElemsStore.isDragging && draggedNode && draggedNode.id) {
+			let didEdit = false;
+
 			if (hoveredNode && hoveredNode.id) {
-				canvasElemsStore.appendToNewParent(draggedNode.id, hoveredNode.id);
+				didEdit = canvasElemsStore.appendToNewParent(
+					draggedNode.id,
+					hoveredNode.id
+				);
 			} else {
-				canvasElemsStore.unparentElem(draggedNode.id);
+				didEdit = canvasElemsStore.unparentElem(draggedNode.id);
+			}
+
+			if (didEdit) {
+				canvasElemsStore.setLastEdited(draggedNode.id);
 			}
 		}
 
 		canvasElemsStore.setCurrentlyDragged(null);
 		canvasElemsStore.setCurrentlyHovered(null);
-		isDragging.value = false;
+		canvasElemsStore.setIsDragging(false);
 	};
 </script>

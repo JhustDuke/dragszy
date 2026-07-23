@@ -1,8 +1,12 @@
 <template>
 	<div
 		ref="elemRef"
+		data-canvas-elem
 		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
-		:class="{ 'border border-3': isHoveredWhileDragging }"
+		:class="{
+			'border border-2': isHoveredWhileDragging,
+			Edited: isLastEdited,
+		}"
 		:style="{
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
@@ -98,6 +102,10 @@
 		canvasElemsStore.deleteElem(props.newElemInfo.id);
 	};
 
+	const isLastEdited = computed(function () {
+		return canvasElemsStore.lastEditedId === props.newElemInfo.id;
+	});
+
 	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();
 
@@ -125,6 +133,9 @@
 <style scoped>
 	.position-relative {
 		user-select: none !important;
+	}
+	.Edited {
+		border: 1px solid red !important;
 	}
 	.x {
 		width: 14px;

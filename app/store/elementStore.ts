@@ -5,10 +5,12 @@ import { useDefaultNudgeStore } from "~/store/defaultStore";
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
 		return {
+			lastEditedId: null as string | null,
 			elems: [] as CanvasElem[],
 			currentlyDragged: null as HTMLElement | null,
 			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
+			isDragging: false as boolean,
 		};
 	},
 	getters: {
@@ -58,49 +60,59 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			this.currentlyHovered = hoveredElem;
 		},
 
-		appendToNewParent: function (draggedId: string, parentId: string): void {
-			if (draggedId === parentId) return;
+		setLastEdited: function (elemId: string | null) {
+			this.lastEditedId = elemId;
+		},
+
+		setIsDragging: function (value: boolean) {
+			this.isDragging = value;
+		},
+
+		appendToNewParent: function (draggedId: string, parentId: string): boolean {
+			if (draggedId === parentId) return false;
 
 			const draggedResult = findElemAndContainer(this.elems, draggedId);
-			if (!draggedResult) return;
+			if (!draggedResult) return false;
 
 			const parentResult = findElemAndContainer(this.elems, parentId);
-			if (!parentResult) return;
+			if (!parentResult) return false;
 
 			// Prevent creating circular trees.
-			if (containsChild(draggedResult.elem, parentId)) return;
+			if (containsChild(draggedResult.elem, parentId)) return false;
 
 			const draggedIndex = draggedResult.container.findIndex(function (elem) {
 				return elem.id === draggedId;
 			});
 
-			if (draggedIndex === -1) return;
+			if (draggedIndex === -1) return false;
 
 			const draggedElem = draggedResult.container.splice(draggedIndex, 1)[0];
 
-			if (draggedElem) {
-				parentResult.elem.children.push(draggedElem);
-			}
+			if (!draggedElem) return false;
+
+			parentResult.elem.children.push(draggedElem);
+			return true;
 		},
 
-		unparentElem: function (id: string): void {
+		unparentElem: function (id: string): boolean {
 			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
+			if (!result) return false;
 
 			// already top-level, nothing to do
-			if (result.container === this.elems) return;
+			if (result.container === this.elems) return false;
 
 			const index = result.container.findIndex(function (elem) {
 				return elem.id === id;
 			});
 
-			if (index === -1) return;
+			if (index === -1) return false;
 
 			const movedElem = result.container.splice(index, 1)[0];
 
-			if (movedElem) {
-				this.elems.push(movedElem);
-			}
+			if (!movedElem) return false;
+
+			this.elems.push(movedElem);
+			return true;
 		},
 
 		deleteElem: function (id: string) {
