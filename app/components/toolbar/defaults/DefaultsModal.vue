@@ -51,33 +51,70 @@
 					<div
 						v-for="elemType in sortedElemTypes"
 						:key="elemType"
-						class="d-flex align-items-center gap-2 mb-2">
-						<label
-							class="form-label mb-0"
-							style="width: 90px"
-							>{{ elemType }}</label
-						>
-						<input
-							type="text"
-							class="form-control"
-							placeholder="text content"
-							:value="defaultStore.getDefaultTextForElemType(elemType)"
-							@input="
-								defaultStore.setDefaultTextForElemType(
-									elemType,
-									($event.target as HTMLInputElement).value
-								)
-							" />
-						<input
-							type="text"
-							class="form-control"
-							placeholder="css classes, comma separated"
-							:value="
-								[...defaultStore.getDefaultClassesForElemType(elemType)]
-									.sort()
-									.join(', ')
-							"
-							@input="handleClassInput(elemType, $event)" />
+						class="border-bottom pb-2 mb-2">
+						<div class="d-flex align-items-center gap-2">
+							<label
+								class="form-label mb-0"
+								style="width: 90px"
+								>{{ elemType }}</label
+							>
+							<input
+								type="text"
+								class="form-control"
+								placeholder="text content"
+								:value="defaultStore.getDefaultTextForElemType(elemType)"
+								@input="
+									defaultStore.setDefaultTextForElemType(
+										elemType,
+										($event.target as HTMLInputElement).value
+									)
+								" />
+
+							<!--
+								FIX for "can't type spaces or commas":
+								this input used to be a controlled :value bound directly
+								to a live computed (sorted + joined from the store) that
+								recalculated on every keystroke. The instant you typed a
+								comma or space, that recalculation immediately stripped
+								it back out (split/trim/filter collapses "a, " -> "a"
+								before you can type the next character) — so you were
+								fighting your own live-reformatting on every keystroke.
+
+								Fix: v-model now points at a local plain-string "draft"
+								(classDrafts[elemType]) that you can type into freely,
+								with zero interference. Only on @blur do we parse, sort,
+								and commit the clean array back into the store.
+							-->
+							<input
+								type="text"
+								class="form-control"
+								placeholder="css classes, comma separated"
+								v-model="classDrafts[elemType]"
+								@blur="commitClassDraft(elemType)" />
+						</div>
+
+						<!-- per-type props, only shown for types that actually have any -->
+						<div
+							v-if="propSchemaByElemType[elemType]?.length"
+							class="d-flex gap-2 mt-1"
+							style="margin-left: 98px">
+							<input
+								v-for="propKey in propSchemaByElemType[elemType]"
+								:key="propKey"
+								type="text"
+								class="form-control form-control-sm"
+								:placeholder="propKey"
+								:value="
+									defaultStore.getDefaultPropsForElemType(elemType)[propKey]
+								"
+								@input="
+									defaultStore.setDefaultPropForElemType(
+										elemType,
+										propKey,
+										($event.target as HTMLInputElement).value
+									)
+								" />
+						</div>
 					</div>
 				</div>
 
@@ -289,9 +326,9 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref } from "vue";
-	import { useDefaultStore } from "~/store/defaultStore";
-	import { supportedElemTypes } from "./elems";
+	import { computed, reactive, ref } from "vue";
+	import { useDefaultStore, propSchemaByElemType } from "~/store/defaultStore";
+	import { supportedElemTypes } from "~/types";
 
 	interface Props {
 		isVisible: boolean;
@@ -311,8 +348,25 @@
 		return [...supportedElemTypes].sort();
 	});
 
-	function handleClassInput(elemType: string, event: Event): void {
-		const rawValue = (event.target as HTMLInputElement).value;
+	// draft text per elem type, edited freely; only parsed/sorted/committed
+	// to the store on blur, so typing spaces and commas isn't fought
+	// by live reformatting on every keystroke (see comment in template
+	// above the css-classes input for the full explanation)
+	const classDrafts = reactive<Record<string, string>>(
+		Object.fromEntries(
+			supportedElemTypes.map(function (elemType) {
+				return [
+					elemType,
+					[...defaultStore.getDefaultClassesForElemType(elemType)]
+						.sort()
+						.join(", "),
+				];
+			})
+		)
+	);
+
+	function commitClassDraft(elemType: string): void {
+		const rawValue = classDrafts[elemType] ?? "";
 		const classes = rawValue
 			.split(",")
 			.map(function (className) {
@@ -324,6 +378,7 @@
 			.sort();
 
 		defaultStore.setDefaultClassesForElemType(elemType, classes);
+		classDrafts[elemType] = classes.join(", ");
 	}
 
 	function closeModal(): void {
