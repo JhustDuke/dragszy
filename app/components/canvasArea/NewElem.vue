@@ -1,5 +1,6 @@
 <template>
-	<div
+	<component
+		:is="newElemInfo.elemType"
 		ref="elemRef"
 		data-canvas-elem
 		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
@@ -58,7 +59,7 @@
 			:key="child.id"
 			:id="child.id"
 			:newElemInfo="child" />
-	</div>
+	</component>
 </template>
 
 <script setup lang="ts">
@@ -106,6 +107,19 @@
 		return canvasElemsStore.lastEditedId === props.newElemInfo.id;
 	});
 
+	/**
+	 * what do i want
+	 * when i click inside an already created div,
+	 * the new child should be inside the div
+	 * if i click on a blank canvas, the new elem on the canvas
+	 * to solve this i need to know where i doubled clcik
+	 ** since all my elems have an id,
+	 * if it has a id , i go to the store and ask
+	 * where's a child with this id
+	 * append into it
+	 * and give the newly created elem the id
+	 * if its
+	 */
 	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();
 

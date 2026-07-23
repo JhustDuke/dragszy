@@ -36,6 +36,18 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				heightUnit: defaultNudgeStore.getDefaultMeasurementY,
 			};
 
+			if (this.activeElemId) {
+				const activeResult = findElemAndContainer(
+					this.elems,
+					this.activeElemId
+				);
+				if (activeResult) {
+					activeResult.elem.children.push(newElem);
+					this.activeElemId = newElem.id;
+					return;
+				}
+			}
+
 			this.elems.push(newElem);
 			this.activeElemId = newElem.id;
 		},

@@ -20,6 +20,7 @@
 					marginTop: defaultNudgeStore.getDefaultMarginY + 'px',
 					marginBottom: defaultNudgeStore.getDefaultMarginY + 'px',
 				}"
+				data-canvas-root
 				@dblclick="handleCanvasDblClick">
 				<CanvasArea />
 			</div>
@@ -34,6 +35,7 @@
 				<div
 					class="white green lighten-5 shadow border rounded-3 overflow-auto"
 					:style="{ width: viewportStore.activeWidth, height: '600px' }"
+					data-canvas-root
 					@dblclick="handleCanvasDblClick">
 					<CanvasArea />
 				</div>
@@ -63,9 +65,16 @@
 	const canvasElemsStore = useCanvasElemsStore();
 	const defaultNudgeStore = useDefaultNudgeStore();
 
-	function handleCanvasDblClick(): void {
+	function handleCanvasDblClick(event: MouseEvent): void {
 		if (appActionStore.getActiveAction !== "create") return;
-		canvasElemsStore.addElem();
+
+		const canvasRoot = event.target as HTMLElement;
+
+		if (canvasRoot.hasAttribute("data-canvas-root")) {
+			canvasElemsStore.setActiveElem(null);
+		}
+
+		canvasElemsStore.addElem(appActionStore.getSelectedElemType);
 	}
 </script>
 <style scoped></style>

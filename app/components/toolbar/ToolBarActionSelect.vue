@@ -33,10 +33,7 @@
 		{ immediate: true }
 	);
 
-	// maps keyboard keys to actions — updating selectedAction keeps the
-	// <select> UI and the store in sync through the existing watch above
 	function handleKeyDown(event: KeyboardEvent): void {
-		// ignore keystrokes while typing in an input/textarea elsewhere on the page
 		const target = event.target as HTMLElement;
 		if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
