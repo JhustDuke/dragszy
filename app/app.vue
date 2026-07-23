@@ -56,14 +56,14 @@
 		useViewportStore,
 		useAppActionStore,
 		useCanvasElemsStore,
-		useDefaultNudgeStore,
+		useDefaultStore,
 	} from "./store";
 
 	// Controls which layout renders: desktop vs boxed mobile/tablet preview
 	const viewportStore = useViewportStore();
 	const appActionStore = useAppActionStore();
 	const canvasElemsStore = useCanvasElemsStore();
-	const defaultNudgeStore = useDefaultNudgeStore();
+	const defaultNudgeStore = useDefaultStore();
 
 	function handleCanvasDblClick(event: MouseEvent): void {
 		if (appActionStore.getActiveAction !== "create") return;

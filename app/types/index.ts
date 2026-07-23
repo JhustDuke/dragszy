@@ -6,7 +6,8 @@ export interface CanvasElem {
 	id: string;
 	width?: number;
 	height?: number;
-
+	textContent: string;
+	cssClasses: string[];
 	elemType: string;
 	widthUnit: string;
 

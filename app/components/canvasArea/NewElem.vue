@@ -4,10 +4,13 @@
 		ref="elemRef"
 		data-canvas-elem
 		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
-		:class="{
-			'border border-2': isHoveredWhileDragging,
-			Edited: isLastEdited,
-		}"
+		:class="[
+			...(newElemInfo.cssClasses ?? []),
+			{
+				'border border-2': isHoveredWhileDragging,
+				edited: isLastEdited,
+			},
+		]"
 		:style="{
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
@@ -15,6 +18,7 @@
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
 		@click="handleElemClick">
+		{{ newElemInfo.textContent }}
 		<!-- Width and height badge -->
 		<small
 			v-if="isSelected"
@@ -148,7 +152,7 @@
 	.position-relative {
 		user-select: none !important;
 	}
-	.Edited {
+	.edited {
 		border: 1px solid red !important;
 	}
 	.x {

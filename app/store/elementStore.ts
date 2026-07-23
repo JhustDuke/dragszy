@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import type { CanvasElem } from "~/types";
-import { useDefaultNudgeStore } from "~/store/defaultStore";
+import { useDefaultStore } from "~/store/defaultStore";
 
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
@@ -24,16 +24,18 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	},
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap = "div") {
-			const defaultNudgeStore = useDefaultNudgeStore();
+			const defaultStore = useDefaultStore();
 
 			const newElem: CanvasElem = {
 				id: Math.random().toString(36).slice(2, 10),
 				elemType: type,
+				textContent: defaultStore.getDefaultTextForElemType(type),
+				cssClasses: defaultStore.getDefaultClassesForElemType(type),
 				children: [],
-				width: defaultNudgeStore.getDefaultWidth,
-				height: defaultNudgeStore.getDefaultHeight,
-				widthUnit: defaultNudgeStore.getDefaultMeasurementX,
-				heightUnit: defaultNudgeStore.getDefaultMeasurementY,
+				width: defaultStore.getDefaultWidth,
+				height: defaultStore.getDefaultHeight,
+				widthUnit: defaultStore.getDefaultMeasurementX,
+				heightUnit: defaultStore.getDefaultMeasurementY,
 			};
 
 			if (this.activeElemId) {
