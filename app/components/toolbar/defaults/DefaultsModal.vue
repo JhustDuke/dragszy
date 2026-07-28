@@ -93,24 +93,22 @@
 								@blur="commitClassDraft(elemType)" />
 						</div>
 
-						<!-- per-type props, only shown for types that actually have any -->
+						<!-- per-elem attr, only shown for those that actually have any -->
 						<div
-							v-if="propSchemaByElemType[elemType]?.length"
+							v-if="attrByElemType[elemType]?.length"
 							class="d-flex gap-2 mt-1"
 							style="margin-left: 98px">
 							<input
-								v-for="propKey in propSchemaByElemType[elemType]"
-								:key="propKey"
+								v-for="attr in attrByElemType[elemType]"
+								:key="attr"
 								type="text"
 								class="form-control form-control-sm"
-								:placeholder="propKey"
-								:value="
-									defaultStore.getDefaultPropsForElemType(elemType)[propKey]
-								"
+								:placeholder="attr"
+								:value="defaultStore.getDefaultPropsForElemType(elemType)[attr]"
 								@input="
 									defaultStore.setDefaultPropForElemType(
 										elemType,
-										propKey,
+										attr,
 										($event.target as HTMLInputElement).value
 									)
 								" />
@@ -327,7 +325,8 @@
 
 <script setup lang="ts">
 	import { computed, reactive, ref } from "vue";
-	import { useDefaultStore, propSchemaByElemType } from "~/store/defaultStore";
+	import { useDefaultStore } from "~/store/defaultStore";
+	import { attrByElemType } from "~/store/utils/defaultData";
 	import { supportedElemTypes } from "~/types";
 
 	interface Props {

@@ -24,21 +24,6 @@
 
 <script setup lang="ts">
 	import { useAppActionStore } from "~/store";
-
+	import { supportedElemTypes } from "~/types";
 	const appActionStore = useAppActionStore();
-
-	const supportedElemTypes = [
-		"div",
-		"span",
-		"a",
-		"button",
-		"ul",
-		"li",
-		"form",
-		"label",
-		"input",
-		"textarea",
-		"select",
-		"option",
-	];
 </script>

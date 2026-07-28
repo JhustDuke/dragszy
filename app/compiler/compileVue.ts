@@ -121,6 +121,9 @@ const compiler = function () {
 		tag: NormalizedTag,
 		elem: CanvasElem
 	): void {
+		if (elem.textContent?.startsWith("dragzy")) {
+			return;
+		}
 		tag.textContent = elem.textContent ?? "";
 	};
 
@@ -132,7 +135,9 @@ const compiler = function () {
 		if (!elem.id) {
 			return;
 		}
-
+		if (elem.id.startsWith("dragzy-")) {
+			return;
+		}
 		tag.attributes.id = elem.id;
 	};
 
@@ -149,6 +154,7 @@ const compiler = function () {
 		for (const key in elem.props) {
 			const value = elem.props[key];
 			if (!value) continue;
+			if(value.startsWith('dragzy')) continue
 			tag.attributes[key] = value;
 		}
 	};

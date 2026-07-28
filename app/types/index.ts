@@ -18,7 +18,7 @@ export interface CanvasElem {
 // single source of truth for which HTML tags Dragsy currently supports.
 // typed against keyof HTMLElementTagNameMap so a typo here is a
 // compile-time error, not a silently-broken elem type.
-export const supportedElemTypes: (keyof HTMLElementTagNameMap)[] = [
+export const supportedElemTypes = [
 	"div",
 	"span",
 	"p",
@@ -32,6 +32,7 @@ export const supportedElemTypes: (keyof HTMLElementTagNameMap)[] = [
 	"textarea",
 	"select",
 	"option",
-];
+	"img",
+] as const satisfies (keyof HTMLElementTagNameMap)[];
 
 export type SupportedElemType = (typeof supportedElemTypes)[number];

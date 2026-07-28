@@ -25,15 +25,19 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap = "div") {
 			const defaultStore = useDefaultStore();
+			const attributes = defaultStore.getDefaultPropsForElemType(type);
+			const attrWidth = attributes.width ? Number(attributes.width) : null;
+			const attrHeight = attributes.height ? Number(attributes.height) : null;
 
 			const newElem: CanvasElem = {
-				id: Math.random().toString(36).slice(2, 10),
+				id: "dragzy-" + Math.random().toString(36).slice(2, 10),
 				elemType: type,
 				textContent: defaultStore.getDefaultTextForElemType(type),
 				cssClasses: defaultStore.getDefaultClassesForElemType(type),
 				children: [],
-				width: defaultStore.getDefaultWidth,
-				height: defaultStore.getDefaultHeight,
+				props: { ...attributes },
+				width: attrWidth ?? defaultStore.getDefaultWidth,
+				height: attrHeight ?? defaultStore.getDefaultHeight,
 				widthUnit: defaultStore.getDefaultMeasurementX,
 				heightUnit: defaultStore.getDefaultMeasurementY,
 			};

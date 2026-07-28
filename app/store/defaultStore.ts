@@ -1,22 +1,11 @@
 import { defineStore } from "pinia";
+import {
+	defaultTextByElemType,
+	defaultClassByElemType,
+	buildEmptyPropsByElemType,
+} from "./utils/defaultData";
 
 type Measurement = "%" | "px";
-
-const defaultTextByElemType: Record<string, string> = {
-	div: "",
-	span: "Text",
-	p: "Paragraph text",
-	a: "Link",
-	button: "Button",
-	ul: "",
-	li: "List item",
-	form: "",
-	label: "Label",
-	input: "",
-	textarea: "",
-	select: "",
-	option: "Option",
-};
 
 export const useDefaultStore = defineStore("defaultStore", {
 	state: function () {
@@ -178,52 +167,3 @@ export const useDefaultStore = defineStore("defaultStore", {
 		},
 	},
 });
-
-const defaultClassByElemType: Record<string, string[]> = {
-	div: [],
-	span: [],
-	p: [],
-	a: ["link-primary"],
-	button: ["btn", "btn-primary"],
-	ul: ["list-group"],
-	li: ["list-group-item"],
-	form: [],
-	label: ["form-label"],
-	input: ["form-control"],
-	textarea: ["form-control"],
-	select: ["form-select"],
-	option: [],
-};
-
-export const propSchemaByElemType: Record<string, string[]> = {
-	div: [],
-	span: [],
-	p: [],
-	a: ["href"],
-	button: ["type"],
-	ul: [],
-	li: [],
-	form: ["action", "method"],
-	label: ["for"],
-	input: ["type", "placeholder", "name"],
-	textarea: ["placeholder", "name"],
-	select: ["name"],
-	option: ["value"],
-};
-
-function buildEmptyPropsByElemType(): Record<string, Record<string, string>> {
-	const result: Record<string, Record<string, string>> = {};
-
-	for (const elemType in propSchemaByElemType) {
-		const keys = propSchemaByElemType[elemType] ?? [];
-		const props: Record<string, string> = {};
-
-		for (const key of keys) {
-			props[key] = "";
-		}
-
-		result[elemType] = props;
-	}
-
-	return result;
-}
