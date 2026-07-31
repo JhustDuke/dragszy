@@ -2,8 +2,9 @@ import { defineStore } from "pinia";
 import {
 	defaultTextByElemType,
 	defaultClassByElemType,
-	buildEmptyPropsByElemType,
+	buildEmptyAttrs,
 } from "./utils/defaultData";
+import type { SupportedElemType, supportedElemTypes } from "~/types";
 
 type Measurement = "%" | "px";
 
@@ -27,16 +28,13 @@ export const useDefaultStore = defineStore("defaultStore", {
 
 			defaultTextByElemType: {
 				...defaultTextByElemType,
-			} as Record<string, string>,
+			},
 
 			defaultClassByElemType: {
 				...defaultClassByElemType,
-			} as Record<string, string[]>,
+			},
 
-			defaultPropsByElemType: buildEmptyPropsByElemType() as Record<
-				string,
-				Record<string, string>
-			>,
+			defaultPropsByElemType: buildEmptyAttrs(),
 		};
 	},
 
@@ -81,18 +79,22 @@ export const useDefaultStore = defineStore("defaultStore", {
 			return state.defaultMarginY;
 		},
 		getDefaultTextForElemType: function (state) {
-			return function (elemType: string): string {
+			return function (
+				elemType: keyof typeof state.defaultTextByElemType
+			): string {
 				return state.defaultTextByElemType[elemType] ?? "";
 			};
 		},
 
 		getDefaultClassesForElemType: function (state) {
-			return function (elemType: string): string[] {
+			return function (
+				elemType: keyof typeof state.defaultTextByElemType
+			): string[] {
 				return state.defaultClassByElemType[elemType] ?? [];
 			};
 		},
 
-		getDefaultPropsForElemType: function (state) {
+		getDefaultsAttrForElemType: function (state) {
 			return function (elemType: string): Record<string, string> {
 				return state.defaultPropsByElemType[elemType] ?? {};
 			};
@@ -141,14 +143,14 @@ export const useDefaultStore = defineStore("defaultStore", {
 		},
 
 		setDefaultTextForElemType: function (
-			elemType: string,
+			elemType: keyof typeof defaultTextByElemType,
 			value: string
 		): void {
 			this.defaultTextByElemType[elemType] = value;
 		},
 
 		setDefaultClassesForElemType: function (
-			elemType: string,
+			elemType: keyof typeof defaultClassByElemType,
 			classes: string[]
 		): void {
 			this.defaultClassByElemType[elemType] = classes;

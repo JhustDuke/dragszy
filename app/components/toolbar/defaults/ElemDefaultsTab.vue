@@ -41,7 +41,7 @@
 					type="text"
 					class="form-control form-control-sm"
 					:placeholder="attr"
-					:value="defaultStore.getDefaultPropsForElemType(elemType)[attr]"
+					:value="defaultStore.getDefaultsAttrForElemType(elemType)[attr]"
 					@input="
 						defaultStore.setDefaultPropForElemType(
 							elemType,
@@ -95,7 +95,7 @@
 			})
 			.sort();
 
-		defaultStore.setDefaultClassesForElemType(elemType, classes);
+		defaultStore.setDefaultClassesForElemType(elemType as any, classes);
 		classDrafts[elemType] = classes.join(", ");
 	}
 </script>

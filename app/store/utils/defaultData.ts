@@ -3,7 +3,7 @@ import type { SupportedElemType } from "~/types";
 //starting textContent for each elem type when it's dragged onto the canvas
 //e.g. div gets "dragzy-div", form/select/img get "" because they don't show text
 export const defaultTextByElemType: Record<SupportedElemType, string> = {
-	div: "dragzy-div",
+	div: "",
 	span: "dragzy-span",
 	p: "dragzy-p",
 	a: "dragzy-a",
@@ -22,7 +22,15 @@ export const defaultTextByElemType: Record<SupportedElemType, string> = {
 //starting BS5 classes for each elem type when it's dragged onto the canvas
 //e.g. img-fluid makes the image scale to its container instead of overflowing
 export const defaultClassByElemType: Record<SupportedElemType, string[]> = {
-	div: [],
+	div: [
+		"d-flex",
+		"container-fluid green ",
+		"p-3 ",
+		"justify-content-between",
+		"my-2",
+		"border",
+		"border-dark",
+	],
 	span: [],
 	p: [],
 	a: ["link-primary"],
@@ -60,17 +68,16 @@ export const attrByElemType: Record<SupportedElemType, string[]> = {
 //builds a fresh props object for every elem type, all values blank ("")
 //img is the ONE exception: it gets a real src/width/height so it doesn't show
 //as a broken image the moment it's dropped on the canvas
-export function buildEmptyPropsByElemType(): Record<
-	string,
-	Record<string, string>
-> {
+//this would be stripped by the compiler
+export function buildEmptyAttrs() {
 	const result: Record<string, Record<string, string>> = {};
 
 	for (const elemType in attrByElemType) {
-		const keys = attrByElemType[elemType as keyof typeof attrByElemType] ?? [];
+		const attrName =
+			attrByElemType[elemType as keyof typeof attrByElemType] ?? [];
 		const props: Record<string, string> = {};
 
-		for (const key of keys) {
+		for (const key of attrName) {
 			//everything defaults to blank...
 			props[key] = "";
 		}
@@ -86,3 +93,9 @@ export function buildEmptyPropsByElemType(): Record<
 
 	return result;
 }
+
+/**
+ * this code simple goes into the supported elem
+ * gets attr each elems supports
+ *
+ */

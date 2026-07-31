@@ -1,7 +1,7 @@
 // types/index.ts
 export type AppAction = "create" | "move" | "resize";
 export type ResizeEdge = "top" | "right" | "bottom" | "left";
-
+import type { Properties } from "csstype";
 export interface CanvasElem {
 	id: string;
 	width?: number;
@@ -11,6 +11,7 @@ export interface CanvasElem {
 	heightUnit: string;
 	textContent?: string;
 	cssClasses?: string[];
+	customStyles?: Partial<Properties<string | number>>;
 	props?: Record<string, string>;
 	children: CanvasElem[];
 }

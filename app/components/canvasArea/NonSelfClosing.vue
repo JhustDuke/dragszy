@@ -23,6 +23,7 @@
 		v-bind="newElemInfo.props"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
+		@dblclick="onDblClick"
 		@click="onClick">
 		{{ newElemInfo.textContent }}
 
@@ -79,6 +80,7 @@
 		onMouseDown: (ev: MouseEvent) => void;
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
+		onDblClick:(ev:MouseEvent)=> void
 	}>();
 
 	//NewElem.vue needs a ref to the REAL dom elem for drag/hover comparisons

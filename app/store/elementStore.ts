@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
-import type { CanvasElem } from "~/types";
+import type { CanvasElem, SupportedElemType } from "~/types";
 import { useDefaultStore } from "~/store/defaultStore";
+import { useAppActionStore } from "~/store";
 
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
@@ -25,19 +26,43 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap = "div") {
 			const defaultStore = useDefaultStore();
-			const attributes = defaultStore.getDefaultPropsForElemType(type);
-			const attrWidth = attributes.width ? Number(attributes.width) : null;
-			const attrHeight = attributes.height ? Number(attributes.height) : null;
+			const appActionStore = useAppActionStore();
+
+			//img (and any future self-closing elem type) carries its own
+			//width/height inside its attributes (e.g. attributes.width = "50"),
+			//so use those instead of the generic global default when present.
+			//strip any leftover unit text (e.g. "300px") before converting to
+			//a number - Number("300px") is NaN, and NaN is not null/undefined
+			//so it would silently skip the ?? fallback below and get stuck
+			//as NaN forever on this elem
+			const attributes = defaultStore.getDefaultsAttrForElemType(
+				type as keyof HTMLElementTagNameMap
+			);
+			const attributeWidth = attributes.width
+				? Number(attributes.width.replace(/[^0-9.]/g, ""))
+				: null;
+			const attributeHeight = attributes.height
+				? Number(attributes.height.replace(/[^0-9.]/g, ""))
+				: null;
+
+			//if a preset was clicked in the toolbar, its classes take over;
+			//otherwise fall back to the elem type's normal default classes
+			const presetClasses = appActionStore.getSelectedPresetClasses;
+			const cssClasses =
+				presetClasses.length > 0
+					? presetClasses
+					: defaultStore.getDefaultClassesForElemType(type as any);
 
 			const newElem: CanvasElem = {
 				id: "dragzy-" + Math.random().toString(36).slice(2, 10),
 				elemType: type,
-				textContent: defaultStore.getDefaultTextForElemType(type),
-				cssClasses: defaultStore.getDefaultClassesForElemType(type),
-				children: [],
+				textContent: defaultStore.getDefaultTextForElemType(type as any),
+				cssClasses: cssClasses,
+
 				props: { ...attributes },
-				width: attrWidth ?? defaultStore.getDefaultWidth,
-				height: attrHeight ?? defaultStore.getDefaultHeight,
+				children: [],
+				width: attributeWidth ?? defaultStore.getDefaultWidth,
+				height: attributeHeight ?? defaultStore.getDefaultHeight,
 				widthUnit: defaultStore.getDefaultMeasurementX,
 				heightUnit: defaultStore.getDefaultMeasurementY,
 			};
@@ -149,6 +174,29 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				this.activeElemId =
 					result.container.length > 0 ? result.container[0]?.id ?? null : null;
 			}
+		},
+
+		updateElemClasses: function (id: string, classes: string[]): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			result.elem.cssClasses = classes;
+		},
+
+		//merges (not overwrites) new inline style properties onto whatever
+		//the elem already has - e.g. updating just "color" won't wipe out
+		//an existing "display" the elem already had set
+		updateElemInlineStyles: function (
+			id: string,
+			customStyles: CanvasElem["customStyles"]
+		): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			result.elem.customStyles = {
+				...result.elem.customStyles,
+				...customStyles,
+			};
 		},
 	},
 });

@@ -28,8 +28,13 @@
 		:resize="resize"
 		:onMouseMove="onMouseMove"
 		:onMouseDown="onMouseDown"
+		:onDblClick="onDblClick"
 		:onClick="handleElemClick"
 		:onDelete="deleteNode" />
+
+	<updateCssModal
+		:is-visible="showModal"
+		@close="showModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -39,6 +44,7 @@
 	import { createResize } from "../../utils";
 	import SelfClosingTags from "./SelfClosingTags.vue";
 	import NonSelfClosingTags from "./NonSelfClosing.vue";
+	import updateCssModal from "./updateCss/updateCssModal.vue";
 
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
@@ -88,6 +94,12 @@
 	const isLastEdited = computed(function () {
 		return canvasElemsStore.lastEditedId === props.newElemInfo.id;
 	});
+
+	const showModal = ref(false);
+	const onDblClick = function (ev: MouseEvent) {
+		ev.stopPropagation();
+		showModal.value = true;
+	};
 
 	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();
