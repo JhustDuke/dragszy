@@ -19,6 +19,7 @@
 		:style="{
 			height: newElemInfo.height + newElemInfo.heightUnit,
 			width: newElemInfo.width + newElemInfo.widthUnit,
+			...(newElemInfo.customStyles ?? {}),
 		}"
 		v-bind="newElemInfo.props"
 		@mousemove="onMouseMove"
@@ -80,7 +81,7 @@
 		onMouseDown: (ev: MouseEvent) => void;
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
-		onDblClick:(ev:MouseEvent)=> void
+		onDblClick: (ev: MouseEvent) => void;
 	}>();
 
 	//NewElem.vue needs a ref to the REAL dom elem for drag/hover comparisons

@@ -88,6 +88,7 @@
 		return {
 			height: props.newElemInfo.height + props.newElemInfo.heightUnit,
 			width: props.newElemInfo.width + props.newElemInfo.widthUnit,
+			...(props.newElemInfo.customStyles ?? {}),
 		};
 	});
 </script>

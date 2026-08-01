@@ -7,7 +7,8 @@
 			class="form-control"
 			placeholder="e.g. card, p-3, mx-auto"
 			v-model="classDraft"
-			@blur="commitClasses" />
+			@blur="commitClasses"
+			@keydown.enter.prevent="commitClasses" />
 
 		<div class="d-flex flex-wrap gap-1 mt-2">
 			<span

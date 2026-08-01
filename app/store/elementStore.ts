@@ -12,6 +12,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
 			isDragging: false as boolean,
+			//where the double-click edit modal should appear - null means
+			//the modal isn't open. reuses activeElemId as "which elem is
+			//being edited", so double-clicking an elem also selects it
+			editModalPosition: null as { top: number; left: number } | null,
 		};
 	},
 	getters: {
@@ -58,7 +62,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				elemType: type,
 				textContent: defaultStore.getDefaultTextForElemType(type as any),
 				cssClasses: cssClasses,
-
 				props: { ...attributes },
 				children: [],
 				width: attributeWidth ?? defaultStore.getDefaultWidth,
@@ -197,6 +200,23 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				...result.elem.customStyles,
 				...customStyles,
 			};
+		},
+
+		//called on double-click - reuses activeElemId as "which elem is
+		//being edited" (so double-clicking also selects), and stores where
+		//the modal should appear (usually just below the clicked elem's
+		//real on-screen position, measured via getBoundingClientRect at
+		//the call site in NewElem.vue)
+		openEditModal: function (
+			id: string,
+			position: { top: number; left: number }
+		): void {
+			this.activeElemId = id;
+			this.editModalPosition = position;
+		},
+
+		closeEditModal: function (): void {
+			this.editModalPosition = null;
 		},
 	},
 });

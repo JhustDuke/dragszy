@@ -13,6 +13,7 @@
 		:onMouseMove="onMouseMove"
 		:onMouseDown="onMouseDown"
 		:onClick="handleElemClick"
+		:onDblClick="onDblClick"
 		:onDelete="deleteNode" />
 
 	<!-- everything else (div, button, span, form, etc.) - render via NonSelfClosingTags -->
@@ -31,10 +32,6 @@
 		:onDblClick="onDblClick"
 		:onClick="handleElemClick"
 		:onDelete="deleteNode" />
-
-	<updateCssModal
-		:is-visible="showModal"
-		@close="showModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -44,7 +41,6 @@
 	import { createResize } from "../../utils";
 	import SelfClosingTags from "./SelfClosingTags.vue";
 	import NonSelfClosingTags from "./NonSelfClosing.vue";
-	import updateCssModal from "./updateCss/updateCssModal.vue";
 
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
@@ -95,10 +91,19 @@
 		return canvasElemsStore.lastEditedId === props.newElemInfo.id;
 	});
 
-	const showModal = ref(false);
+	//captures the elem's real on-screen position at the moment of double
+	//click, and opens the shared edit popover there - reuses activeElemId
+	//via openEditModal, so double-clicking also selects this elem
 	const onDblClick = function (ev: MouseEvent) {
 		ev.stopPropagation();
-		showModal.value = true;
+
+		const elem = ev.currentTarget as HTMLElement;
+		const rect = elem.getBoundingClientRect();
+
+		canvasElemsStore.openEditModal(props.newElemInfo.id, {
+			top: rect.bottom + 10,
+			left: rect.left,
+		});
 	};
 
 	const handleElemClick = function (event: MouseEvent): void {

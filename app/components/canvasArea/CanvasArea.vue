@@ -1,22 +1,26 @@
 <template>
-	<CanvasElement
-		v-for="elem in canvasElemsStore.elems"
-		:key="elem.id"
-		:id="elem.id"
-		:newElemInfo="elem" />
+	<div>
+		<CanvasElement
+			v-for="elem in canvasElemsStore.elems"
+			:key="elem.id"
+			:id="elem.id"
+			:newElemInfo="elem" />
 
-	<template v-if="canvasElemsStore.isDragging">
-		<div
-			class="position-fixed p-2 grey border border-3"
-			style="border-style: dotted !important"
-			:style="{
-				top: dragY + 'px',
-				left: dragX + 'px',
-				height: '50px',
-			}">
-			{{ canvasElemsStore.currentlyDragged?.id || "drag" }}
-		</div>
-	</template>
+		<updateCssModal />
+
+		<template v-if="canvasElemsStore.isDragging">
+			<div
+				class="position-fixed p-2 grey border border-3"
+				style="border-style: dotted !important"
+				:style="{
+					top: dragY + 'px',
+					left: dragX + 'px',
+					height: '50px',
+				}">
+				{{ canvasElemsStore.currentlyDragged?.id || "drag" }}
+			</div>
+		</template>
+	</div>
 </template>
 
 <!-- CanvasArea.vue -->
@@ -24,6 +28,7 @@
 	import { onMounted, onUnmounted, ref } from "vue";
 	import { useCanvasElemsStore } from "../../store";
 	import CanvasElement from "./NewElem.vue";
+	import updateCssModal from "./updateCss/updateCssModal.vue";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
