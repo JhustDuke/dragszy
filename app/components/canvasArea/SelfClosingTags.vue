@@ -16,6 +16,7 @@
 		:style="resizeWrapperAndImg"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
+		@contextmenu="onRightClick"
 		@click="onClick">
 		<!-- the actual elem the user is building, e.g. <img src="..." > -->
 		<!-- no textContent, no <NewElem> children slot: self-closing elems can't have either -->
@@ -71,6 +72,7 @@
 		onMouseDown: (ev: MouseEvent) => void;
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
+		onRightClick: (ev: MouseEvent) => void;
 	}>();
 
 	//NewElem.vue needs a ref to the REAL dom elem (the <img>, not this wrapper div)
@@ -84,6 +86,7 @@
 	//elems on the same canvas are no longer a problem either
 	//e.g. "dragzy-x7f2q9"
 	const wrapperId = ref("dragzy-img-" + Math.random().toString(36).slice(2, 9));
+
 	const resizeWrapperAndImg = computed(function () {
 		return {
 			height: props.newElemInfo.height + props.newElemInfo.heightUnit,

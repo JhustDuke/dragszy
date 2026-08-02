@@ -20,10 +20,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	},
 	getters: {
 		activeElem: function (state) {
+			if (!state.activeElemId) return null;
+
 			return (
-				state.elems.find(function (elem) {
-					return elem.id === state.activeElemId;
-				}) ?? null
+				findElemAndContainer(state.elems, state.activeElemId)?.elem ?? null
 			);
 		},
 	},
