@@ -9,6 +9,8 @@ export interface CanvasElem {
 	elemType: keyof HTMLElementTagNameMap;
 	widthUnit: string;
 	heightUnit: string;
+	isHeightAdjusted?: boolean;
+	isWidthAdjusted?: boolean;
 	textContent?: string;
 	cssClasses?: string[];
 	customStyles?: Partial<Properties<string | number>>;

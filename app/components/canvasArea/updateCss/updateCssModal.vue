@@ -64,10 +64,12 @@
 
 	import ClassesTab from "./ClassesTab.vue";
 	import InlineStylesTab from "./InlineStylesTab.vue";
+	import TextContentTab from "./InsertTextContent.vue";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
 	const tabs = [
+		{ title: "Text", component: TextContentTab },
 		{ title: "Classes", component: ClassesTab },
 		{ title: "Inline Styles", component: InlineStylesTab },
 	] as const;

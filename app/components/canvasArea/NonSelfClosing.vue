@@ -17,8 +17,12 @@
 			},
 		]"
 		:style="{
-			height: newElemInfo.height + newElemInfo.heightUnit,
-			width: newElemInfo.width + newElemInfo.widthUnit,
+			...(newElemInfo.isWidthAdjusted
+				? { width: newElemInfo.width + newElemInfo.widthUnit }
+				: {}),
+			...(newElemInfo.isHeightAdjusted
+				? { height: newElemInfo.height + newElemInfo.heightUnit }
+				: {}),
 			...(newElemInfo.customStyles ?? {}),
 		}"
 		v-bind="newElemInfo.props"
