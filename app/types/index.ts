@@ -1,5 +1,5 @@
 // types/index.ts
-export type AppAction = "create" | "move" | "resize";
+export type AppAction = "create" | "move" | "resize" | "position";
 export type ResizeEdge = "top" | "right" | "bottom" | "left";
 import type { Properties } from "csstype";
 export interface CanvasElem {

@@ -17,6 +17,7 @@
 			<div class="col-12">
 				<SupportedElemTypes />
 				<PresetRow />
+				<positioning />
 			</div>
 		</div>
 	</div>
@@ -27,5 +28,6 @@
 	import ToolBarActionSelect from "./ToolBarActionSelect.vue";
 	import SupportedElemTypes from "./ElemTypes.vue";
 	import CompilerSelect from "./Compile.vue";
-	import PresetRow from "./PresetsRow.vue";
+	import PresetRow from "./PresetsStyles.vue";
+	import positioning from "./CssPositioning.vue";
 </script>

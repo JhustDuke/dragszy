@@ -16,7 +16,6 @@
 		:style="resizeWrapperAndImg"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
-		@contextmenu="onRightClick"
 		@click="onClick">
 		<!-- the actual elem the user is building, e.g. <img src="..." > -->
 		<!-- no textContent, no <NewElem> children slot: self-closing elems can't have either -->
@@ -72,7 +71,6 @@
 		onMouseDown: (ev: MouseEvent) => void;
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
-		onRightClick: (ev: MouseEvent) => void;
 	}>();
 
 	//NewElem.vue needs a ref to the REAL dom elem (the <img>, not this wrapper div)

@@ -1,16 +1,18 @@
 <template>
-	<div
-		v-if="presets.length > 0"
-		class="d-flex flex-wrap gap-1 mt-1">
-		<span
-			v-for="preset in presets"
-			:key="preset.label"
-			class="badge border"
-			:class="isActive(preset) ? 'blue lighten-2' : 'grey darken-2'"
-			role="button"
-			@click="pickPreset(preset)">
-			{{ preset.label }}
-		</span>
+	<div v-if="appActionStore.getActiveAction === 'create'">
+		<div
+			v-if="presets.length > 0"
+			class="d-flex flex-wrap gap-1 mt-1">
+			<span
+				v-for="preset in presets"
+				:key="preset.label"
+				class="badge border"
+				:class="isActive(preset) ? 'blue lighten-2' : 'grey darken-2'"
+				role="button"
+				@click="pickPreset(preset)">
+				{{ preset.label }}
+			</span>
+		</div>
 	</div>
 </template>
 

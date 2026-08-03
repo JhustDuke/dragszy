@@ -10,6 +10,8 @@
 		>
 		<option value="resize">Resize</option>
 		<option value="move">Move</option>
+		<option value="position">Position</option>
+		o
 	</select>
 </template>
 
@@ -49,6 +51,10 @@
 
 		if (event.key === "m") {
 			selectedAction.value = "move";
+			return;
+		}
+		if (event.key === "p") {
+			selectedAction.value = "position";
 			return;
 		}
 	}

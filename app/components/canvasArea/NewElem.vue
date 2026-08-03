@@ -13,7 +13,6 @@
 		:onMouseMove="onMouseMove"
 		:onMouseDown="onMouseDown"
 		:onClick="handleElemClick"
-		:onRightClick="onRightClick"
 		:onDelete="deleteNode" />
 
 	<!-- everything else (div, button, span, form, etc.) - render via NonSelfClosingTags -->
@@ -29,7 +28,6 @@
 		:resize="resize"
 		:onMouseMove="onMouseMove"
 		:onMouseDown="onMouseDown"
-		:onRightClick="onRightClick"
 		:onClick="handleElemClick"
 		:onDelete="deleteNode" />
 </template>
@@ -120,27 +118,6 @@
 	const isLastEdited = computed(function () {
 		return canvasElemsStore.lastEditedId === props.newElemInfo.id;
 	});
-
-	//captures the elem's real on-screen position at the moment of a right
-	//click, and opens the shared edit popover there - reuses activeElemId
-	//via openEditModal, so right-clicking also selects this elem.
-	//using right-click instead of double-click sidesteps a real collision:
-	//browsers fire click, click, THEN dblclick for a double-click, and
-	//those extra click events were accidentally triggering "add new elem
-	//inside the selected elem" logic elsewhere in the app. right-click
-	//never fires a normal click event at all, so there's nothing to collide with.
-	const onRightClick = function (ev: MouseEvent) {
-		ev.preventDefault();
-		ev.stopPropagation();
-
-		const elem = ev.currentTarget as HTMLElement;
-		const rect = elem.getBoundingClientRect();
-
-		canvasElemsStore.openEditModal(props.newElemInfo.id, {
-			top: rect.bottom + 10,
-			left: rect.left,
-		});
-	};
 
 	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();

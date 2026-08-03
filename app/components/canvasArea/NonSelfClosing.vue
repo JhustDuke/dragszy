@@ -7,6 +7,7 @@
 	<component
 		:is="newElemInfo.elemType"
 		ref="elemRef"
+		:id="newElemInfo.id"
 		data-canvas-elem
 		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
 		:class="[
@@ -28,7 +29,6 @@
 		v-bind="newElemInfo.props"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
-		@contextmenu="onRightClick"
 		@click="onClick">
 		{{ newElemInfo.textContent }}
 
@@ -85,7 +85,6 @@
 		onMouseDown: (ev: MouseEvent) => void;
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
-		onRightClick: (ev: MouseEvent) => void;
 	}>();
 
 	//NewElem.vue needs a ref to the REAL dom elem for drag/hover comparisons

@@ -186,9 +186,11 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			result.elem.cssClasses = classes;
 		},
 
-		//merges (not overwrites) new inline style properties onto whatever
-		//the elem already has - e.g. updating just "color" won't wipe out
-		//an existing "display" the elem already had set
+		//REPLACES customStyles entirely (not merged) - the caller
+		//(InlineStylesTab.vue) always sends the complete, current set of
+		//styles built from every row, not just what changed. merging here
+		//would mean a deleted style could never actually disappear, since
+		//spreading the old object back in would silently restore it.
 		updateElemInlineStyles: function (
 			id: string,
 			customStyles: CanvasElem["customStyles"]
@@ -196,10 +198,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.customStyles = {
-				...result.elem.customStyles,
-				...customStyles,
-			};
+			result.elem.customStyles = customStyles;
 		},
 
 		updateElemTextContent: function (id: string, textContent: string): void {
