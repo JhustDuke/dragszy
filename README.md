@@ -1,75 +1,59 @@
-# Nuxt Minimal Starter
+# Dragsy
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Dragsy is a WYSIWYG UI builder that lets you design visually and compile directly to real Vue or React components. Start with customizable Bootstrap 5 or Tailwind CSS presets, or build from scratch — everything is fully customizable either way. No browser-editor hopping. AI integration coming in V2.
+
+## How it works
+
+1. **Pick a styling system** — Bootstrap 5 or Tailwind CSS (chosen once, upfront)
+2. **Pick an output framework** — Vue or React
+3. **Start from a preset or blank canvas** — v1 ships a small preset library (navbars, cards, footers, images)
+4. **Design visually** — WYSIWYG in-browser editing; every preset is fully overwritable
+5. **Preview across screen sizes**
+6. **Export** — get clean Vue or React code, ready to drop into your own project
+
+## Status
+
+🚧 Early development (v1). Currently:
+- Styling/framework selection and home page are built
+- Vue compiler is done
+- No backend yet — everything runs client-side, with state persisted to IndexedDB
+
+v1 focuses on markup and styling only (no logic/interaction compilation yet).
+
+## Tech stack
+
+- [Nuxt](https://nuxt.com) (Vue)
+- [Pinia](https://pinia.vuejs.org) for state management
+- IndexedDB for local persistence
 
 ## Setup
 
-Make sure to install dependencies:
+Install dependencies:
 
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
-
-## Development Server
 
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+Build for production:
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+Locally preview a production build:
 
 ```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Roadmap
+
+- Expand preset library
+- Layout/logic compilation beyond markup + styling
+- AI integration (V2)
