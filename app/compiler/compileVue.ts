@@ -130,15 +130,13 @@ const compiler = function () {
 	/**
 	 * Stamps the elem's internal id onto the tag as an id attribute.
 	 * e.g. elem.id = "dop01ig5" -> tag.attributes.id = "dop01ig5"
+	 * id with prefixed is never exported only used for app internal tracking
 	 */
 	const insertId = function (tag: NormalizedTag, elem: CanvasElem): void {
-		if (!elem.id) {
+		if (!elem.customId) {
 			return;
 		}
-		if (elem.id.startsWith("dragzy-")) {
-			return;
-		}
-		tag.attributes.id = elem.id;
+		tag.attributes.id = elem.customId;
 	};
 
 	/**
@@ -154,7 +152,7 @@ const compiler = function () {
 		for (const key in elem.props) {
 			const value = elem.props[key];
 			if (!value) continue;
-			if(value.startsWith('dragzy')) continue
+			if (value.startsWith("dragzy")) continue;
 			tag.attributes[key] = value;
 		}
 	};

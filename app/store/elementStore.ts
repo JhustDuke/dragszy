@@ -208,7 +208,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			result.elem.textContent = textContent;
 		},
 
-		//called on double-click - reuses activeElemId as "which elem is
+		updateElemCustomId: function (id: string, customId: string): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			result.elem.customId = customId;
+		},
+
+		//called when the user presses U - reuses activeElemId as "which elem is
 		//being edited" (so double-clicking also selects), and stores where
 		//the modal should appear (usually just below the clicked elem's
 		//real on-screen position, measured via getBoundingClientRect at

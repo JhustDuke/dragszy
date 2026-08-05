@@ -1,7 +1,10 @@
 // types/index.ts
+
+import type { Properties } from "csstype";
+
 export type AppAction = "create" | "move" | "resize" | "position";
 export type ResizeEdge = "top" | "right" | "bottom" | "left";
-import type { Properties } from "csstype";
+
 export interface CanvasElem {
 	id: string;
 	width?: number;
@@ -9,6 +12,11 @@ export interface CanvasElem {
 	elemType: keyof HTMLElementTagNameMap;
 	widthUnit: string;
 	heightUnit: string;
+	//user-chosen id for the exported output - completely separate from
+	//the internal "id" above (which is always "dragzy-" prefixed and
+	//never exported). this is the ONLY way an elem can carry a real
+	//id="..." attribute in the compiled file
+	customId?: string;
 	isHeightAdjusted?: boolean;
 	isWidthAdjusted?: boolean;
 	textContent?: string;

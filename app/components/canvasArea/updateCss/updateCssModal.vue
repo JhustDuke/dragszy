@@ -65,6 +65,7 @@
 	import ClassesTab from "./ClassesTab.vue";
 	import InlineStylesTab from "./InlineStylesTab.vue";
 	import TextContentTab from "./InsertTextContent.vue";
+	import CustomIdTab from "./CustomIDTab.vue";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
@@ -72,6 +73,7 @@
 		{ title: "Text", component: TextContentTab },
 		{ title: "Classes", component: ClassesTab },
 		{ title: "Inline Styles", component: InlineStylesTab },
+		{ title: "ID", component: CustomIdTab },
 	] as const;
 
 	const activeTab = ref<(typeof tabs)[number]>(tabs[0]);
