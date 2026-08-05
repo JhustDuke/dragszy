@@ -31,7 +31,7 @@ Dragsy uses keyboard shortcuts to switch between tool modes on the canvas (simil
 
 Many more controls are available — see the in-app **Help** section for the full list.
 
-Every change is undo/redo-able — so you're always safe after shooting yourself in the foot.
+Every change is undo/redo-able — so you're always safe after shooting yourself in the foot! 🥲
 
 ## Tech stack
 
