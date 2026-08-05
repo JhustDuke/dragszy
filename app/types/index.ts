@@ -1,0 +1,41 @@
+// types/index.ts
+export type AppAction = "create" | "move" | "resize" | "position";
+export type ResizeEdge = "top" | "right" | "bottom" | "left";
+import type { Properties } from "csstype";
+export interface CanvasElem {
+	id: string;
+	width?: number;
+	height?: number;
+	elemType: keyof HTMLElementTagNameMap;
+	widthUnit: string;
+	heightUnit: string;
+	isHeightAdjusted?: boolean;
+	isWidthAdjusted?: boolean;
+	textContent?: string;
+	cssClasses?: string[];
+	customStyles?: Partial<Properties<string | number>>;
+	props?: Record<string, string>;
+	children: CanvasElem[];
+}
+
+// single source of truth for which HTML tags Dragsy currently supports.
+// typed against keyof HTMLElementTagNameMap so a typo here is a
+// compile-time error, not a silently-broken elem type.
+export const supportedElemTypes = [
+	"div",
+	"span",
+	"p",
+	"a",
+	"button",
+	"ul",
+	"li",
+	"form",
+	"label",
+	"input",
+	"textarea",
+	"select",
+	"option",
+	"img",
+] as const satisfies (keyof HTMLElementTagNameMap)[];
+
+export type SupportedElemType = (typeof supportedElemTypes)[number];

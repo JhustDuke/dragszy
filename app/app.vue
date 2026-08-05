@@ -1,14 +1,80 @@
 <template>
-	<div>
-		<div>{{ test + 1 }}</div>
-		<div class="yellow p-1 mt-4">
-			<div class="container-fluid"> testing bs 5</div>
-		</div>
+	<!-- App root: toolbar + canvas + viewport toggle -->
+	<div class="grey lighten-3">
+		<nav>
+			<ToolBar />
+		</nav>
+
+		<section>
+			<!-- Desktop: full width, no backdrop -->
+			<div
+				v-if="viewportStore.activeViewport === 'desktop'"
+				class="min-vh-100"
+				:style="{
+					paddingLeft: defaultNudgeStore.getDefaultPaddingX + 'px',
+					paddingRight: defaultNudgeStore.getDefaultPaddingX + 'px',
+					paddingTop: defaultNudgeStore.getDefaultPaddingY + 'px',
+					paddingBottom: defaultNudgeStore.getDefaultPaddingY + 'px',
+					marginLeft: defaultNudgeStore.getDefaultMarginX + 'px',
+					marginRight: defaultNudgeStore.getDefaultMarginX + 'px',
+					marginTop: defaultNudgeStore.getDefaultMarginY + 'px',
+					marginBottom: defaultNudgeStore.getDefaultMarginY + 'px',
+				}"
+				data-canvas-root
+				@dblclick="handleCanvasDblClick">
+				<CanvasArea />
+			</div>
+
+			<!-- Mobile/Tablet: backdrop + boxed preview, click backdrop to exit -->
+			<div
+				v-else
+				class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+				style="background: rgba(0, 0, 0, 0.5); z-index: 998"
+				@click.self="viewportStore.setDesktop()">
+				<!-- Preview box: bordered, scrollable, fixed height so surrounding backdrop stays visible -->
+				<div
+					class="white green lighten-5 shadow border rounded-3 overflow-auto"
+					:style="{ width: viewportStore.activeWidth, height: '600px' }"
+					data-canvas-root
+					@dblclick="handleCanvasDblClick">
+					<CanvasArea />
+				</div>
+			</div>
+		</section>
+
+		<ToggleView />
 	</div>
 </template>
 
 <script setup lang="ts">
-	const test = 3;
-</script>
+	// @ts-ignore
+	import ToolBar from "./components/toolbar/Toolbar.vue";
+	import ToggleView from "./components/viewportToggle.vue";
+	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
 
+	import {
+		useViewportStore,
+		useAppActionStore,
+		useCanvasElemsStore,
+		useDefaultStore,
+	} from "./store";
+
+	// Controls which layout renders: desktop vs boxed mobile/tablet preview
+	const viewportStore = useViewportStore();
+	const appActionStore = useAppActionStore();
+	const canvasElemsStore = useCanvasElemsStore();
+	const defaultNudgeStore = useDefaultStore();
+
+	function handleCanvasDblClick(event: MouseEvent): void {
+		if (appActionStore.getActiveAction !== "create") return;
+
+		const canvasRoot = event.target as HTMLElement;
+
+		if (canvasRoot.hasAttribute("data-canvas-root")) {
+			canvasElemsStore.setActiveElem(null);
+		}
+
+		canvasElemsStore.addElem(appActionStore.getSelectedElemType);
+	}
+</script>
 <style scoped></style>
