@@ -6,7 +6,7 @@ Dragsy is a WYSIWYG UI builder that lets you design visually and compile directl
 
 1. **Pick a styling system** — Bootstrap 5 or Tailwind CSS (chosen once, upfront)
 2. **Pick an output framework** — Vue or React
-3. **Start from a preset or blank canvas** — v1 ships a small preset library (navbars, cards, footers, images)
+3. **Start from a preset or blank canvas** — v1 ships a small preset library  (navbars, cards, footers, images)all presets I designed to be mobile first 
 4. **Design visually** — WYSIWYG in-browser editing; every preset is fully overwritable
 5. **Preview across screen sizes**
 6. **Export** — get clean Vue or React code, ready to drop into your own project
