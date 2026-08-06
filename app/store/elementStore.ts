@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import type { CanvasElem, SupportedElemType } from "~/types";
 import { useDefaultStore } from "~/store/defaultStore";
 import { useAppActionStore } from "~/store";
+import { createDefault, createClone } from "./utils/canvasElemFactory";
 
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
@@ -32,43 +33,22 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const defaultStore = useDefaultStore();
 			const appActionStore = useAppActionStore();
 
-			//img (and any future self-closing elem type) carries its own
-			//width/height inside its attributes (e.g. attributes.width = "50"),
-			//so use those instead of the generic global default when present.
-			//strip any leftover unit text (e.g. "300px") before converting to
-			//a number - Number("300px") is NaN, and NaN is not null/undefined
-			//so it would silently skip the ?? fallback below and get stuck
-			//as NaN forever on this elem
-			const attributes = defaultStore.getDefaultsAttrForElemType(
-				type as keyof HTMLElementTagNameMap
-			);
-			const attributeWidth = attributes.width
-				? Number(attributes.width.replace(/[^0-9.]/g, ""))
-				: null;
-			const attributeHeight = attributes.height
-				? Number(attributes.height.replace(/[^0-9.]/g, ""))
-				: null;
-
-			//if a preset was clicked in the toolbar, its classes take over;
-			//otherwise fall back to the elem type's normal default classes
-			const presetClasses = appActionStore.getSelectedPresetClasses;
-			const cssClasses =
-				presetClasses.length > 0
-					? presetClasses
-					: defaultStore.getDefaultClassesForElemType(type as any);
-
-			const newElem: CanvasElem = {
-				id: "dragzy-" + Math.random().toString(36).slice(2, 10),
-				elemType: type,
-				textContent: defaultStore.getDefaultTextForElemType(type as any),
-				cssClasses: cssClasses,
-				props: { ...attributes },
-				children: [],
-				width: attributeWidth ?? defaultStore.getDefaultWidth,
-				height: attributeHeight ?? defaultStore.getDefaultHeight,
-				widthUnit: defaultStore.getDefaultMeasurementX,
-				heightUnit: defaultStore.getDefaultMeasurementY,
-			};
+			//createDefault (in canvasElemFactory.ts) now owns all the
+			//width/height/attribute-parsing logic internally - this action
+			//just gathers the raw defaults/presets and hands them over
+			const newElem = createDefault({
+				type: type as any,
+				defaultText: defaultStore.getDefaultTextForElemType(type as any),
+				defaultClasses: defaultStore.getDefaultClassesForElemType(type as any),
+				defaultAttributes: defaultStore.getDefaultsAttrForElemType(
+					type as keyof HTMLElementTagNameMap
+				),
+				defaultWidth: defaultStore.getDefaultWidth,
+				defaultHeight: defaultStore.getDefaultHeight,
+				defaultWidthUnit: defaultStore.getDefaultMeasurementX,
+				defaultHeightUnit: defaultStore.getDefaultMeasurementY,
+				presetClasses: appActionStore.getSelectedPresetClasses,
+			});
 
 			if (this.activeElemId) {
 				const activeResult = findElemAndContainer(
@@ -230,6 +210,27 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 		closeEditModal: function (): void {
 			this.editModalPosition = null;
+		},
+
+		duplicateActiveElem: function (): void {
+			if (!this.activeElemId) return;
+
+			const result = findElemAndContainer(this.elems, this.activeElemId);
+
+			if (!result) return;
+
+			const clone = createClone(result.elem);
+
+			const index = result.container.findIndex(function (elem) {
+				return elem.id === result.elem.id;
+			});
+
+			if (index === -1) return;
+
+			result.container.splice(index + 1, 0, clone);
+
+			this.activeElemId = clone.id;
+			this.lastEditedId = clone.id;
 		},
 	},
 });

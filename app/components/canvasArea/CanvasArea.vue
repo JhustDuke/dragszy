@@ -26,6 +26,7 @@
 	import { useCanvasElemsStore } from "../../store";
 	import CanvasElement from "./NewElem.vue";
 	import updateCssModal from "./updateCss/updateCssModal.vue";
+	import { isTyping } from "~/utils";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
@@ -33,13 +34,27 @@
 		document.addEventListener("mouseup", handleCanvasMouseUp, true);
 		document.addEventListener("mousemove", trackDragPosition, true);
 		document.addEventListener("keydown", activateUpdateModal);
+		document.addEventListener("keydown", handleDuplicateShortcut);
 	});
 
 	onUnmounted(function () {
 		document.removeEventListener("mouseup", handleCanvasMouseUp, true);
 		document.removeEventListener("mousemove", trackDragPosition, true);
 		document.removeEventListener("keydown", activateUpdateModal);
+		document.removeEventListener("keydown", handleDuplicateShortcut);
 	});
+
+	//"D" duplicates the currently selected elem as a sibling right after
+	//itself - matches real editor workflow (Figma, Webflow): duplicate
+	//first, then drag it wherever you actually want it, rather than
+	//baking direction into the shortcut itself
+	const handleDuplicateShortcut = function (ev: KeyboardEvent): void {
+		if (isTyping(ev.target)) return;
+		if (ev.key.toLowerCase() !== "d") return;
+		if (!canvasElemsStore.activeElemId) return;
+
+		canvasElemsStore.duplicateActiveElem();
+	};
 
 	//"U" opens the edit modal for whichever elem is currently selected -
 	//replaces right-click, which was stepping on the browser's own
@@ -48,14 +63,7 @@
 	//so typing the letter "u" anywhere doesn't accidentally trigger it.
 	const activateUpdateModal = function (ev: KeyboardEvent) {
 		if (ev.key.toLowerCase() !== "u") return;
-
-		const target = ev.target as HTMLElement;
-		const isTypingInField =
-			target.tagName === "INPUT" ||
-			target.tagName === "TEXTAREA" ||
-			target.isContentEditable;
-
-		if (isTypingInField) return;
+		if (isTyping(ev.target)) return;
 
 		const activeElemId = canvasElemsStore.activeElemId;
 		if (!activeElemId) return;
@@ -71,16 +79,18 @@
 		});
 	};
 
-	let dragX = ref(0);
-	let dragY = ref(0);
+	const dragX = ref(0);
+	const dragY = ref(0);
 
 	const trackDragPosition = function (ev: MouseEvent) {
 		if (!canvasElemsStore.currentlyDragged) return;
+
 		dragX.value = ev.clientX;
 		dragY.value = ev.clientY;
 		canvasElemsStore.setIsDragging(true);
 
 		const target = ev.target as HTMLElement;
+
 		if (!target.closest("[data-canvas-elem]")) {
 			canvasElemsStore.setCurrentlyHovered(null);
 		}
