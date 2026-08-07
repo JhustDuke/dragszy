@@ -10,21 +10,37 @@
 				placeholder="property, e.g. display"
 				list="css-property-names"
 				v-model="styleRow.property"
-				@blur="commitRows" />
+				@blur="styleRowManager.commitRows" />
 
 			<input
 				type="text"
 				class="form-control"
-				placeholder="value"
-				:list="valueListIdFor(styleRow.property)"
+				:placeholder="
+					styleRowManager.isImageProperty(styleRow.property)
+						? 'https://example.com/photo.jpg'
+						: 'value'
+				"
+				:list="styleRowManager.valueListIdFor(styleRow.property)"
 				v-model="styleRow.value"
-				@keydown.enter.prevent="commitRows"
-				@blur="commitRows" />
+				@keydown.enter.prevent="styleRowManager.commitRows"
+				@blur="styleRowManager.commitRows" />
+
+			<!-- backgroundImage/background can ALSO be set by uploading a
+				file directly, as an alternative to pasting a link above -
+				testing the simplest version first: straight to base64,
+				no IndexedDB yet -->
+			<input
+				v-if="styleRowManager.isImageProperty(styleRow.property)"
+				type="file"
+				accept="image/*"
+				class="form-control"
+				style="max-width: 160px"
+				@change="styleRowManager.onImageFileSelected($event, styleRow)" />
 
 			<button
 				type="button"
 				class="btn btn-sm btn-outline-danger"
-				@click="removeRow(index)">
+				@click="styleRowManager.removeRow(index)">
 				X
 			</button>
 		</div>
@@ -32,7 +48,7 @@
 		<button
 			type="button"
 			class="btn btn-sm btn-outline-secondary mt-1"
-			@click="addRow">
+			@click="styleRowManager.addRow">
 			+ Add Style
 		</button>
 
@@ -48,7 +64,7 @@
 		<datalist
 			v-for="propertyName in propertiesWithValueSuggestions"
 			:key="propertyName"
-			:id="valueListIdFor(propertyName)">
+			:id="styleRowManager.valueListIdFor(propertyName)">
 			<option
 				v-for="propertyValue in cssValueSuggestions[propertyName]"
 				:key="propertyValue"
@@ -64,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, reactive, watch } from "vue";
+	import { computed, reactive, watch, onMounted } from "vue";
 	import { useCanvasElemsStore } from "~/store";
 	import {
 		commonCssProperties,
@@ -83,117 +99,174 @@
 		value: string;
 	}
 
-	const styleRows = reactive<StyleRow[]>([]);
-
-	loadStyleRows();
-
-	watch(activeElem, function () {
-		loadStyleRows();
+	onMounted(function () {
+		//this code doesnt touch the dom just here for easily readability
+		//and understanding the concept
+		//instead of calling it on the setup body
+		styleRowManager.loadStyleRows();
 	});
 
-	function loadStyleRows(): void {
-		styleRows.splice(0, styleRows.length);
+	watch(activeElem, function () {
+		styleRowManager.loadStyleRows();
+	});
 
-		if (!activeElem.value) {
-			return;
-		}
-
-		const customStyles = activeElem.value.customStyles;
-
-		// @ts-ignore
-		const sortedPropertyNames = getSortedPropertyNames(customStyles);
-
-		for (const propertyName of sortedPropertyNames) {
-			// @ts-ignore
-			const propertyValue = customStyles?.[propertyName];
-
-			styleRows.push(createStyleRow(propertyName, propertyValue));
-		}
-	}
-
-	function getSortedPropertyNames(
-		customStyles: Record<string, string> | undefined
-	): string[] {
-		const propertyNames = Object.keys(customStyles ?? {});
-
-		propertyNames.sort(function (leftProperty, rightProperty) {
-			return leftProperty.localeCompare(rightProperty);
-		});
-
-		return propertyNames;
-	}
-
-	function createStyleRow(property: string, value: string): StyleRow {
-		return {
-			rowId: createRowId(),
-			property,
-			value,
-		};
-	}
-
-	function createRowId(): string {
-		return "row-" + Math.random().toString(36).slice(2, 9);
-	}
-
-	function addRow(): void {
-		styleRows.push({
-			rowId: createRowId(),
-			property: "",
-			value: "",
-		});
-	}
-
-	function removeRow(index: number): void {
-		styleRows.splice(index, 1);
-		commitRows();
-	}
-
-	function valueListIdFor(property: string): string {
-		return "css-values-" + property;
-	}
+	const styleRows = reactive<StyleRow[]>([]);
 
 	const propertiesWithValueSuggestions = computed(function () {
 		return Object.keys(cssValueSuggestions);
 	});
 
-	function commitRows(): void {
-		if (!activeElem.value) {
-			return;
-		}
+	const styleRowManager = {
+		loadStyleRows: function (): void {
+			styleRows.splice(0, styleRows.length);
 
-		const updatedInlineStyles = buildInlineStyles();
+			if (!activeElem.value) {
+				return;
+			}
 
-		canvasElemsStore.updateElemInlineStyles(
-			activeElem.value.id,
-			updatedInlineStyles
-		);
-	}
+			const customStyles = activeElem.value.customStyles;
 
-	function buildInlineStyles(): Record<string, string> {
-		const inlineStyles: Record<string, string> = {};
+			const sortedPropertyNames = styleRowManager.getSortedPropertyNames(
+				customStyles as Record<string, string>
+			);
 
-		for (const styleRow of styleRows) {
-			addStyleToCollection(styleRow, inlineStyles);
-		}
+			for (const propertyName of sortedPropertyNames) {
+				// @ts-ignore
+				const propertyValue = customStyles?.[propertyName];
 
-		return inlineStyles;
-	}
+				styleRows.push(
+					styleRowManager.createStyleRow(propertyName, propertyValue)
+				);
+			}
+		},
 
-	function addStyleToCollection(
-		styleRow: StyleRow,
-		inlineStyles: Record<string, string>
-	): void {
-		const propertyName = styleRow.property.trim();
-		const propertyValue = styleRow.value.trim();
+		getSortedPropertyNames: function (
+			customStyles: Record<string, string> | undefined
+		): string[] {
+			const propertyNames = Object.keys(customStyles ?? {});
 
-		if (propertyName.length === 0) {
-			return;
-		}
+			propertyNames.sort(function (leftProperty, rightProperty) {
+				return leftProperty.localeCompare(rightProperty);
+			});
 
-		if (propertyValue.length === 0) {
-			return;
-		}
+			return propertyNames;
+		},
 
-		inlineStyles[propertyName] = propertyValue;
-	}
+		createStyleRow: function (property: string, value: string): StyleRow {
+			return {
+				rowId: styleRowManager.createRowId(),
+				property,
+				value: styleRowManager.isImageProperty(property)
+					? styleRowManager.unwrapUrl(value)
+					: value,
+			};
+		},
+
+		//strips the url("...") wrapper back off, so the input always shows
+		//just the raw link/base64 for editing - matches how it's typed in
+		unwrapUrl: function (value: string): string {
+			const match = value.match(/^url\((["']?)(.*)\1\)$/);
+			return match ? match[2] ?? "" : value || "";
+		},
+
+		createRowId: function (): string {
+			return "row-" + Math.random().toString(36).slice(2, 9);
+		},
+
+		addRow: function (): void {
+			styleRows.push({
+				rowId: styleRowManager.createRowId(),
+				property: "",
+				value: "",
+			});
+		},
+
+		removeRow: function (index: number): void {
+			styleRows.splice(index, 1);
+			styleRowManager.commitRows();
+		},
+
+		valueListIdFor: function (property: string): string {
+			return "css-values-" + property;
+		},
+
+		//only these properties get the "or upload a file" option -
+		//no realistic way to hand-type a base64 image string
+		isImageProperty: function (property: string): boolean {
+			return property === "backgroundImage" || property === "background";
+		},
+
+		//simplest possible version for testing: reads the picked file,
+		//converts to a base64 data URI, stores it RAW (no url() wrapper -
+		//that gets added automatically for every image property at
+		//commit time, same as the link input). no IndexedDB yet - that's
+		//the next step once this is confirmed working end to end.
+		onImageFileSelected: function (event: Event, styleRow: StyleRow): void {
+			const input = event.target as HTMLInputElement;
+			const file = input.files?.[0];
+			if (!file) return;
+
+			const reader = new FileReader();
+
+			reader.onload = function () {
+				styleRow.value = reader.result as string;
+				styleRowManager.commitRows();
+			};
+
+			reader.readAsDataURL(file);
+		},
+
+		commitRows: function (): void {
+			if (!activeElem.value) {
+				return;
+			}
+
+			const updatedInlineStyles = styleRowManager.buildInlineStyles();
+
+			canvasElemsStore.updateElemInlineStyles(
+				activeElem.value.id,
+				updatedInlineStyles
+			);
+		},
+
+		buildInlineStyles: function (): Record<string, string> {
+			const inlineStyles: Record<string, string> = {};
+
+			for (const styleRow of styleRows) {
+				styleRowManager.addStyleToCollection(styleRow, inlineStyles);
+			}
+
+			return inlineStyles;
+		},
+
+		addStyleToCollection: function (
+			styleRow: StyleRow,
+			inlineStyles: Record<string, string>
+		): void {
+			const propertyName = styleRow.property.trim();
+			let propertyValue = styleRow.value.trim();
+
+			if (propertyName.length === 0) {
+				return;
+			}
+
+			if (propertyValue.length === 0) {
+				return;
+			}
+
+			//backgroundImage/background take a raw link or raw base64 string
+			//in the UI (no one should ever have to type url(...) by hand) -
+			//wrap it into a real CSS url(...) here, once, automatically.
+			//skip wrapping if it's already wrapped, so re-committing an
+			//already-saved row doesn't double-wrap it.
+			if (
+				styleRowManager.isImageProperty(propertyName) &&
+				!propertyValue.startsWith("url(")
+			) {
+				propertyValue = `url("${propertyValue}")`;
+			}
+
+			inlineStyles[propertyName] = propertyValue;
+		},
+	};
 </script>

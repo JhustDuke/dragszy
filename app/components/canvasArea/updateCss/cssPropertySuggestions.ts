@@ -1,62 +1,26 @@
-//a curated, practical list of common CSS properties (camelCase, matching
-//how Vue's :style binding and CanvasElem.customStyles both expect them)
-//NOTE: this is a runtime array for UI autocomplete only - it exists
-//because csstype's Properties type is compile-time-only and vanishes
-//once the code actually runs in the browser, so there's nothing to read
-//from the type itself to build a dropdown - this list has to be
-//hand-maintained separately
-export const commonCssProperties: string[] = [
-	"display",
-	"position",
-	"top",
-	"right",
-	"bottom",
-	"left",
-	"zIndex",
-	"width",
-	"height",
-	"minWidth",
-	"minHeight",
-	"maxWidth",
-	"maxHeight",
-	"margin",
-	"marginTop",
-	"marginRight",
-	"marginBottom",
-	"marginLeft",
-	"padding",
-	"paddingTop",
-	"paddingRight",
-	"paddingBottom",
-	"paddingLeft",
-	"backgroundColor",
-	"color",
-	"fontSize",
-	"fontWeight",
-	"fontFamily",
-	"textAlign",
-	"lineHeight",
-	"letterSpacing",
-	"border",
-	"borderWidth",
-	"borderColor",
-	"borderStyle",
-	"borderRadius",
-	"boxShadow",
-	"opacity",
-	"overflow",
-	"flexDirection",
-	"flexWrap",
-	"justifyContent",
-	"alignItems",
-	"alignSelf",
-	"gap",
-	"gridTemplateColumns",
-	"gridTemplateRows",
-	"cursor",
-	"transition",
-	"transform",
-];
+//pulls the COMPLETE, always-accurate list of CSS properties directly from
+//the browser itself - no hand-maintained list to forget entries on, no
+//external dependency needed. getComputedStyle on any element returns
+//every CSS property the running browser recognizes (hundreds of them),
+//and it updates itself automatically as browsers add new CSS features.
+//converted from kebab-case (background-image) to camelCase
+//(backgroundImage) to match how customStyles/Vue's :style expect keys.
+function kebabToCamelCase(property: string): string {
+	return property.replace(/-([a-z])/g, function (_, letter) {
+		return letter.toUpperCase();
+	});
+}
+
+export const commonCssProperties: string[] = Array.from(
+	getComputedStyle(document.documentElement)
+)
+	//skip vendor-prefixed properties (-webkit-, -moz-, etc.) - noisy and
+	//rarely what someone wants to autocomplete to
+	.filter(function (property) {
+		return !property.startsWith("-");
+	})
+	.map(kebabToCamelCase)
+	.sort();
 
 //per-property value suggestions - only filled in for properties where a
 //short, well-known set of values genuinely covers most real use, so the
