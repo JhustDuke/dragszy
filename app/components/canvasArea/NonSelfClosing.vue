@@ -8,7 +8,7 @@
 		:is="newElemInfo.elemType"
 		ref="elemRef"
 		:id="newElemInfo.id"
-		data-canvas-elem
+		dragzy-elem
 		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
 		:class="[
 			...(newElemInfo.cssClasses ?? []),

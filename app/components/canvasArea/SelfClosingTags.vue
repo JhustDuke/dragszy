@@ -23,7 +23,7 @@
 			:style="resizeWrapperAndImg"
 			:is="newElemInfo.elemType"
 			ref="elemRef"
-			data-canvas-elem
+			dragzy-elem
 			:class="newElemInfo.cssClasses ?? []"
 			v-bind="newElemInfo.props" />
 

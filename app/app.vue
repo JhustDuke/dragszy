@@ -13,7 +13,7 @@
 			<div
 				v-if="viewportStore.activeViewport === 'desktop'"
 				class="min-vh-100 py-1 px-2"
-				data-canvas-root
+				dragzy-root
 				@dblclick="handleCanvasDblClick">
 				<CanvasArea />
 			</div>
@@ -28,7 +28,7 @@
 				<div
 					class="green lighten-5 shadow border rounded-3 overflow-auto"
 					:style="{ width: viewportStore.activeWidth, height: '600px' }"
-					data-canvas-root
+					dragzy-root
 					@dblclick="handleCanvasDblClick">
 					<CanvasArea />
 				</div>
@@ -72,7 +72,7 @@
 
 		const canvasRoot = event.target as HTMLElement;
 
-		if (canvasRoot.hasAttribute("data-canvas-root")) {
+		if (canvasRoot.hasAttribute("dragzy-root")) {
 			canvasElemsStore.setActiveElem(null);
 		}
 

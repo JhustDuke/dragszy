@@ -6,6 +6,7 @@
 			:id="elem.id"
 			:newElemInfo="elem" />
 		<updateCssModal />
+		<undoRedoToast />
 	</div>
 
 	<template v-if="canvasElemsStore.isDragging">
@@ -28,6 +29,7 @@
 	import { useCanvasElemsStore } from "../../store";
 	import CanvasElement from "./NewElem.vue";
 	import updateCssModal from "./updateCss/updateCssModal.vue";
+	import undoRedoToast from "./undoRedoToast.vue";
 	import { isTyping } from "../../utils";
 
 	const canvasElemsStore = useCanvasElemsStore();
@@ -94,7 +96,7 @@
 
 		const target = ev.target as HTMLElement;
 
-		if (!target.closest("[data-canvas-elem]")) {
+		if (!target.closest("[dragzy-elem]")) {
 			canvasElemsStore.setCurrentlyHovered(null);
 		}
 	};

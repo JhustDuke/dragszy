@@ -2,11 +2,18 @@ import { defineStore } from "pinia";
 import { useCanvasElemsStore } from "~/store";
 import type { CanvasElem } from "~/types";
 
+interface CanvasHistory {
+	canvasState: CanvasElem[];
+	action: string;
+}
+
 export const useHistoryStore = defineStore("history", {
 	state: function () {
 		return {
-			previousCanvasStates: [] as CanvasElem[][],
-			futureCanvasStates: [] as CanvasElem[][],
+			previousCanvasStates: [] as CanvasHistory[],
+			futureCanvasStates: [] as CanvasHistory[],
+			lastUndoneAction: null as string | null,
+			lastRedoneAction: null as string | null,
 		};
 	},
 
@@ -15,7 +22,7 @@ export const useHistoryStore = defineStore("history", {
 			const canvasElemsStore = useCanvasElemsStore();
 			const historyStore = this;
 
-			canvasElemsStore.$onAction(function ({ after }) {
+			canvasElemsStore.$onAction(function ({ name, after }) {
 				const canvasStateBeforeAction = JSON.stringify(canvasElemsStore.elems);
 
 				after(function () {
@@ -25,11 +32,14 @@ export const useHistoryStore = defineStore("history", {
 						return;
 					}
 
-					historyStore.previousCanvasStates.push(
-						JSON.parse(canvasStateBeforeAction)
-					);
+					historyStore.previousCanvasStates.push({
+						canvasState: JSON.parse(canvasStateBeforeAction),
+						action: name,
+					});
 
 					historyStore.futureCanvasStates = [];
+					historyStore.lastUndoneAction = null;
+					historyStore.lastRedoneAction = null;
 				});
 			});
 		},
@@ -43,13 +53,19 @@ export const useHistoryStore = defineStore("history", {
 				JSON.stringify(canvasElemsStore.elems)
 			);
 
-			this.futureCanvasStates.push(currentCanvasState);
+			const previousHistory = this.previousCanvasStates.pop();
 
-			const previousCanvasState = this.previousCanvasStates.pop();
+			if (!previousHistory) return;
 
-			if (!previousCanvasState) return;
+			this.futureCanvasStates.push({
+				canvasState: currentCanvasState,
+				action: previousHistory.action,
+			});
 
-			canvasElemsStore.elems = previousCanvasState;
+			canvasElemsStore.elems = previousHistory.canvasState;
+
+			this.lastUndoneAction = previousHistory.action;
+			this.lastRedoneAction = null;
 		},
 
 		redo: function (): void {
@@ -61,13 +77,19 @@ export const useHistoryStore = defineStore("history", {
 				JSON.stringify(canvasElemsStore.elems)
 			);
 
-			this.previousCanvasStates.push(currentCanvasState);
+			const nextHistory = this.futureCanvasStates.pop();
 
-			const nextCanvasState = this.futureCanvasStates.pop();
+			if (!nextHistory) return;
 
-			if (!nextCanvasState) return;
+			this.previousCanvasStates.push({
+				canvasState: currentCanvasState,
+				action: nextHistory.action,
+			});
 
-			canvasElemsStore.elems = nextCanvasState;
+			canvasElemsStore.elems = nextHistory.canvasState;
+
+			this.lastRedoneAction = nextHistory.action;
+			this.lastUndoneAction = null;
 		},
 	},
 });
