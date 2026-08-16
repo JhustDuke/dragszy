@@ -2,6 +2,7 @@ import type { CanvasElem } from "~/types";
 
 interface ResizeOptions {
 	shouldStart: () => boolean;
+	onResizeStart?: () => void;
 	onResizeEnd?: () => void;
 }
 
@@ -10,6 +11,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		if (!options.shouldStart()) return;
 
 		event.stopPropagation();
+		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
 		const initialWidth = newElemInfo.width ?? 0;
@@ -40,6 +42,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		if (!options.shouldStart()) return;
 
 		event.stopPropagation();
+		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
 		const initialHeight = newElemInfo.height ?? 0;
@@ -70,6 +73,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		if (!options.shouldStart()) return;
 
 		event.stopPropagation();
+		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
 		const initialWidth = newElemInfo.width ?? 0;
@@ -100,6 +104,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		if (!options.shouldStart()) return;
 
 		event.stopPropagation();
+		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
 		const initialHeight = newElemInfo.height ?? 0;

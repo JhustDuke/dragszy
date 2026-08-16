@@ -36,6 +36,7 @@
 	import { computed, ref, watch } from "vue";
 	import type { CanvasElem } from "../../types";
 	import { useCanvasElemsStore, useAppActionStore } from "../../store";
+	import { useHistoryStore } from "../../store/historyStore";
 	import { createResize } from "../../utils";
 	import SelfClosingTags from "./SelfClosingTags.vue";
 	import NonSelfClosingTags from "./NonSelfClosing.vue";
@@ -46,6 +47,7 @@
 
 	const canvasElemsStore = useCanvasElemsStore();
 	const appActionStore = useAppActionStore();
+	const historyStore = useHistoryStore();
 
 	//elem types that can't have children/text in real HTML
 	//e.g. img - add more here later (input, br, hr, etc.) if you support them
@@ -58,6 +60,17 @@
 	const resize = createResize(props.newElemInfo, {
 		shouldStart: function (): boolean {
 			return appActionStore.getActiveAction === "resize";
+		},
+
+		//called right when a drag STARTS, before any mutation happens -
+		//this is what makes the "before" snapshot actually correct, since
+		//$onAction's automatic timing captures "before" only when
+		//commitElemSize is CALLED, which is after the whole drag already
+		//finished (too late). manual snapshot here fixes that for every
+		//resize, on every elem type, not just cases where a flag-flip
+		//happened to mask the bug by coincidence.
+		onResizeStart: function (): void {
+			historyStore.snapshot("Resize");
 		},
 
 		//called once, right when a resize drag ENDS - not during. this is

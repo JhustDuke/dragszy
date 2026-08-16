@@ -36,12 +36,29 @@ export const useHistoryStore = defineStore("history", {
 						canvasState: JSON.parse(canvasStateBeforeAction),
 						action: name,
 					});
-
 					historyStore.futureCanvasStates = [];
 					historyStore.lastUndoneAction = null;
 					historyStore.lastRedoneAction = null;
 				});
 			});
+		},
+
+		//manual snapshot for cases that mutate elems directly, bypassing
+		//$onAction's automatic before/after timing on purpose (resize -
+		//it mutates on every mousemove for drag performance, and by the
+		//time any action call happens, the drag is already over, so the
+		//automatic "before" would already equal "after"). call this once,
+		//right when a drag STARTS, before any mutation happens.
+		snapshot: function (actionLabel: string): void {
+			const canvasElemsStore = useCanvasElemsStore();
+
+			this.previousCanvasStates.push({
+				canvasState: JSON.parse(JSON.stringify(canvasElemsStore.elems)),
+				action: actionLabel,
+			});
+			this.futureCanvasStates = [];
+			this.lastUndoneAction = null;
+			this.lastRedoneAction = null;
 		},
 
 		undo: function (): void {
@@ -54,7 +71,6 @@ export const useHistoryStore = defineStore("history", {
 			);
 
 			const previousHistory = this.previousCanvasStates.pop();
-
 			if (!previousHistory) return;
 
 			this.futureCanvasStates.push({
@@ -63,7 +79,6 @@ export const useHistoryStore = defineStore("history", {
 			});
 
 			canvasElemsStore.elems = previousHistory.canvasState;
-
 			this.lastUndoneAction = previousHistory.action;
 			this.lastRedoneAction = null;
 		},
@@ -78,7 +93,6 @@ export const useHistoryStore = defineStore("history", {
 			);
 
 			const nextHistory = this.futureCanvasStates.pop();
-
 			if (!nextHistory) return;
 
 			this.previousCanvasStates.push({
@@ -87,7 +101,6 @@ export const useHistoryStore = defineStore("history", {
 			});
 
 			canvasElemsStore.elems = nextHistory.canvasState;
-
 			this.lastRedoneAction = nextHistory.action;
 			this.lastUndoneAction = null;
 		},
