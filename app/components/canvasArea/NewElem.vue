@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 	import { computed, ref, watch } from "vue";
-	import type { CanvasElem } from "~/types";
+	import type { CanvasElem } from "../../types";
 	import { useCanvasElemsStore, useAppActionStore } from "../../store";
 	import { createResize } from "../../utils";
 	import SelfClosingTags from "./SelfClosingTags.vue";
@@ -59,6 +59,22 @@
 		shouldStart: function (): boolean {
 			return appActionStore.getActiveAction === "resize";
 		},
+
+		//called once, right when a resize drag ENDS - not during. this is
+		//what makes EVERY resize (not just the first one, which the watch
+		//below already covers on its own) show up in undo/redo history,
+		//since commitElemSize is a real store action and $onAction picks
+		//it up automatically. createResize.ts stays fully store-agnostic -
+		//it just calls this callback, it never imports or knows about
+		//canvasElemsStore itself.
+		onResizeEnd: function (): void {
+			canvasElemsStore.commitElemSize(props.newElemInfo.id, {
+				width: props.newElemInfo.width,
+				height: props.newElemInfo.height,
+				isWidthAdjusted: true,
+				isHeightAdjusted: true,
+			});
+		},
 	});
 
 	const isSelected = computed(function () {
@@ -81,12 +97,16 @@
 		return canvasElemsStore.currentlyHovered === tagRef.value?.elemRef;
 	});
 
-	//size stays purely class-driven until the user is BOTH selecting this
-	//elem AND in resize mode at the same time - the instant that happens,
-	//measure the real rendered size (whatever the classes gave it) and
-	//lock it in as this elem's actual width/height going forward. this
-	//only fires once per elem (guarded by isWidthAdjusted/isHeightAdjusted)
-	//so it never overwrites a size the user already deliberately resized.
+	//BEFORE the very first drag, an elem's width/height may still be
+	//undefined (pure class-driven, never resized). createResize's drag
+	//math needs a real starting number to work from, or the first drag
+	//would jump from 0. this watch just seeds that starting value the
+	//moment resize mode + selection align - it does NOT call any store
+	//action here (that would create a phantom history entry just from
+	//selecting something, even before any actual drag happens).
+	//commitElemSize (fired via onResizeEnd, on every drag's end) is now
+	//the ONLY thing that ever creates a real history entry for resize -
+	//covering the first resize and every one after it, uniformly.
 	watch(
 		function () {
 			return isSelected.value && appActionStore.getActiveAction === "resize";
@@ -101,12 +121,10 @@
 
 			if (!props.newElemInfo.isWidthAdjusted) {
 				props.newElemInfo.width = rect.width;
-				props.newElemInfo.isWidthAdjusted = true;
 			}
 
 			if (!props.newElemInfo.isHeightAdjusted) {
 				props.newElemInfo.height = rect.height;
-				props.newElemInfo.isHeightAdjusted = true;
 			}
 		}
 	);

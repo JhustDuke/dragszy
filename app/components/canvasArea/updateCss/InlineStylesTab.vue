@@ -82,10 +82,13 @@
 <script setup lang="ts">
 	import { computed, reactive, watch, onMounted } from "vue";
 	import { useCanvasElemsStore } from "~/store";
+
 	import {
-		commonCssProperties,
+		getCommonCssProperties,
 		cssValueSuggestions,
 	} from "./cssPropertySuggestions";
+
+	const commonCssProperties = getCommonCssProperties();
 
 	const canvasElemsStore = useCanvasElemsStore();
 

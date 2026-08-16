@@ -1,25 +1,18 @@
 <template>
 	<!-- App root: toolbar + canvas + viewport toggle -->
-	<div class="grey lighten-3">
+	<div
+		class="grey lighten-3"
+		id="dragzy"
+		style="min-height: 5000px; height: 100%">
 		<nav>
 			<ToolBar />
 		</nav>
 
-		<section>
+		<section style="padding-top: 6rem">
 			<!-- Desktop: full width, no backdrop -->
 			<div
 				v-if="viewportStore.activeViewport === 'desktop'"
-				class="min-vh-100"
-				:style="{
-					paddingLeft: defaultNudgeStore.getDefaultPaddingX + 'px',
-					paddingRight: defaultNudgeStore.getDefaultPaddingX + 'px',
-					paddingTop: defaultNudgeStore.getDefaultPaddingY + 'px',
-					paddingBottom: defaultNudgeStore.getDefaultPaddingY + 'px',
-					marginLeft: defaultNudgeStore.getDefaultMarginX + 'px',
-					marginRight: defaultNudgeStore.getDefaultMarginX + 'px',
-					marginTop: defaultNudgeStore.getDefaultMarginY + 'px',
-					marginBottom: defaultNudgeStore.getDefaultMarginY + 'px',
-				}"
+				class="min-vh-100 py-1 px-2"
 				data-canvas-root
 				@dblclick="handleCanvasDblClick">
 				<CanvasArea />
@@ -28,12 +21,12 @@
 			<!-- Mobile/Tablet: backdrop + boxed preview, click backdrop to exit -->
 			<div
 				v-else
-				class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-				style="background: rgba(0, 0, 0, 0.5); z-index: 998"
+				class="w-100 d-flex align-items-center justify-content-center grey lighten-1"
+				style="z-index: 998; min-height: 100vh"
 				@click.self="viewportStore.setDesktop()">
 				<!-- Preview box: bordered, scrollable, fixed height so surrounding backdrop stays visible -->
 				<div
-					class="white green lighten-5 shadow border rounded-3 overflow-auto"
+					class="green lighten-5 shadow border rounded-3 overflow-auto"
 					:style="{ width: viewportStore.activeWidth, height: '600px' }"
 					data-canvas-root
 					@dblclick="handleCanvasDblClick">
@@ -48,7 +41,8 @@
 
 <script setup lang="ts">
 	// @ts-ignore
-	import ToolBar from "./components/toolbar/Toolbar.vue";
+	import { onMounted } from "vue";
+	import ToolBar from "./components/toolbar/ToolBar.vue";
 	import ToggleView from "./components/viewportToggle.vue";
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
 
@@ -56,14 +50,22 @@
 		useViewportStore,
 		useAppActionStore,
 		useCanvasElemsStore,
-		useDefaultStore,
 	} from "./store";
+	import { useHistoryStore } from "./store/historyStore";
 
 	// Controls which layout renders: desktop vs boxed mobile/tablet preview
 	const viewportStore = useViewportStore();
 	const appActionStore = useAppActionStore();
 	const canvasElemsStore = useCanvasElemsStore();
-	const defaultNudgeStore = useDefaultStore();
+
+	const historyStore = useHistoryStore();
+
+	//App.vue is the actual root, mounted exactly once for the app's
+	//lifetime - the correct, single place to start watching
+	//canvasElemsStore for history tracking
+	onMounted(function () {
+		historyStore.trackCanvasChanges();
+	});
 
 	function handleCanvasDblClick(event: MouseEvent): void {
 		if (appActionStore.getActiveAction !== "create") return;

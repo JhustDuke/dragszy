@@ -1,6 +1,8 @@
 <template>
 	<!-- Toolbar -->
-	<div class="container-fluid black py-1 border-bottom">
+	<div
+		class="container-fluid black border-bottom position-fixed mb-1"
+		style="z-index: 9999">
 		<div class="d-flex justify-content-between">
 			<!-- left contents -->
 			<div class="col-auto d-flex gap-1">
@@ -13,11 +15,19 @@
 				<CompilerSelect />
 			</div>
 		</div>
+		<!-- presets rows -->
 		<div class="row">
 			<div class="col-12">
-				<SupportedElemTypes />
-				<PresetRow />
-				<positioning />
+				<div class="d-flex justify-content-between">
+					<section>
+						<SupportedElemTypes />
+						<PresetRow />
+						<positioning />
+					</section>
+					<section>
+						<UndoRedo />
+					</section>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -30,4 +40,5 @@
 	import CompilerSelect from "./Compile.vue";
 	import PresetRow from "./PresetsStyles.vue";
 	import positioning from "./CssPositioning.vue";
+	import UndoRedo from "./UndoRedo.vue";
 </script>

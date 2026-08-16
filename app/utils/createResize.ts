@@ -2,6 +2,7 @@ import type { CanvasElem } from "~/types";
 
 interface ResizeOptions {
 	shouldStart: () => boolean;
+	onResizeEnd?: () => void;
 }
 
 export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
@@ -28,6 +29,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		const stopResizeDrag = function (): void {
 			document.removeEventListener("mousemove", handleResizeDrag);
 			document.removeEventListener("mouseup", stopResizeDrag);
+			options.onResizeEnd?.();
 		};
 
 		document.addEventListener("mousemove", handleResizeDrag);
@@ -57,6 +59,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		const stopResizeDrag = function (): void {
 			document.removeEventListener("mousemove", handleResizeDrag);
 			document.removeEventListener("mouseup", stopResizeDrag);
+			options.onResizeEnd?.();
 		};
 
 		document.addEventListener("mousemove", handleResizeDrag);
@@ -86,6 +89,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		const stopResizeDrag = function (): void {
 			document.removeEventListener("mousemove", handleResizeDrag);
 			document.removeEventListener("mouseup", stopResizeDrag);
+			options.onResizeEnd?.();
 		};
 
 		document.addEventListener("mousemove", handleResizeDrag);
@@ -115,6 +119,7 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		const stopResizeDrag = function (): void {
 			document.removeEventListener("mousemove", handleResizeDrag);
 			document.removeEventListener("mouseup", stopResizeDrag);
+			options.onResizeEnd?.();
 		};
 
 		document.addEventListener("mousemove", handleResizeDrag);

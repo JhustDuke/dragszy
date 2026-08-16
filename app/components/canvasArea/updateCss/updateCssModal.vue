@@ -1,7 +1,7 @@
 <template>
 	<div
 		v-if="canvasElemsStore.editModalPosition"
-		class="position-fixed start-50 translate-middle-x bg-white rounded shadow d-flex flex-column"
+		class="position-absolute start-50 translate-middle-x bg-white rounded shadow d-flex flex-column"
 		style="width: 75%; max-width: 80%; z-index: 1001"
 		:style="{ top: canvasElemsStore.editModalPosition.top + 'px' }">
 		<!-- Header -->
@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-	import { ref } from "vue";
+	import { ref, shallowRef } from "vue";
 	import { useCanvasElemsStore } from "~/store";
 
 	import ClassesTab from "./ClassesTab.vue";
@@ -76,7 +76,7 @@
 		{ title: "ID", component: CustomIdTab },
 	] as const;
 
-	const activeTab = ref<(typeof tabs)[number]>(tabs[0]);
+	const activeTab = shallowRef<(typeof tabs)[number]>(tabs[0]);
 
 	//no more click-outside-to-close - only the X button or Done/Cancel
 	//should ever close this now, per explicit request

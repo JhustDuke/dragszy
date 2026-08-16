@@ -1,10 +1,12 @@
 <template>
-	<CanvasElement
-		v-for="elem in canvasElemsStore.elems"
-		:key="elem.id"
-		:id="elem.id"
-		:newElemInfo="elem" />
-	<updateCssModal />
+	<div class="position-relative">
+		<CanvasElement
+			v-for="elem in canvasElemsStore.elems"
+			:key="elem.id"
+			:id="elem.id"
+			:newElemInfo="elem" />
+		<updateCssModal />
+	</div>
 
 	<template v-if="canvasElemsStore.isDragging">
 		<div
@@ -22,11 +24,11 @@
 
 <!-- CanvasArea.vue -->
 <script setup lang="ts">
-	import { onMounted, onUnmounted, ref } from "vue";
+	import { onMounted, onUnmounted, ref, provide } from "vue";
 	import { useCanvasElemsStore } from "../../store";
 	import CanvasElement from "./NewElem.vue";
 	import updateCssModal from "./updateCss/updateCssModal.vue";
-	import { isTyping } from "~/utils";
+	import { isTyping } from "../../utils";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
@@ -44,8 +46,10 @@
 		document.removeEventListener("keydown", handleDuplicateShortcut);
 	});
 
+	//what do i want?
+	//i want to get
+
 	//"D" duplicates the currently selected elem as a sibling right after
-	//itself - matches real editor workflow (Figma, Webflow): duplicate
 	//first, then drag it wherever you actually want it, rather than
 	//baking direction into the shortcut itself
 	const handleDuplicateShortcut = function (ev: KeyboardEvent): void {
@@ -57,7 +61,6 @@
 	};
 
 	//"U" opens the edit modal for whichever elem is currently selected -
-	//replaces right-click, which was stepping on the browser's own
 	//"Inspect Element" context menu. Guards against firing while the user
 	//is typing inside any text input/textarea (e.g. a class draft field),
 	//so typing the letter "u" anywhere doesn't accidentally trigger it.
@@ -74,7 +77,7 @@
 		const rect = elemNode.getBoundingClientRect();
 
 		canvasElemsStore.openEditModal(activeElemId, {
-			top: rect.bottom + 10,
+			top: rect.bottom,
 			left: rect.left,
 		});
 	};

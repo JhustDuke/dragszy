@@ -11,16 +11,28 @@ function kebabToCamelCase(property: string): string {
 	});
 }
 
-export const commonCssProperties: string[] = Array.from(
-	getComputedStyle(document.documentElement)
-)
-	//skip vendor-prefixed properties (-webkit-, -moz-, etc.) - noisy and
-	//rarely what someone wants to autocomplete to
-	.filter(function (property) {
-		return !property.startsWith("-");
-	})
-	.map(kebabToCamelCase)
-	.sort();
+//LAZY on purpose - getComputedStyle/document only exist in the browser.
+//Computing this as a module-level constant would run it the instant this
+//file is imported, which can happen during Nuxt's server-side render
+//(no "document" yet there) and throw "getComputedStyle is not defined".
+//calling this function only when actually needed (e.g. when the Inline
+//Styles tab mounts) guarantees it only ever runs client-side.
+let cachedCssProperties: string[] | null = null;
+
+export function getCommonCssProperties(): string[] {
+	if (cachedCssProperties) return cachedCssProperties;
+
+	cachedCssProperties = Array.from(getComputedStyle(document.documentElement))
+		//skip vendor-prefixed properties (-webkit-, -moz-, etc.) - noisy
+		//and rarely what someone wants to autocomplete to
+		.filter(function (property) {
+			return !property.startsWith("-");
+		})
+		.map(kebabToCamelCase)
+		.sort();
+
+	return cachedCssProperties;
+}
 
 //per-property value suggestions - only filled in for properties where a
 //short, well-known set of values genuinely covers most real use, so the

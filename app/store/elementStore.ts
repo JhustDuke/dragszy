@@ -70,6 +70,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			this.activeElemId = id;
 		},
 
+		//it updates the width and the height of the active elem
+		//the active elem is gotten from the state
 		updateElemWidthOrHeight: function (
 			changes: Partial<Pick<CanvasElem, "width" | "height">>
 		): void {
@@ -231,6 +233,28 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			this.activeElemId = clone.id;
 			this.lastEditedId = clone.id;
+		},
+
+		//called once per resize, right when the drag ENDS (not during) -
+		//createResize.ts mutates width/height directly on every mousemove
+		//for speed, bypassing this store entirely while dragging. this is
+		//the one real action call that "checks in" with the store once
+		//the resize is finished, so $onAction/historyStore can pick it up
+		//automatically like any other action - covers EVERY resize, not
+		//just the first one on a given elem.
+		commitElemSize: function (
+			id: string,
+			changes: {
+				width?: number;
+				height?: number;
+				isWidthAdjusted?: boolean;
+				isHeightAdjusted?: boolean;
+			}
+		): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			Object.assign(result.elem, changes);
 		},
 	},
 });
