@@ -70,16 +70,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			this.activeElemId = id;
 		},
 
-		//it updates the width and the height of the active elem
-		//the active elem is gotten from the state
-		updateElemWidthOrHeight: function (
-			changes: Partial<Pick<CanvasElem, "width" | "height">>
-		): void {
-			if (!this.activeElem) return;
-
-			Object.assign(this.activeElem, changes);
-		},
-
 		setCurrentlyDragged: function (draggedElem: HTMLElement | null) {
 			this.currentlyDragged = draggedElem;
 		},
