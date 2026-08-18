@@ -8,7 +8,7 @@
 			<ToolBar />
 		</nav>
 
-		<section style="padding-top: 6rem">
+		<section style="padding-top: 8rem">
 			<!-- Desktop: full width, no backdrop -->
 			<div
 				v-if="viewportStore.activeViewport === 'desktop'"
@@ -34,7 +34,7 @@
 				</div>
 			</div>
 		</section>
-
+		<RestoreOrNewPrompt />
 		<ToggleView />
 	</div>
 </template>
@@ -45,6 +45,7 @@
 	import ToolBar from "./components/toolbar/ToolBar.vue";
 	import ToggleView from "./components/viewportToggle.vue";
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
+	import RestoreOrNewPrompt from "./components/indexdb/RestorePrompt.vue";
 
 	import {
 		useViewportStore,
