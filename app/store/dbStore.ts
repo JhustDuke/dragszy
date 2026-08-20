@@ -9,144 +9,157 @@ export interface SavedCanvasMeta {
 	updatedAt: number;
 }
 
-function generateSaveId(): string {
-	return "canvas-" + Math.random().toString(36).slice(2, 10);
-}
-
 export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 	state: function () {
 		return {
+			//the ONE place the list of saved canvases lives. every
+			//component reads this directly, always current - without this
+			//field there's nowhere for the list to actually live, so any
+			//own disconnected copy of the return value instead.
 			savedCanvases: [] as SavedCanvasMeta[],
 
 			currentCanvasId: null as string | null,
 
-			showSaveNamePrompt: false,
-			showRestorePrompt: false,
-
+			//the currently loaded/saved canvas's REAL name - distinct
+			//from saveNamePrompt.draftName below, which is just whatever
+			//the user is currently typing into the name input. these were
+			//previously the same field (saveNamePrompt.name), which meant
+			//restoring a canvas would silently overwrite whatever the
+			//user had mid-typed into the save-name form, and vice versa.
 			canvasName: "",
 			savedAt: null as number | null,
 
-			isSaving: false,
 			isStartingNew: false,
 
-			restoringCanvasId: null as string | null,
-			deletingCanvasId: null as string | null,
-
 			errorMessage: null as string | null,
+			showRestorePrompt: false,
+
+			saveNamePrompt: {
+				show: false,
+				draftName: "",
+				isSaving: false,
+			},
+
+			canvasOperation: {
+				restoringId: null as string | null,
+				deletingId: null as string | null,
+			},
 		};
 	},
 
 	actions: {
-		listSavedCanvases: async function (): Promise<void> {
+		//the ONLY public entry point for syncing the saved-canvas list.
+		//getDataFromDb (the actual db fetch) is a private, module-scoped
+		//function above - it's not an action, so nothing outside this
+		//file can call it directly. every place that needs the list
+		//refreshed (startup, after save, after delete) goes through
+		//refreshList, never around it.
+		refreshList: async function (): Promise<void> {
 			try {
-				const rows = await db.canvases.toArray();
+				const data = await getDataFromDb();
 
-				this.savedCanvases = rows
-					.map(function (row) {
-						return {
-							id: row.id,
-							name: row.name,
-							updatedAt: row.updatedAt,
-						};
-					})
-					.sort(function (a, b) {
-						return b.updatedAt - a.updatedAt;
-					});
-
-				this.showRestorePrompt = this.savedCanvases.length > 0;
-			} catch (error) {
+				this.savedCanvases = data;
+			} catch (error: any) {
 				this.savedCanvases = [];
-				this.showRestorePrompt = false;
-
 				this.errorMessage =
-					error instanceof Error
-						? `Couldn't list saved canvases: ${error.message}`
-						: "Couldn't list saved canvases. Please try again.";
+					error.message || "opps something went wrong couldnt get data from db";
 			}
 		},
 
 		requestSaveCanvas: async function (): Promise<void> {
 			this.errorMessage = null;
 
-			if (!this.currentCanvasId && !this.canvasName.trim()) {
-				this.showSaveNamePrompt = true;
+			// EXISTING CANVAS
+			if (this.currentCanvasId) {
+				if (!this.canvasName.trim()) {
+					this.errorMessage = "This canvas has an ID but no name.";
+					return;
+				}
+
+				await this.saveCanvas(this.canvasName);
 				return;
 			}
 
-			this.showSaveNamePrompt = false;
+			// NEW CANVAS
+			if (!this.saveNamePrompt.draftName.trim()) {
+				this.saveNamePrompt.show = true;
+				return;
+			}
 
-			await this.saveCanvas();
+			await this.saveCanvas(this.saveNamePrompt.draftName.trim());
 		},
 
 		saveCanvas: async function (newName?: string): Promise<boolean> {
 			this.errorMessage = null;
-			this.isSaving = true;
+			this.saveNamePrompt.isSaving = true;
 
 			try {
-				const canvasElemsStore = useCanvasElemsStore();
-
 				if (newName !== undefined) {
 					this.canvasName = newName.trim();
 				}
 
+				if (!this.canvasName.trim()) {
+					console.log("thig block ran");
+					this.saveNamePrompt.show = true;
+					return false;
+				}
+
+				const canvasElemsStore = useCanvasElemsStore();
+
 				const id = this.currentCanvasId ?? generateSaveId();
+				const updatedAt = Date.now();
 
-				const now = Date.now();
-
-				await db.canvases.put({
+				await saveDataToDb({
 					id,
+					updatedAt,
 					name: this.canvasName,
 					elems: JSON.parse(
 						JSON.stringify(canvasElemsStore.elems)
 					) as CanvasElem[],
-					updatedAt: now,
 				});
 
 				this.currentCanvasId = id;
-				this.savedAt = now;
+				this.savedAt = updatedAt;
 
-				this.showSaveNamePrompt = false;
+				this.saveNamePrompt.show = false;
+				this.showRestorePrompt = false;
 
-				await this.listSavedCanvases();
+				//refresh the shared list so it reflects the new/updated
+				//save immediately, everywhere it's displayed
+				await this.refreshList();
 
 				return true;
-			} catch (error) {
+			} catch (error: any) {
 				this.errorMessage =
-					error instanceof Error
-						? `Couldn't save: ${error.message}`
-						: "Couldn't save the canvas. Please try again.";
+					error.message || "Couldn't save the canvas. Please try again.";
 
 				return false;
 			} finally {
-				this.isSaving = false;
+				this.saveNamePrompt.isSaving = false;
 			}
 		},
 
 		restoreCanvas: async function (id: string): Promise<boolean> {
 			this.errorMessage = null;
-			this.restoringCanvasId = id;
+			this.canvasOperation.restoringId = id;
 
 			try {
 				const canvasElemsStore = useCanvasElemsStore();
-
 				const savedCanvas = await db.canvases.get(id);
 
 				if (!savedCanvas) {
 					this.errorMessage = "That saved canvas could not be found.";
-
 					return false;
 				}
 
 				canvasElemsStore.elems = savedCanvas.elems;
 
 				this.currentCanvasId = savedCanvas.id;
-
 				this.canvasName = savedCanvas.name;
-
 				this.savedAt = savedCanvas.updatedAt;
 
 				this.showRestorePrompt = false;
-				this.showSaveNamePrompt = false;
+				this.saveNamePrompt.show = false;
 
 				return true;
 			} catch (error) {
@@ -157,16 +170,20 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 
 				return false;
 			} finally {
-				this.restoringCanvasId = null;
+				this.canvasOperation.restoringId = null;
 			}
 		},
-
+		checkForRestorePrompt: function (): void {
+			if (this.savedCanvases.length > 0 && !this.currentCanvasId) {
+				this.showRestorePrompt = true;
+			}
+		},
 		deleteSavedCanvas: async function (id: string): Promise<boolean> {
 			this.errorMessage = null;
-			this.deletingCanvasId = id;
+			this.canvasOperation.deletingId = id;
 
 			try {
-				await db.canvases.delete(id);
+				await deleteDataFromDb(id);
 
 				if (this.currentCanvasId === id) {
 					this.currentCanvasId = null;
@@ -174,18 +191,17 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 					this.savedAt = null;
 				}
 
-				await this.listSavedCanvases();
+				//refresh the shared list so the deleted item disappears
+				//from every display of it immediately
+				await this.refreshList();
 
 				return true;
-			} catch (error) {
-				this.errorMessage =
-					error instanceof Error
-						? `Couldn't delete the saved canvas: ${error.message}`
-						: "Couldn't delete the saved canvas. Please try again.";
+			} catch (error: any) {
+				this.errorMessage = error.message || "Couldn't delete the saved canvas";
 
 				return false;
 			} finally {
-				this.deletingCanvasId = null;
+				this.canvasOperation.deletingId = null;
 			}
 		},
 
@@ -204,14 +220,12 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 				this.savedAt = null;
 
 				this.showRestorePrompt = false;
-				this.showSaveNamePrompt = false;
+				this.saveNamePrompt.show = false;
 
 				return true;
-			} catch (error) {
+			} catch (error: any) {
 				this.errorMessage =
-					error instanceof Error
-						? `Couldn't start a new canvas: ${error.message}`
-						: "Couldn't start a new canvas. Please try again.";
+					error.message || "Couldn't start a new canvas. Please try again";
 
 				return false;
 			} finally {
@@ -220,3 +234,55 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 		},
 	},
 });
+
+//---- private helpers - NOT part of the store, not reachable from
+//outside this file ----
+
+const saveDataToDb = async function ({
+	name,
+	id,
+	updatedAt,
+	elems,
+}: {
+	id: string;
+	name: string;
+	elems: CanvasElem[];
+	updatedAt: number;
+}): Promise<void> {
+	try {
+		await db.canvases.put({ id, name, elems, updatedAt });
+	} catch (error: any) {
+		throw new Error(error.message || "failed to save canvas to database");
+	}
+};
+
+const generateSaveId = function (): string {
+	return "dragzy-" + Math.random().toString(36).slice(2, 10);
+};
+
+const getDataFromDb = async function (): Promise<SavedCanvasMeta[]> {
+	try {
+		const rows = await db.canvases.toArray();
+
+		return rows
+			.map(function (row) {
+				return { id: row.id, name: row.name, updatedAt: row.updatedAt };
+			})
+			.sort(function (a, b) {
+				return b.updatedAt - a.updatedAt;
+			});
+	} catch (error: any) {
+		throw new Error(
+			error.message || "couldnt retrieve data or something went wrong"
+		);
+	}
+};
+
+const deleteDataFromDb = async function (id: string): Promise<boolean> {
+	try {
+		await db.canvases.delete(id);
+		return true;
+	} catch (error: any) {
+		throw new Error(error.message || "failed to delete canvas");
+	}
+};

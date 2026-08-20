@@ -4,10 +4,10 @@
 			type="button"
 			class="btn"
 			:class="showSaved ? 'btn-success' : 'btn-primary'"
-			:disabled="canvasPersistenceStore.isSaving || showSaved"
+			:disabled="canvasPersistenceStore.saveNamePrompt.isSaving || showSaved"
 			@click="requestSave">
 			<span
-				v-if="canvasPersistenceStore.isSaving"
+				v-if="canvasPersistenceStore.saveNamePrompt.isSaving"
 				class="spinner-border spinner-border-sm me-2">
 			</span>
 
@@ -22,39 +22,13 @@
 			</i>
 
 			{{
-				canvasPersistenceStore.isSaving
+				canvasPersistenceStore.saveNamePrompt.isSaving
 					? "Saving..."
 					: showSaved
 					? "Saved"
 					: "Save"
 			}}
 		</button>
-
-		<div
-			v-if="canvasPersistenceStore.errorMessage"
-			class="modal d-block"
-			tabindex="-1">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title">Could not save canvas</h5>
-					</div>
-
-					<div class="modal-body">
-						<p>{{ canvasPersistenceStore.errorMessage }}</p>
-					</div>
-
-					<div class="modal-footer">
-						<button
-							type="button"
-							class="btn btn-secondary"
-							@click="canvasPersistenceStore.errorMessage = null">
-							Close
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
 	</div>
 </template>
 
@@ -66,18 +40,15 @@
 
 	const showSaved = ref<boolean>(false);
 
-	const requestSave = async function (): Promise<void> {
-		await canvasPersistenceStore.requestSaveCanvas();
-
-		//don't show "Saved" if there's an error, OR if this was actually
-		//a first-time save that just opened the name prompt instead of
-		//completing - showing a false "Saved" checkmark here was the
-		//second bug caused by the same missing-prompt gap
-		if (canvasPersistenceStore.errorMessage) {
+	const requestSave = async function () {
+		if (!canvasPersistenceStore.currentCanvasId) {
+			canvasPersistenceStore.saveNamePrompt.show = true;
 			return;
+		} else {
+			await canvasPersistenceStore.requestSaveCanvas();
 		}
 
-		if (canvasPersistenceStore.showSaveNamePrompt) {
+		if (canvasPersistenceStore.errorMessage) {
 			return;
 		}
 
