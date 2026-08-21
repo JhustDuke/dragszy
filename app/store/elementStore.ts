@@ -16,7 +16,13 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			//where the double-click edit modal should appear - null means
 			//the modal isn't open. reuses activeElemId as "which elem is
 			//being edited", so double-clicking an elem also selects it
-			editModalPosition: null as { top: number; left: number } | null,
+			editModalPosition: null as {
+				top?: number;
+				left?: number;
+				bottom?: number;
+				right?: number;
+			} | null,
+			relativeElemsIds: [] as string[],
 		};
 	},
 	getters: {
@@ -50,11 +56,16 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				presetClasses: appActionStore.getSelectedPresetClasses,
 			});
 
+			//find whether the newly-created element or any of its children
+			//uses position relative before adding it to the canvas tree
+			findRelativeElemsIds(newElem, this.relativeElemsIds);
+
 			if (this.activeElemId) {
 				const activeResult = findElemAndContainer(
 					this.elems,
 					this.activeElemId
 				);
+
 				if (activeResult) {
 					activeResult.elem.children.push(newElem);
 					this.activeElemId = newElem.id;
@@ -149,6 +160,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				this.activeElemId =
 					result.container.length > 0 ? result.container[0]?.id ?? null : null;
 			}
+
+			//rebuild the relative element IDs after removing an element
+			this.refreshRelativeElemsIds();
 		},
 
 		updateElemClasses: function (id: string, classes: string[]): void {
@@ -156,6 +170,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!result) return;
 
 			result.elem.cssClasses = classes;
+
+			//classes may have added or removed the relative class
+			this.refreshRelativeElemsIds();
 		},
 
 		//REPLACES customStyles entirely (not merged) - the caller
@@ -171,6 +188,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!result) return;
 
 			result.elem.customStyles = customStyles;
+
+			//inline styles may have added or removed position: relative
+			this.refreshRelativeElemsIds();
 		},
 
 		updateElemTextContent: function (id: string, textContent: string): void {
@@ -194,7 +214,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		//the call site in NewElem.vue)
 		openEditModal: function (
 			id: string,
-			position: { top: number; left: number }
+			position: { top?: number; right?: number; bottom?: number; left?: number }
 		): void {
 			this.activeElemId = id;
 			this.editModalPosition = position;
@@ -223,6 +243,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			this.activeElemId = clone.id;
 			this.lastEditedId = clone.id;
+
+			//the cloned element may contain position relative
+			this.refreshRelativeElemsIds();
 		},
 
 		//called once per resize, right when the drag ENDS (not during) -
@@ -246,10 +269,47 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			Object.assign(result.elem, changes);
 		},
+
+		//rebuilds the list from the complete canvas tree so removed relative
+		//elements or elements that no longer have position relative cannot
+		//remain in the array
+		refreshRelativeElemsIds: function () {
+			this.relativeElemsIds = [];
+
+			for (const elem of this.elems) {
+				findRelativeElemsIds(elem, this.relativeElemsIds);
+			}
+			console.log(this.relativeElemsIds);
+		},
 	},
 });
 
-function findElemAndContainer(
+const findRelativeElemsIds = function (elem: CanvasElem, arr: string[]) {
+	// Bootstrap 5 uses "position-relative".
+	// Tailwind uses "relative".
+	// Keep both checks here so Absolute-To works regardless of
+	// which framework is currently active.
+	if (
+		elem.cssClasses?.includes("position-relative") ||
+		elem.cssClasses?.includes("relative")
+	) {
+		arr.push(elem.id);
+	}
+
+	// An inline style with position: relative should also count,
+	// regardless of the active framework.
+	if (elem.customStyles?.position === "relative") {
+		arr.push(elem.id);
+	}
+
+	// Check nested children because a relative element can exist
+	// anywhere inside the canvas element tree.
+	for (const child of elem.children) {
+		findRelativeElemsIds(child, arr);
+	}
+};
+
+const findElemAndContainer = function (
 	elems: CanvasElem[],
 	id: string
 ): { elem: CanvasElem; container: CanvasElem[] } | null {
@@ -271,9 +331,9 @@ function findElemAndContainer(
 	}
 
 	return null;
-}
+};
 
-function containsChild(parent: CanvasElem, childId: string): boolean {
+const containsChild = function (parent: CanvasElem, childId: string): boolean {
 	for (const child of parent.children) {
 		if (child.id === childId) {
 			return true;
@@ -285,4 +345,4 @@ function containsChild(parent: CanvasElem, childId: string): boolean {
 	}
 
 	return false;
-}
+};

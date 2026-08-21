@@ -99,4 +99,27 @@
 			left: `${rect.left + window.scrollX}px`,
 		});
 	}
+
+	/**
+	 * what do  i want when i click absolute-to
+	 * every elem that has an attribute of dragzy-elem and also
+	 * has a class or inline style with name relative in it is highlighted
+	 *  with yellow
+	 * and when either of them is clicked the previously selected elem would be force to sit relative to it
+	 *
+	 * to do this
+	 * i need to create a method that looks at every elem classes or inline style for position relative
+	 * get their id
+	 * store it some where in an array variable in the store
+	 * now another would be watch the store action
+	 * when the absoluteTo is clicked
+	 * it goes to that array
+	 * gets all elems with that id
+	 * and change their border to yellow
+	 *
+	 * and then another handler that only runs on action 'position'
+	 * in the new elem simply runs
+	 * by extracting that parent from where it was
+	 * to the parent, if any of the activeElem
+	 */
 </script>

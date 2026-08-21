@@ -3,16 +3,19 @@
 	<div
 		class="grey lighten-3"
 		id="dragzy"
-		style="min-height: 5000px; height: 100%">
+		style="height: 100%">
 		<nav>
 			<ToolBar />
 		</nav>
 
-		<section style="padding-top: 8rem">
+		<section
+			style="padding-top: 8rem"
+			class="">
 			<!-- Desktop: full width, no backdrop -->
 			<div
+				style="min-height: 5000px"
 				v-if="viewportStore.activeViewport === 'desktop'"
-				class="min-vh-100 py-1 px-2"
+				class="py-1 px-2 yellow"
 				dragzy-root
 				@dblclick="handleCanvasDblClick">
 				<CanvasArea />

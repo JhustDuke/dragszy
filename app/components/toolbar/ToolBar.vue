@@ -41,5 +41,5 @@
 	import PresetRow from "./PresetsStyles.vue";
 	import positioning from "./CssPositioning.vue";
 	import UndoRedo from "./UndoRedo.vue";
-	import saveBtn from "../indexdb/SaveBtn.vue";
+	import saveBtn from "./SaveBtn.vue";
 </script>

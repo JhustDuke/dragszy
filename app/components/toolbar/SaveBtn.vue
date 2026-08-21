@@ -9,7 +9,7 @@
 			"
 			style="height: fit-content"
 			type="button"
-			class="rounded p-2 grey"
+			class="rounded p-2 btn btn-primary"
 			:class="showSaved ? 'btn-success' : 'btn-primary'"
 			:disabled="canvasPersistenceStore.saveNamePrompt.isSaving || showSaved"
 			@click="requestSave">
