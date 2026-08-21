@@ -16,6 +16,12 @@
 				appActionStore.setSelectedElemType(
 					elemType as keyof HTMLElementTagNameMap
 				)
+			"
+			@mouseenter="
+				showAndHideToolTip(hints.elemType, {
+					left: 90,
+					top: 34,
+				})
 			">
 			{{ elemType }}
 		</span>
@@ -25,5 +31,8 @@
 <script setup lang="ts">
 	import { useAppActionStore } from "~/store";
 	import { supportedElemTypes } from "~/types";
+
+	import { showAndHideToolTip, hints } from "#imports";
+
 	const appActionStore = useAppActionStore();
 </script>

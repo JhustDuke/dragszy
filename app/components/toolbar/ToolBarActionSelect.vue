@@ -2,16 +2,19 @@
 	<select
 		v-model="selectedAction"
 		class="form-select"
-		@mouseenter="showAndHideToolTip(hints.action)">
+		@mouseenter="
+			showAndHideToolTip(hints.action, {
+				left: 50,
+				top: 30,
+			})
+		">
 		<option
 			selected
 			value="create"
 			>Create</option
 		>
 		<option value="resize">Resize</option>
-		<option value="move">Move</option>
 		<option value="position">Position</option>
-		o
 	</select>
 </template>
 

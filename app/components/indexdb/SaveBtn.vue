@@ -1,6 +1,12 @@
 <template>
 	<div>
 		<button
+			@mouseenter="
+				showAndHideToolTip(hints.save, {
+					left: 0,
+					top: 50,
+				})
+			"
 			style="height: fit-content"
 			type="button"
 			class="rounded p-2 grey"
@@ -36,6 +42,7 @@
 <script setup lang="ts">
 	import { ref } from "vue";
 	import { useCanvasPersistenceStore } from "../../store";
+	import { showAndHideToolTip, hints } from "#imports";
 
 	const canvasPersistenceStore = useCanvasPersistenceStore();
 

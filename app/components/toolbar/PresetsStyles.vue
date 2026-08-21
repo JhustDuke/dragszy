@@ -9,7 +9,13 @@
 				class="badge border"
 				:class="isActive(preset) ? 'blue lighten-2' : 'grey darken-2'"
 				role="button"
-				@click="pickPreset(preset)">
+				@click="pickPreset(preset)"
+				@mouseenter="
+					showAndHideToolTip(hints.cssType, {
+						left: 90,
+						top: 30,
+					})
+				">
 				{{ preset.label }}
 			</span>
 		</div>
@@ -22,6 +28,7 @@
 	import { usePresetStore } from "~/store/presetStore";
 	import type { Preset } from "~/store/utils/presets";
 	import type { SupportedElemType } from "~/types";
+	import { showAndHideToolTip, hints } from "#imports";
 
 	const appActionStore = useAppActionStore();
 	const presetStore = usePresetStore();

@@ -4,7 +4,12 @@
 		<select
 			v-model="selectedFramework"
 			class="form-select form-select-sm w-auto"
-			aria-label="Export framework">
+			@mouseenter="
+				showAndHideToolTip(hints.exportFormat, {
+					left: 0,
+					top: 30,
+				})
+			">
 			<option value="vue">Vue</option>
 		</select>
 		<button
@@ -21,6 +26,7 @@
 	import { ref } from "vue";
 	import { compiler } from "../../compiler";
 	import { useCanvasElemsStore } from "~/store";
+	import { showAndHideToolTip, hints } from "#imports";
 
 	const selectedFramework = ref("vue");
 	const isCompiling = ref(false);
