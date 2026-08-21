@@ -1,8 +1,9 @@
 <template>
 	<div>
 		<button
+			style="height: fit-content"
 			type="button"
-			class="btn"
+			class="rounded p-2 grey"
 			:class="showSaved ? 'btn-success' : 'btn-primary'"
 			:disabled="canvasPersistenceStore.saveNamePrompt.isSaving || showSaved"
 			@click="requestSave">
@@ -26,7 +27,7 @@
 					? "Saving..."
 					: showSaved
 					? "Saved"
-					: "Save"
+					: "save"
 			}}
 		</button>
 	</div>

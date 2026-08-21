@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 	// @ts-ignore
-	import { onMounted } from "vue";
+	import { onMounted, watch } from "vue";
 	import ToolBar from "./components/toolbar/ToolBar.vue";
 	import ToggleView from "./components/viewportToggle.vue";
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
@@ -51,15 +51,9 @@
 		useViewportStore,
 		useAppActionStore,
 		useCanvasElemsStore,
+		useCanvasPersistenceStore,
 	} from "./store";
 	import { useHistoryStore } from "./store/historyStore";
-
-	// Controls which layout renders: desktop vs boxed mobile/tablet preview
-	const viewportStore = useViewportStore();
-	const appActionStore = useAppActionStore();
-	const canvasElemsStore = useCanvasElemsStore();
-
-	const historyStore = useHistoryStore();
 
 	//App.vue is the actual root, mounted exactly once for the app's
 	//lifetime - the correct, single place to start watching
@@ -67,6 +61,28 @@
 	onMounted(function () {
 		historyStore.trackCanvasChanges();
 	});
+	watch(
+		function () {
+			return useCanvasPersistenceStore().canvasName;
+		},
+		function (canvasName) {
+			if (!document) return;
+			if (canvasName) {
+				document.title = `${canvasName} — Dragzy`;
+			} else {
+				document.title = "dragzy";
+			}
+		},
+
+		{ immediate: true }
+	);
+
+	// Controls which layout renders: desktop vs boxed mobile/tablet preview
+	const viewportStore = useViewportStore();
+	const appActionStore = useAppActionStore();
+	const canvasElemsStore = useCanvasElemsStore();
+
+	const historyStore = useHistoryStore();
 
 	function handleCanvasDblClick(event: MouseEvent): void {
 		if (appActionStore.getActiveAction !== "create") return;

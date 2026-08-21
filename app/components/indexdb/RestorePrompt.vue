@@ -74,7 +74,7 @@
 	import { useCanvasPersistenceStore } from "../../store";
 	import RestoreOption from "./RestoreOption.vue";
 	import NewOption from "./NewOption.vue";
-	import saveNameOnSaveButtonClick from "./SaveNamePrompt.vue";
+	import SaveNameOnSaveButtonClick from "./SaveNamePrompt.vue";
 
 	const canvasPersistenceStore = useCanvasPersistenceStore();
 
