@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref } from "vue";
+	import { computed, ref, onMounted } from "vue";
 	import { useAppActionStore, useCanvasElemsStore } from "~/store";
 
 	const appActionStore = useAppActionStore();
@@ -48,6 +48,7 @@
 	let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 	function showAbsoluteToToast(): void {
+		identifyRelativeElems();
 		toastMessage.value =
 			"Absolute needs a descendant of a positioned (relative) ancestor to anchor to - otherwise it falls back to the viewport.";
 
@@ -105,7 +106,9 @@
 	 * every elem that has an attribute of dragzy-elem and also
 	 * has a class or inline style with name relative in it is highlighted
 	 *  with yellow
-	 * and when either of them is clicked the previously selected elem would be force to sit relative to it
+	 * and when either of them is clicked the previously selected elem would be force to sit absolute to it
+	 * now this element must be removed from whatever parent it was inside
+	 * also the new elems absolute position should be controlled by drraging it
 	 *
 	 * to do this
 	 * i need to create a method that looks at every elem classes or inline style for position relative
@@ -122,4 +125,20 @@
 	 * by extracting that parent from where it was
 	 * to the parent, if any of the activeElem
 	 */
+
+	const identifyRelativeElems = function () {
+		const elemsId: string[] = canvasElemsStore.relativeElemsIds;
+		console.log(elemsId);
+
+		if (elemsId.length > 0) {
+			console.log("i ran");
+			elemsId.forEach(function (elem: string) {
+				document
+					.getElementById(elem)!
+					.style.setProperty("border", "4px solid black", "important");
+			});
+			return;
+		}
+		console.log("i found nothing");
+	};
 </script>

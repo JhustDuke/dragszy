@@ -153,6 +153,7 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 				}
 
 				canvasElemsStore.elems = savedCanvas.elems;
+				canvasElemsStore.refreshRelativeElemsIds();
 
 				this.currentCanvasId = savedCanvas.id;
 				this.canvasName = savedCanvas.name;

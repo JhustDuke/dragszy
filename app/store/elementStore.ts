@@ -13,6 +13,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
 			isDragging: false as boolean,
+
+			relativeElemsIds: [] as string[],
+
 			//where the double-click edit modal should appear - null means
 			//the modal isn't open. reuses activeElemId as "which elem is
 			//being edited", so double-clicking an elem also selects it
@@ -22,7 +25,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				bottom?: number;
 				right?: number;
 			} | null,
-			relativeElemsIds: [] as string[],
 		};
 	},
 	getters: {
