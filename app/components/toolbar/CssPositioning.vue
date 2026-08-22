@@ -47,7 +47,9 @@
 	const toastMessage = ref("");
 	let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
+	const isClicked = ref(false);
 	function showAbsoluteToToast(): void {
+		isClicked.value = !isClicked.value;
 		identifyRelativeElems();
 		toastMessage.value =
 			"Absolute needs a descendant of a positioned (relative) ancestor to anchor to - otherwise it falls back to the viewport.";
@@ -128,17 +130,18 @@
 
 	const identifyRelativeElems = function () {
 		const elemsId: string[] = canvasElemsStore.relativeElemsIds;
-		console.log(elemsId);
 
-		if (elemsId.length > 0) {
-			console.log("i ran");
+		if (elemsId.length > 0 && isClicked.value) {
 			elemsId.forEach(function (elem: string) {
 				document
 					.getElementById(elem)!
 					.style.setProperty("border", "4px solid black", "important");
 			});
 			return;
+		} else {
+			elemsId.forEach(function (elem: string) {
+				document.getElementById(elem)!.style.removeProperty("border");
+			});
 		}
-		console.log("i found nothing");
 	};
 </script>
