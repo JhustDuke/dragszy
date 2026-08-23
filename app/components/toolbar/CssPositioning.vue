@@ -8,35 +8,35 @@
 			<span
 				class="badge border grey darken-2 active"
 				role="button"
-				@click="applyFixed">
+				@click="positionActions.applyFixed">
 				Fixed
 			</span>
 
 			<span
 				class="badge border grey darken-2"
 				role="button"
-				@click="applyAbsoluteViewport">
+				@click="positionActions.applyAbsoluteViewport">
 				Absolute - Viewport
 			</span>
 
 			<span
 				class="badge border grey darken-2"
 				role="button"
-				@click="showAbsoluteToToast">
+				@click="positionActions.showAbsoluteToToast">
 				Absolute - To
 			</span>
 
 			<span
 				class="badge border grey darken-2"
 				role="button"
-				@click="toggleShowRelative">
+				@click="positionActions.toggleShowRelative">
 				show relative elems
 			</span>
 
 			<span
 				class="badge border grey darken-2"
 				role="button"
-				@click="toggleShowAbsolute">
+				@click="positionActions.toggleShowAbsolute">
 				show absolute elems
 			</span>
 		</div>
@@ -73,67 +73,10 @@
 		},
 		{ immediate: true }
 	);
-	console.log(33);
 
 	const activeElem = computed(function () {
 		return canvasElemsStore.activeElem;
 	});
-
-	const toastMessage = ref("");
-	let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
-
-	function showAbsoluteToToast(): void {
-		toastMessage.value =
-			"Absolute needs a descendant of a positioned (relative) ancestor to anchor to - otherwise it falls back to the viewport.";
-
-		if (toastTimeoutId) clearTimeout(toastTimeoutId);
-		toastTimeoutId = setTimeout(function () {
-			toastMessage.value = "";
-		}, 4000);
-	}
-
-	//PositionRow lives at the toolbar level, not nested inside NewElem.vue,
-	//so it has no direct elemRef the way resize/keyboard-shortcut logic
-	//does. instead, the real rendered elem carries :id="newElemInfo.id",
-	//so document.getElementById reaches it directly by that id.
-	function findActiveElemNode(): HTMLElement | null {
-		if (!activeElem.value) return null;
-		return document.getElementById(activeElem.value.id);
-	}
-
-	//pins the elem to the viewport - stays put even while scrolling
-	function applyFixed(): void {
-		const elem = activeElem.value;
-		const node = findActiveElemNode();
-		if (!elem || !node) return;
-
-		const rect = node.getBoundingClientRect();
-
-		canvasElemsStore.updateElemInlineStyles(elem.id, {
-			...(elem.customStyles ?? {}),
-			position: "fixed",
-			top: `${rect.top}px`,
-			left: `${rect.left}px`,
-		});
-	}
-
-	//anchors to the nearest positioned ancestor, or the viewport if none
-	//exists - this is standard CSS behavior for position: absolute, not
-	//something this code enforces or checks for
-	function applyAbsoluteViewport(): void {
-		const elem = activeElem.value;
-		const node = findActiveElemNode();
-		if (!elem || !node) return;
-
-		const rect = node.getBoundingClientRect();
-
-		canvasElemsStore.updateElemInlineStyles(elem.id, {
-			...(elem.customStyles ?? {}),
-			position: "absolute",
-			top: `${rect.top + window.scrollY}px`,
-			left: `${rect.left + window.scrollX}px`,
-		});
-	}
 
 	/**
 	 * what do  i want when i click absolute-to
@@ -148,34 +91,76 @@
 	 *
 	 * and then another handler that only runs on action 'position'
 	 * in the new elem simply runs
-	 * by extracting that parent from where it was
+	 * by extracting that clicked elem from where it was
 	 * to the parent, if any of the activeElem
 	 */
 
-	//shared helper - toggles a highlight border on/off for a given set of
-	//elem ids. reused by both the "show relative" and "show absolute"
-	//buttons since the show/hide operation itself is identical, only the
-	//id array and border color differ per caller
+	const positionActions = {
+		//pins the elem to the viewport - stays put even while scrolling
+		applyFixed: function (): void {
+			const elem = activeElem.value;
+			const node = findActiveElemNode();
+			if (!elem || !node) return;
+
+			const rect = node.getBoundingClientRect();
+
+			canvasElemsStore.updateElemInlineStyles(elem.id, {
+				...(elem.customStyles ?? {}),
+				position: "fixed",
+				top: `${rect.top}px`,
+				left: `${rect.left}px`,
+			});
+		},
+
+		//anchors to the nearest positioned ancestor, or the viewport if none
+		//exists - this is standard CSS behavior for position: absolute, not
+		//something this code enforces or checks for
+		applyAbsoluteViewport: function (): void {
+			const elem = activeElem.value;
+			const node = findActiveElemNode();
+			if (!elem || !node) return;
+
+			const rect = node.getBoundingClientRect();
+
+			canvasElemsStore.updateElemInlineStyles(elem.id, {
+				...(elem.customStyles ?? {}),
+				position: "absolute",
+				top: `${rect.top + window.scrollY}px`,
+				left: `${rect.left + window.scrollX}px`,
+			});
+		},
+
+		showAbsoluteToToast: function (): void {
+			toastMessage.value =
+				"Absolute needs a descendant of a positioned (relative) ancestor to anchor to - otherwise it falls back to the viewport.";
+
+			if (toastTimeoutId) clearTimeout(toastTimeoutId);
+			toastTimeoutId = setTimeout(function () {
+				toastMessage.value = "";
+			}, 4000);
+		},
+
+		toggleShowRelative: function (): void {
+			isRelativeShown.value = !isRelativeShown.value;
+			togglePositionedElemsHighlight(
+				canvasElemsStore.positionedElemsIds.relative,
+				isRelativeShown.value,
+				"black"
+			);
+		},
+
+		toggleShowAbsolute: function (): void {
+			isAbsoluteShown.value = !isAbsoluteShown.value;
+			togglePositionedElemsHighlight(
+				canvasElemsStore.positionedElemsIds.absolute,
+				isAbsoluteShown.value,
+				"grey"
+			);
+		},
+	};
 
 	const isRelativeShown = ref(false);
-	function toggleShowRelative(): void {
-		isRelativeShown.value = !isRelativeShown.value;
-		togglePositionedElemsHighlight(
-			canvasElemsStore.positionedElemsIds.relative,
-			isRelativeShown.value,
-			"black"
-		);
-	}
-
 	const isAbsoluteShown = ref(false);
-	function toggleShowAbsolute(): void {
-		isAbsoluteShown.value = !isAbsoluteShown.value;
-		togglePositionedElemsHighlight(
-			canvasElemsStore.positionedElemsIds.absolute,
-			isAbsoluteShown.value,
-			"grey"
-		);
-	}
 
 	const setActiveBadge = function (parent: HTMLElement) {
 		const badges = parent?.querySelectorAll(".badge");
@@ -197,6 +182,18 @@
 
 		activeBadge?.classList.add("active");
 	};
+
+	const toastMessage = ref("");
+	let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+	//PositionRow lives at the toolbar level, not nested inside NewElem.vue,
+	//so it has no direct elemRef the way resize/keyboard-shortcut logic
+	//does. instead, the real rendered elem carries :id="newElemInfo.id",
+	//so document.getElementById reaches it directly by that id.
+	function findActiveElemNode(): HTMLElement | null {
+		if (!activeElem.value) return null;
+		return document.getElementById(activeElem.value.id);
+	}
 </script>
 <style scoped>
 	.active {
