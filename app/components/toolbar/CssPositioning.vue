@@ -1,27 +1,45 @@
 <template>
 	<div
-		v-if="appActionStore.getActiveAction === 'position' && activeElem"
+		v-if="appActionStore.getActiveAction === 'position'"
 		class="d-flex flex-wrap gap-1 mt-1">
-		<span
-			class="badge border grey darken-2"
-			role="button"
-			@click="applyFixed">
-			Fixed
-		</span>
+		<div
+			:disabled="canvasElemsStore.activeElem"
+			id="positioning">
+			<span
+				class="badge border grey darken-2 active"
+				role="button"
+				@click="applyFixed">
+				Fixed
+			</span>
 
-		<span
-			class="badge border grey darken-2"
-			role="button"
-			@click="applyAbsoluteViewport">
-			Absolute - Viewport
-		</span>
+			<span
+				class="badge border grey darken-2"
+				role="button"
+				@click="applyAbsoluteViewport">
+				Absolute - Viewport
+			</span>
 
-		<span
-			class="badge border grey darken-2"
-			role="button"
-			@click="showAbsoluteToToast">
-			Absolute - To
-		</span>
+			<span
+				class="badge border grey darken-2"
+				role="button"
+				@click="showAbsoluteToToast">
+				Absolute - To
+			</span>
+
+			<span
+				class="badge border grey darken-2"
+				role="button"
+				@click="toggleShowRelative">
+				show relative elems
+			</span>
+
+			<span
+				class="badge border grey darken-2"
+				role="button"
+				@click="toggleShowAbsolute">
+				show absolute elems
+			</span>
+		</div>
 	</div>
 
 	<!-- lightweight self-contained toast, no external library needed -->
@@ -34,11 +52,28 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref, onMounted } from "vue";
+	import { computed, ref, watch, nextTick } from "vue";
 	import { useAppActionStore, useCanvasElemsStore } from "~/store";
+	import { togglePositionedElemsHighlight } from "../../utils";
 
 	const appActionStore = useAppActionStore();
 	const canvasElemsStore = useCanvasElemsStore();
+
+	watch(
+		function () {
+			return appActionStore.getActiveAction;
+		},
+		function (newAction) {
+			if (newAction !== "position") return;
+
+			// wait one tick for the v-if'd div to actually be in the DOM
+			nextTick(function () {
+				setActiveBadge(document.getElementById("positioning")!);
+			});
+		},
+		{ immediate: true }
+	);
+	console.log(33);
 
 	const activeElem = computed(function () {
 		return canvasElemsStore.activeElem;
@@ -47,10 +82,7 @@
 	const toastMessage = ref("");
 	let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-	const isClicked = ref(false);
 	function showAbsoluteToToast(): void {
-		isClicked.value = !isClicked.value;
-		identifyRelativeElems();
 		toastMessage.value =
 			"Absolute needs a descendant of a positioned (relative) ancestor to anchor to - otherwise it falls back to the viewport.";
 
@@ -112,15 +144,7 @@
 	 * now this element must be removed from whatever parent it was inside
 	 * also the new elems absolute position should be controlled by drraging it
 	 *
-	 * to do this
-	 * i need to create a method that looks at every elem classes or inline style for position relative
-	 * get their id
-	 * store it some where in an array variable in the store
-	 * now another would be watch the store action
-	 * when the absoluteTo is clicked
-	 * it goes to that array
-	 * gets all elems with that id
-	 * and change their border to yellow
+	 *
 	 *
 	 * and then another handler that only runs on action 'position'
 	 * in the new elem simply runs
@@ -128,20 +152,55 @@
 	 * to the parent, if any of the activeElem
 	 */
 
-	const identifyRelativeElems = function () {
-		const elemsId: string[] = canvasElemsStore.relativeElemsIds;
+	//shared helper - toggles a highlight border on/off for a given set of
+	//elem ids. reused by both the "show relative" and "show absolute"
+	//buttons since the show/hide operation itself is identical, only the
+	//id array and border color differ per caller
 
-		if (elemsId.length > 0 && isClicked.value) {
-			elemsId.forEach(function (elem: string) {
-				document
-					.getElementById(elem)!
-					.style.setProperty("border", "4px solid black", "important");
+	const isRelativeShown = ref(false);
+	function toggleShowRelative(): void {
+		isRelativeShown.value = !isRelativeShown.value;
+		togglePositionedElemsHighlight(
+			canvasElemsStore.positionedElemsIds.relative,
+			isRelativeShown.value,
+			"black"
+		);
+	}
+
+	const isAbsoluteShown = ref(false);
+	function toggleShowAbsolute(): void {
+		isAbsoluteShown.value = !isAbsoluteShown.value;
+		togglePositionedElemsHighlight(
+			canvasElemsStore.positionedElemsIds.absolute,
+			isAbsoluteShown.value,
+			"grey"
+		);
+	}
+
+	const setActiveBadge = function (parent: HTMLElement) {
+		const badges = parent?.querySelectorAll(".badge");
+
+		if (!badges || badges.length === 0) return;
+
+		let activeBadge = badges?.[0];
+
+		badges.forEach(function (badge) {
+			badge.addEventListener("click", function () {
+				if (badge === activeBadge) return;
+
+				activeBadge?.classList.remove("active");
+				badge.classList.add("active");
+
+				activeBadge = badge;
 			});
-			return;
-		} else {
-			elemsId.forEach(function (elem: string) {
-				document.getElementById(elem)!.style.removeProperty("border");
-			});
-		}
+		});
+
+		activeBadge?.classList.add("active");
 	};
 </script>
+<style scoped>
+	.active {
+		background-color: blue !important;
+		padding: 0.4em !important;
+	}
+</style>

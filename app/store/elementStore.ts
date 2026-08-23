@@ -14,7 +14,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			activeElemId: null as string | null,
 			isDragging: false as boolean,
 
-			relativeElemsIds: [] as string[],
+			positionedElemsIds: {
+				relative: [] as string[],
+				absolute: [] as string[],
+			},
 
 			//where the double-click edit modal should appear - null means
 			//the modal isn't open. reuses activeElemId as "which elem is
@@ -59,8 +62,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			});
 
 			//find whether the newly-created element or any of its children
-			//uses position relative before adding it to the canvas tree
-			findRelativeElemsIds(newElem, this.relativeElemsIds);
+			//uses position relative/absolute before adding it to the canvas tree
+			findPositionedElemsIds(newElem, this.positionedElemsIds);
 
 			if (this.activeElemId) {
 				const activeResult = findElemAndContainer(
@@ -163,8 +166,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 					result.container.length > 0 ? result.container[0]?.id ?? null : null;
 			}
 
-			//rebuild the relative element IDs after removing an element
-			this.refreshRelativeElemsIds();
+			//rebuild the positioned element IDs after removing an element
+			this.refreshPositionedElemsIds();
 		},
 
 		updateElemClasses: function (id: string, classes: string[]): void {
@@ -173,8 +176,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			result.elem.cssClasses = classes;
 
-			//classes may have added or removed the relative class
-			this.refreshRelativeElemsIds();
+			//classes may have added or removed the relative/absolute class
+			this.refreshPositionedElemsIds();
 		},
 
 		//REPLACES customStyles entirely (not merged) - the caller
@@ -191,8 +194,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			result.elem.customStyles = customStyles;
 
-			//inline styles may have added or removed position: relative
-			this.refreshRelativeElemsIds();
+			//inline styles may have added or removed position: relative/absolute
+			this.refreshPositionedElemsIds();
 		},
 
 		updateElemTextContent: function (id: string, textContent: string): void {
@@ -246,8 +249,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			this.activeElemId = clone.id;
 			this.lastEditedId = clone.id;
 
-			//the cloned element may contain position relative
-			this.refreshRelativeElemsIds();
+			//the cloned element may contain position relative/absolute
+			this.refreshPositionedElemsIds();
 		},
 
 		//called once per resize, right when the drag ENDS (not during) -
@@ -272,42 +275,55 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			Object.assign(result.elem, changes);
 		},
 
-		//rebuilds the list from the complete canvas tree so removed relative
-		//elements or elements that no longer have position relative cannot
-		//remain in the array
-		refreshRelativeElemsIds: function () {
-			this.relativeElemsIds = [];
+		//rebuilds both lists from the complete canvas tree so removed
+		//positioned elements or elements that no longer have position
+		//relative/absolute cannot remain in either array
+		refreshPositionedElemsIds: function () {
+			this.positionedElemsIds = { relative: [], absolute: [] };
 
 			for (const elem of this.elems) {
-				findRelativeElemsIds(elem, this.relativeElemsIds);
+				findPositionedElemsIds(elem, this.positionedElemsIds);
 			}
-			console.log(this.relativeElemsIds);
 		},
 	},
 });
 
-const findRelativeElemsIds = function (elem: CanvasElem, arr: string[]) {
-	// Bootstrap 5 uses "position-relative".
-	// Tailwind uses "relative".
+const findPositionedElemsIds = function (
+	elem: CanvasElem,
+	ids: { relative: string[]; absolute: string[] }
+) {
+	// Bootstrap 5 uses "position-relative"/"position-absolute".
+	// Tailwind uses "relative"/"absolute".
 	// Keep both checks here so Absolute-To works regardless of
 	// which framework is currently active.
 	if (
 		elem.cssClasses?.includes("position-relative") ||
 		elem.cssClasses?.includes("relative")
 	) {
-		arr.push(elem.id);
+		ids.relative.push(elem.id);
 	}
 
-	// An inline style with position: relative should also count,
+	if (
+		elem.cssClasses?.includes("position-absolute") ||
+		elem.cssClasses?.includes("absolute")
+	) {
+		ids.absolute.push(elem.id);
+	}
+
+	// An inline style with position: relative/absolute should also count,
 	// regardless of the active framework.
 	if (elem.customStyles?.position === "relative") {
-		arr.push(elem.id);
+		ids.relative.push(elem.id);
 	}
 
-	// Check nested children because a relative element can exist
+	if (elem.customStyles?.position === "absolute") {
+		ids.absolute.push(elem.id);
+	}
+
+	// Check nested children because a positioned element can exist
 	// anywhere inside the canvas element tree.
 	for (const child of elem.children) {
-		findRelativeElemsIds(child, arr);
+		findPositionedElemsIds(child, ids);
 	}
 };
 
