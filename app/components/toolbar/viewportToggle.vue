@@ -37,8 +37,8 @@
 </template>
 
 <script setup lang="ts">
-	import { showAndHideToolTip, hints } from "../utils";
-	import { useViewportStore } from "../store";
+	import { showAndHideToolTip, hints } from "../../utils";
+	import { useViewportStore } from "../../store";
 
 	const viewportStore = useViewportStore();
 </script>

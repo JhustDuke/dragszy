@@ -16,9 +16,7 @@
 
 		<!-- Row 2 -->
 		<div class="d-flex justify-content-between align-items-center">
-			<div class="d-flex align-items-center">
-				<SupportedElemTypes />
-			</div>
+			<div class="d-flex align-items-center"> <PresetRow /></div>
 
 			<div class="d-flex align-items-center gap-3">
 				<UndoRedo />
@@ -27,19 +25,14 @@
 		</div>
 
 		<!-- Row 3 -->
-		<div class="d-flex align-items-center gap-2 ms-3">
-			<PresetRow />
-			<positioning />
-		</div>
+		<div class="d-flex align-items-center gap-2 ms-3"> </div>
 	</div>
 </template>
 
 <script setup lang="ts">
 	import ToolBarActionSelect from "./ToolBarActionSelect.vue";
-	import SupportedElemTypes from "./ElemTypes.vue";
 	import CompilerSelect from "./Compile.vue";
-	import PresetRow from "./PresetsStyles.vue";
-	import positioning from "./CssPositioning.vue";
+	import PresetRow from "./presetStyles/PresetsStyles.vue";
 	import UndoRedo from "./UndoRedo.vue";
 	import saveBtn from "./SaveBtn.vue";
 </script>

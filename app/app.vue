@@ -46,7 +46,7 @@
 	// @ts-ignore
 	import { onMounted, watch } from "vue";
 	import ToolBar from "./components/toolbar/ToolBar.vue";
-	import ToggleView from "./components/viewportToggle.vue";
+	import ToggleView from "./components/toolbar/viewportToggle.vue";
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
 	import RestoreOrNewPrompt from "./components/indexdb/RestorePrompt.vue";
 

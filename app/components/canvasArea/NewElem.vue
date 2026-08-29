@@ -171,4 +171,28 @@
 
 		canvasElemsStore.setCurrentlyHovered(elem);
 	};
+
+	/**
+	 * what do i want
+	 * i want to get the real width of the rendered elem
+	 * the width bs5 or tw gave it when it was rendered on the screen
+	 * and pass it
+	 * down to image tag,
+	 * the resize badge
+	 *
+	 * wait this would not work for images so images
+	 * because images needs a fixed size from the getgo
+	 * i also want to get rid of the image container cos
+	 * it leads to abnormal behaviour
+	 * so if the user is choosing image he'd not ask why is this
+	 * coming here too
+	 * even though the via the id it would be removed
+	 * by the compiler
+	 * so i'd a fixed pixel size for the image
+	 * now the next issue is this must show up in the resize button
+	 * n fuck the resize button depends on a parent with position relative
+	 *
+	 * so now who knows when the image is created
+	 *
+	 */
 </script>
