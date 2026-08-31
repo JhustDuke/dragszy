@@ -5,9 +5,13 @@ interface ResizeOptions {
 	onResize: (width: number, height: number) => void;
 }
 
+interface Size {
+	width: number;
+	height: number;
+}
+
 export function createResize(
-	getCurrentWidth: () => number,
-	getCurrentHeight: () => number,
+	getCurrentSize: () => Size,
 	options: ResizeOptions
 ) {
 	function right(event: MouseEvent): void {
@@ -17,8 +21,7 @@ export function createResize(
 		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
-		const initialWidth = getCurrentWidth();
-		const initialHeight = getCurrentHeight();
+		const { width: initialWidth, height: initialHeight } = getCurrentSize();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
@@ -49,8 +52,7 @@ export function createResize(
 		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
-		const initialWidth = getCurrentWidth();
-		const initialHeight = getCurrentHeight();
+		const { width: initialWidth, height: initialHeight } = getCurrentSize();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
@@ -81,8 +83,7 @@ export function createResize(
 		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
-		const initialWidth = getCurrentWidth();
-		const initialHeight = getCurrentHeight();
+		const { width: initialWidth, height: initialHeight } = getCurrentSize();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
@@ -113,8 +114,7 @@ export function createResize(
 		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
-		const initialWidth = getCurrentWidth();
-		const initialHeight = getCurrentHeight();
+		const { width: initialWidth, height: initialHeight } = getCurrentSize();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;

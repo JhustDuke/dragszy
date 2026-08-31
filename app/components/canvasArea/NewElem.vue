@@ -65,7 +65,7 @@
 	const badgeWidth = ref(0);
 	const badgeHeight = ref(0);
 
-	//createResize is fully pure - it knows nothing about newElemInfo or
+	//createResize is fully decouped - it knows nothing about newElemInfo or
 	//customStyles. it reads current size via these two getters (always
 	//live, since they read badgeWidth.value/badgeHeight.value fresh on
 	//every call, never a frozen number) and reports new sizes back
@@ -73,30 +73,15 @@
 	//onResize when your data shape changes, never createResize.ts itself.
 	const resize = createResize(
 		function () {
-			return badgeWidth.value;
-		},
-		function () {
-			return badgeHeight.value;
+			return { width: badgeWidth.value, height: badgeHeight.value };
 		},
 		{
 			shouldStart: function (): boolean {
 				return appActionStore.getActiveAction === "resize";
 			},
-
-			//called right when a drag STARTS, before any mutation happens -
-			//this is what makes the "before" snapshot actually correct,
-			//since $onAction's automatic timing captures "before" only when
-			//commitElemSize is CALLED, which is after the whole drag
-			//already finished (too late). manual snapshot here fixes that
-			//for every resize, on every elem type.
 			onResizeStart: function (): void {
 				historyStore.snapshot("Resize");
 			},
-
-			//fires on every mousemove during the drag, with the live
-			//width/height createResize just calculated. writes straight
-			//into customStyles (the one place templates actually render
-			//from) and keeps the badge in sync with what's on screen.
 			onResize: function (width: number, height: number): void {
 				props.newElemInfo.customStyles = props.newElemInfo.customStyles ?? {};
 				props.newElemInfo.customStyles.width = width + "px";
@@ -105,11 +90,6 @@
 				badgeWidth.value = width;
 				badgeHeight.value = height;
 			},
-
-			//called once, right when a resize drag ENDS - not during. this
-			//is what makes EVERY resize (not just the first one) show up in
-			//undo/redo history, since commitElemSize is a real store action
-			//and $onAction picks it up automatically.
 			onResizeEnd: function (): void {
 				canvasElemsStore.commitElemSize(props.newElemInfo.id, {
 					width: badgeWidth.value,
