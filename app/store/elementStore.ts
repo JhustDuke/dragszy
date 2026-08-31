@@ -41,7 +41,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		},
 	},
 	actions: {
-		addElem: function (type: keyof HTMLElementTagNameMap = "div") {
+		addElem: function (type: keyof HTMLElementTagNameMap) {
 			const defaultStore = useDefaultStore();
 			const appActionStore = useAppActionStore();
 			const elemData = elemDataFactory.getElemData(type as any);
@@ -53,16 +53,22 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				defaultText: elemData.defaults.text,
 				defaultClasses: elemData.defaults.classes,
 				defaultAttributes: elemData.defaults.attributes,
-				defaultWidth: defaultStore.getDefaultWidth,
-				defaultHeight: defaultStore.getDefaultHeight,
-				defaultWidthUnit: "px",
-				defaultHeightUnit: "px",
 				presetClasses: appActionStore.getSelectedPresetClasses,
 			});
 
+			//img is the one elem type that needs a real starting size seeded
+			//into customStyles at creation - can't rely on a shrink-wrap/class
+			//default the way other types can. only fires for THIS new elem,
+			//never touches any other existing image on the canvas.
+			if (newElem.elemType === "img") {
+				newElem.customStyles = newElem.customStyles ?? {};
+				newElem.customStyles.width = "100px";
+				newElem.customStyles.height = "100px";
+			}
+
 			//find whether the newly-created element or any of its children
 			//uses position relative/absolute before adding it to the canvas tree
-			findPositionedElemsIds(newElem, this.positionedElemsIds);
+			// findPositionedElemsIds(newElem, this.positionedElemsIds);
 
 			if (this.activeElemId) {
 				const activeResult = findElemAndContainer(
@@ -165,8 +171,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 					result.container.length > 0 ? result.container[0]?.id ?? null : null;
 			}
 
-			//rebuild the positioned element IDs after removing an element
-			this.refreshPositionedElemsIds();
+			// //rebuild the positioned element IDs after removing an element
+			// this.refreshPositionedElemsIds();
 		},
 
 		updateElemClasses: function (id: string, classes: string[]): void {
@@ -175,8 +181,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			result.elem.cssClasses = classes;
 
-			//classes may have added or removed the relative/absolute class
-			this.refreshPositionedElemsIds();
+			// //classes may have added or removed the relative/absolute class
+			// this.refreshPositionedElemsIds();
 		},
 
 		//REPLACES customStyles entirely (not merged) - the caller
@@ -194,7 +200,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			result.elem.customStyles = customStyles;
 
 			//inline styles may have added or removed position: relative/absolute
-			this.refreshPositionedElemsIds();
+			// this.refreshPositionedElemsIds();
 		},
 
 		updateElemTextContent: function (id: string, textContent: string): void {
@@ -249,7 +255,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			this.lastEditedId = clone.id;
 
 			//the cloned element may contain position relative/absolute
-			this.refreshPositionedElemsIds();
+			// this.refreshPositionedElemsIds();
 		},
 
 		//called once per resize, right when the drag ENDS (not during) -
@@ -277,7 +283,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		//rebuilds both lists from the complete canvas tree so removed
 		//positioned elements or elements that no longer have position
 		//relative/absolute cannot remain in either array
-		refreshPositionedElemsIds: function () {
+		refreshPositionedElemsId: function () {
 			this.positionedElemsIds = { relative: [], absolute: [] };
 
 			for (const elem of this.elems) {

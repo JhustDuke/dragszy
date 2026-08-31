@@ -1,12 +1,15 @@
-import type { CanvasElem } from "~/types";
-
 interface ResizeOptions {
 	shouldStart: () => boolean;
 	onResizeStart?: () => void;
 	onResizeEnd?: () => void;
+	onResize: (width: number, height: number) => void;
 }
 
-export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
+export function createResize(
+	getCurrentWidth: () => number,
+	getCurrentHeight: () => number,
+	options: ResizeOptions
+) {
 	function right(event: MouseEvent): void {
 		if (!options.shouldStart()) return;
 
@@ -14,18 +17,19 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
-		const initialWidth = newElemInfo.width ?? 0;
+		const initialWidth = getCurrentWidth();
+		const initialHeight = getCurrentHeight();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
 			const dragDistanceX = Math.abs(event.clientX - dragStartX);
 
 			if (isDraggingTowardsPositiveX) {
-				newElemInfo.width = initialWidth + dragDistanceX;
+				options.onResize(initialWidth + dragDistanceX, initialHeight);
 				return;
 			}
 
-			newElemInfo.width = initialWidth - dragDistanceX;
+			options.onResize(initialWidth - dragDistanceX, initialHeight);
 		};
 
 		const stopResizeDrag = function (): void {
@@ -45,18 +49,19 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
-		const initialHeight = newElemInfo.height ?? 0;
+		const initialWidth = getCurrentWidth();
+		const initialHeight = getCurrentHeight();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
 			const dragDistanceY = Math.abs(event.clientY - dragStartY);
 
 			if (isDraggingTowardsPositiveY) {
-				newElemInfo.height = initialHeight + dragDistanceY;
+				options.onResize(initialWidth, initialHeight + dragDistanceY);
 				return;
 			}
 
-			newElemInfo.height = initialHeight - dragDistanceY;
+			options.onResize(initialWidth, initialHeight - dragDistanceY);
 		};
 
 		const stopResizeDrag = function (): void {
@@ -76,18 +81,19 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		options.onResizeStart?.();
 
 		const dragStartX = event.clientX;
-		const initialWidth = newElemInfo.width ?? 0;
+		const initialWidth = getCurrentWidth();
+		const initialHeight = getCurrentHeight();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveX = event.clientX > dragStartX;
 			const dragDistanceX = Math.abs(event.clientX - dragStartX);
 
 			if (isDraggingTowardsPositiveX) {
-				newElemInfo.width = initialWidth - dragDistanceX;
+				options.onResize(initialWidth - dragDistanceX, initialHeight);
 				return;
 			}
 
-			newElemInfo.width = initialWidth + dragDistanceX;
+			options.onResize(initialWidth + dragDistanceX, initialHeight);
 		};
 
 		const stopResizeDrag = function (): void {
@@ -107,18 +113,19 @@ export function createResize(newElemInfo: CanvasElem, options: ResizeOptions) {
 		options.onResizeStart?.();
 
 		const dragStartY = event.clientY;
-		const initialHeight = newElemInfo.height ?? 0;
+		const initialWidth = getCurrentWidth();
+		const initialHeight = getCurrentHeight();
 
 		const handleResizeDrag = function (event: MouseEvent): void {
 			const isDraggingTowardsPositiveY = event.clientY > dragStartY;
 			const dragDistanceY = Math.abs(event.clientY - dragStartY);
 
 			if (isDraggingTowardsPositiveY) {
-				newElemInfo.height = initialHeight - dragDistanceY;
+				options.onResize(initialWidth, initialHeight - dragDistanceY);
 				return;
 			}
 
-			newElemInfo.height = initialHeight + dragDistanceY;
+			options.onResize(initialWidth, initialHeight + dragDistanceY);
 		};
 
 		const stopResizeDrag = function (): void {

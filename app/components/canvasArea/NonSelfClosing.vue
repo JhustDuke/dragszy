@@ -1,8 +1,8 @@
 <template>
 	<!--
-		non-self-closing elems (div, button, span, form, etc.) CAN hold children,
-		so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
-		this component IS the real elem the user is building.
+	 non-self-closing elems (div, button, span, form, etc.) CAN hold children,
+	 so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
+	 this component IS the real elem the user is building.
 	-->
 	<component
 		:is="newElemInfo.elemType"
@@ -17,15 +17,7 @@
 				edited: isLastEdited,
 			},
 		]"
-		:style="{
-			...(newElemInfo.isWidthAdjusted
-				? { width: newElemInfo.width + newElemInfo.widthUnit }
-				: {}),
-			...(newElemInfo.isHeightAdjusted
-				? { height: newElemInfo.height + newElemInfo.heightUnit }
-				: {}),
-			...(newElemInfo.customStyles ?? {}),
-		}"
+		:style="newElemInfo.customStyles ?? {}"
 		v-bind="newElemInfo.props"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
@@ -38,8 +30,8 @@
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:widthUnit="newElemInfo.widthUnit"
-			:heightUnit="newElemInfo.heightUnit" />
+			widthUnit="px"
+			heightUnit="px" />
 
 		<!-- delete button -->
 		<button
@@ -51,7 +43,7 @@
 		</button>
 
 		<!-- nested children, recursively rendered - this is the whole reason
-			this elem type CAN'T be self-closing: it needs to hold these -->
+		 this elem type CAN'T be self-closing: it needs to hold these -->
 		<NewElem
 			v-for="child in newElemInfo.children"
 			:key="child.id"

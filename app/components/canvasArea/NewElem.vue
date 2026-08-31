@@ -5,8 +5,8 @@
 		ref="tagRef"
 		:newElemInfo="newElemInfo"
 		:isSelected="isSelected"
-		:activeWidth="activeWidth"
-		:activeHeight="activeHeight"
+		:activeWidth="badgeWidth"
+		:activeHeight="badgeHeight"
 		:isHoveredWhileDragging="isHoveredWhileDragging"
 		:isLastEdited="isLastEdited"
 		:resize="resize"
@@ -21,8 +21,8 @@
 		ref="tagRef"
 		:newElemInfo="newElemInfo"
 		:isSelected="isSelected"
-		:activeWidth="activeWidth"
-		:activeHeight="activeHeight"
+		:activeWidth="badgeWidth"
+		:activeHeight="badgeHeight"
 		:isHoveredWhileDragging="isHoveredWhileDragging"
 		:isLastEdited="isLastEdited"
 		:resize="resize"
@@ -33,11 +33,11 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref, watch } from "vue";
+	import { computed, ref, watch, nextTick } from "vue";
 	import type { CanvasElem } from "../../types";
 	import { useCanvasElemsStore, useAppActionStore } from "../../store";
 	import { useHistoryStore } from "../../store/historyStore";
-	import { createResize } from "../../utils";
+	import { createResize, measureElem } from "../../utils";
 	import SelfClosingTags from "./SelfClosingTags.vue";
 	import NonSelfClosingTags from "./NonSelfClosing.vue";
 
@@ -57,49 +57,72 @@
 		return selfClosingElemTypes.includes(props.newElemInfo.elemType);
 	});
 
-	const resize = createResize(props.newElemInfo, {
-		shouldStart: function (): boolean {
-			return appActionStore.getActiveAction === "resize";
-		},
+	//badgeWidth/badgeHeight are the ONE source the badge, resize
+	//starting-point, and resize commit all read from - always the real
+	//measured DOM size, never a stale stored field. purely local, never
+	//written to newElemInfo directly (except through onResize below),
+	//so selecting an elem never mutates its data on its own.
+	const badgeWidth = ref(0);
+	const badgeHeight = ref(0);
 
-		//called right when a drag STARTS, before any mutation happens -
-		//this is what makes the "before" snapshot actually correct, since
-		//$onAction's automatic timing captures "before" only when
-		//commitElemSize is CALLED, which is after the whole drag already
-		//finished (too late). manual snapshot here fixes that for every
-		//resize, on every elem type, not just cases where a flag-flip
-		//happened to mask the bug by coincidence.
-		onResizeStart: function (): void {
-			historyStore.snapshot("Resize");
+	//createResize is fully pure - it knows nothing about newElemInfo or
+	//customStyles. it reads current size via these two getters (always
+	//live, since they read badgeWidth.value/badgeHeight.value fresh on
+	//every call, never a frozen number) and reports new sizes back
+	//through onResize. all mutation happens here, in one place - change
+	//onResize when your data shape changes, never createResize.ts itself.
+	const resize = createResize(
+		function () {
+			return badgeWidth.value;
 		},
+		function () {
+			return badgeHeight.value;
+		},
+		{
+			shouldStart: function (): boolean {
+				return appActionStore.getActiveAction === "resize";
+			},
 
-		//called once, right when a resize drag ENDS - not during. this is
-		//what makes EVERY resize (not just the first one, which the watch
-		//below already covers on its own) show up in undo/redo history,
-		//since commitElemSize is a real store action and $onAction picks
-		//it up automatically. createResize.ts stays fully store-agnostic -
-		//it just calls this callback, it never imports or knows about
-		//canvasElemsStore itself.
-		onResizeEnd: function (): void {
-			canvasElemsStore.commitElemSize(props.newElemInfo.id, {
-				width: props.newElemInfo.width,
-				height: props.newElemInfo.height,
-				isWidthAdjusted: true,
-				isHeightAdjusted: true,
-			});
-		},
-	});
+			//called right when a drag STARTS, before any mutation happens -
+			//this is what makes the "before" snapshot actually correct,
+			//since $onAction's automatic timing captures "before" only when
+			//commitElemSize is CALLED, which is after the whole drag
+			//already finished (too late). manual snapshot here fixes that
+			//for every resize, on every elem type.
+			onResizeStart: function (): void {
+				historyStore.snapshot("Resize");
+			},
+
+			//fires on every mousemove during the drag, with the live
+			//width/height createResize just calculated. writes straight
+			//into customStyles (the one place templates actually render
+			//from) and keeps the badge in sync with what's on screen.
+			onResize: function (width: number, height: number): void {
+				props.newElemInfo.customStyles = props.newElemInfo.customStyles ?? {};
+				props.newElemInfo.customStyles.width = width + "px";
+				props.newElemInfo.customStyles.height = height + "px";
+
+				badgeWidth.value = width;
+				badgeHeight.value = height;
+			},
+
+			//called once, right when a resize drag ENDS - not during. this
+			//is what makes EVERY resize (not just the first one) show up in
+			//undo/redo history, since commitElemSize is a real store action
+			//and $onAction picks it up automatically.
+			onResizeEnd: function (): void {
+				canvasElemsStore.commitElemSize(props.newElemInfo.id, {
+					width: badgeWidth.value,
+					height: badgeHeight.value,
+					isWidthAdjusted: true,
+					isHeightAdjusted: true,
+				});
+			},
+		}
+	);
 
 	const isSelected = computed(function () {
 		return canvasElemsStore.activeElemId === props.newElemInfo.id;
-	});
-
-	const activeWidth = computed(function () {
-		return props.newElemInfo.width ?? 0;
-	});
-
-	const activeHeight = computed(function () {
-		return props.newElemInfo.height ?? 0;
 	});
 
 	//ref into whichever tag component is actually rendered (Self or NonSelf)
@@ -110,36 +133,29 @@
 		return canvasElemsStore.currentlyHovered === tagRef.value?.elemRef;
 	});
 
-	//BEFORE the very first drag, an elem's width/height may still be
-	//undefined (pure class-driven, never resized). createResize's drag
-	//math needs a real starting number to work from, or the first drag
-	//would jump from 0. this watch just seeds that starting value the
-	//moment resize mode + selection align - it does NOT call any store
-	//action here (that would create a phantom history entry just from
-	//selecting something, even before any actual drag happens).
-	//commitElemSize (fired via onResizeEnd, on every drag's end) is now
-	//the ONLY thing that ever creates a real history entry for resize -
-	//covering the first resize and every one after it, uniformly.
+	//fires any time THIS elem BECOMES selected - covers both "user
+	//clicked it" and "it was just created and auto-selected by addElem"
+	//with one trigger, since both just flip activeElemId to this elem's
+	//id. immediate:true also runs this once at setup, covering the case
+	//where isSelected is ALREADY true the very first moment this
+	//component exists (freshly created elems never see a false->true
+	//transition, since they're born already selected).
+	//nextTick matters for the creation case: right when addElem runs,
+	//this elem's DOM node may not exist yet - for a plain click the node
+	//already exists, so nextTick resolves instantly either way.
 	watch(
-		function () {
-			return isSelected.value && appActionStore.getActiveAction === "resize";
+		isSelected,
+		function (isNowSelected) {
+			if (!isNowSelected) return;
+
+			nextTick(function () {
+				measureElem(props.newElemInfo.id, function (width, height) {
+					badgeWidth.value = width;
+					badgeHeight.value = height;
+				});
+			});
 		},
-		function (isNowResizingThisElem) {
-			if (!isNowResizingThisElem) return;
-
-			const elem = tagRef.value?.elemRef;
-			if (!elem) return;
-
-			const rect = elem.getBoundingClientRect();
-
-			if (!props.newElemInfo.isWidthAdjusted) {
-				props.newElemInfo.width = rect.width;
-			}
-
-			if (!props.newElemInfo.isHeightAdjusted) {
-				props.newElemInfo.height = rect.height;
-			}
-		}
+		{ immediate: true }
 	);
 
 	const deleteNode = function (ev: MouseEvent) {
@@ -171,28 +187,4 @@
 
 		canvasElemsStore.setCurrentlyHovered(elem);
 	};
-
-	/**
-	 * what do i want
-	 * i want to get the real width of the rendered elem
-	 * the width bs5 or tw gave it when it was rendered on the screen
-	 * and pass it
-	 * down to image tag,
-	 * the resize badge
-	 *
-	 * wait this would not work for images so images
-	 * because images needs a fixed size from the getgo
-	 * i also want to get rid of the image container cos
-	 * it leads to abnormal behaviour
-	 * so if the user is choosing image he'd not ask why is this
-	 * coming here too
-	 * even though the via the id it would be removed
-	 * by the compiler
-	 * so i'd a fixed pixel size for the image
-	 * now the next issue is this must show up in the resize button
-	 * n fuck the resize button depends on a parent with position relative
-	 *
-	 * so now who knows when the image is created
-	 *
-	 */
 </script>

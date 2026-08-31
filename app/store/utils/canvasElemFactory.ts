@@ -10,24 +10,10 @@ export interface CreateDefaultInterface {
 
 	defaultAttributes: Record<string, string>;
 
-	defaultWidth: number;
-	defaultHeight: number;
-
-	defaultWidthUnit: CanvasElem["widthUnit"];
-	defaultHeightUnit: CanvasElem["heightUnit"];
-
 	presetClasses?: string[];
 }
 
 export function createDefault(params: CreateDefaultInterface): CanvasElem {
-	const attributeWidth = params.defaultAttributes.width
-		? Number(params.defaultAttributes.width.replace(/[^0-9.]/g, ""))
-		: null;
-
-	const attributeHeight = params.defaultAttributes.height
-		? Number(params.defaultAttributes.height.replace(/[^0-9.]/g, ""))
-		: null;
-
 	return {
 		id: generateId(),
 
@@ -46,13 +32,10 @@ export function createDefault(params: CreateDefaultInterface): CanvasElem {
 
 		children: [],
 
-		width: attributeWidth ?? params.defaultWidth,
-
-		height: attributeHeight ?? params.defaultHeight,
-
-		widthUnit: params.defaultWidthUnit,
-
-		heightUnit: params.defaultHeightUnit,
+		//always a real object, never undefined - so any code that does
+		//elem.customStyles.width = "..." without a fallback check never
+		//throws, even for elem types that start with nothing in here
+		customStyles: {},
 	};
 }
 
@@ -68,7 +51,7 @@ export function createClone(source: CanvasElem): CanvasElem {
 			...source.props,
 		},
 
-		customStyles: source.customStyles ? { ...source.customStyles } : undefined,
+		customStyles: source.customStyles ? { ...source.customStyles } : {},
 
 		children: source.children.map(function (child) {
 			return createClone(child);

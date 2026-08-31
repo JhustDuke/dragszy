@@ -10,8 +10,6 @@ export interface CanvasElem {
 	width?: number;
 	height?: number;
 	elemType: keyof HTMLElementTagNameMap;
-	widthUnit: string;
-	heightUnit: string;
 	//user-chosen id for the exported output - completely separate from
 	//the internal "id" above (which is always "dragzy-" prefixed and
 	//never exported). this is the ONLY way an elem can carry a real

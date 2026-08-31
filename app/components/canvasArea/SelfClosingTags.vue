@@ -13,14 +13,14 @@
 			edited: isLastEdited,
 		}"
 		:id="wrapperId"
-		:style="resizeWrapperAndImg"
+		:style="props.newElemInfo.customStyles ?? {}"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
 		@click="onClick">
 		<!-- the actual elem the user is building, e.g. <img src="..." > -->
 		<!-- no textContent, no <NewElem> children slot: self-closing elems can't have either -->
 		<component
-			:style="resizeWrapperAndImg"
+			:style="props.newElemInfo.customStyles ?? {}"
 			:is="newElemInfo.elemType"
 			ref="elemRef"
 			dragzy-elem
@@ -32,9 +32,7 @@
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
-			:height="activeHeight"
-			:widthUnit="newElemInfo.widthUnit"
-			:heightUnit="newElemInfo.heightUnit" />
+			:height="activeHeight" />
 
 		<!-- delete button (stays here - not part of resize, so not extracted) -->
 		<button
@@ -84,14 +82,6 @@
 	//elems on the same canvas are no longer a problem either
 	//e.g. "dragzy-x7f2q9"
 	const wrapperId = ref("dragzy-img-" + Math.random().toString(36).slice(2, 9));
-
-	const resizeWrapperAndImg = computed(function () {
-		return {
-			height: props.newElemInfo.height + props.newElemInfo.heightUnit,
-			width: props.newElemInfo.width + props.newElemInfo.widthUnit,
-			...(props.newElemInfo.customStyles ?? {}),
-		};
-	});
 </script>
 
 <style scoped>

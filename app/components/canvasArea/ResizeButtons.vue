@@ -2,7 +2,7 @@
 	<!-- width/height badge - shows current size while the elem is selected -->
 	<small
 		class="position-absolute top-50 start-50 translate-middle badge bg-dark">
-		w:{{ width }}{{ widthUnit }} h:{{ height }}{{ heightUnit }}
+		w:{{ width }}px h:{{ height }}px
 	</small>
 
 	<!-- Top handle -->
@@ -39,8 +39,6 @@
 		};
 		width: number;
 		height: number;
-		widthUnit: string;
-		heightUnit: string;
 	}>();
 </script>
 
