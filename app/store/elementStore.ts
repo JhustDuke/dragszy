@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import type { CanvasElem } from "~/types";
-import { useDefaultStore } from "~/store/defaultStore";
+
 import { useAppActionStore } from "~/store";
 import { createDefault, createClone } from "./utils/canvasElemFactory";
 import { elemDataFactory } from "~/presets/bs5";
@@ -42,7 +42,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	},
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap) {
-			const defaultStore = useDefaultStore();
 			const appActionStore = useAppActionStore();
 			const elemData = elemDataFactory.getElemData(type as any);
 			//createDefault (in canvasElemFactory.ts) now owns all the

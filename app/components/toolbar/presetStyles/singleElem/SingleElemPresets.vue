@@ -27,7 +27,7 @@
 	import { useAppActionStore } from "~/store";
 	import { elemDataFactory } from "~/presets/bs5";
 	import { allElems, type AllElemType } from "~/presets/common";
-	import type { Preset } from "~/store/utils/presets";
+	import type { Preset } from "~/presets";
 	import ElemTypes from "./ElemTypes.vue";
 	import { showAndHideToolTip, hints } from "#imports";
 

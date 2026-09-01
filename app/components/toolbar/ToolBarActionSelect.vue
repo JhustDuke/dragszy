@@ -9,12 +9,12 @@
 			})
 		">
 		<option
-			selected
-			value="create"
-			>Create</option
-		>
-		<option value="resize">Resize</option>
-		<option value="position">Position</option>
+			v-for="label in Optionlabels"
+			:key="label"
+			:value="label"
+			:selected="label === 'create'">
+			{{ label }}
+		</option>
 	</select>
 </template>
 
@@ -27,6 +27,13 @@
 	const appActionStore = useAppActionStore();
 
 	const selectedAction = ref<AppAction>("create");
+
+	const Optionlabels: AppAction[] = [
+		"create",
+		"resize",
+		"position",
+		"components",
+	];
 
 	watch(
 		function () {
@@ -52,8 +59,8 @@
 			return;
 		}
 
-		if (event.key === "m") {
-			selectedAction.value = "move";
+		if (event.key === "k") {
+			selectedAction.value = "components";
 			return;
 		}
 		if (event.key === "p") {

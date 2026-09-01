@@ -88,12 +88,23 @@
 	const historyStore = useHistoryStore();
 
 	function handleCanvasDblClick(event: MouseEvent): void {
-		if (appActionStore.getActiveAction !== "create") return;
+		if (
+			appActionStore.getActiveAction !== "create" &&
+			appActionStore.getActiveAction !== "components"
+		)
+			return;
 
 		const canvasRoot = event.target as HTMLElement;
 
 		if (canvasRoot.hasAttribute("dragzy-root")) {
 			canvasElemsStore.setActiveElem(null);
+		}
+
+		const blockPreset = appActionStore.getSelectedBlockPreset;
+
+		if (blockPreset) {
+			//canvasElemsStore.addElemFromPreset(blockPreset);
+			return;
 		}
 
 		canvasElemsStore.addElem(appActionStore.getSelectedElemType);

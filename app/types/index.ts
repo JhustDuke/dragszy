@@ -2,7 +2,7 @@
 
 import type { Properties } from "csstype";
 
-export type AppAction = "create" | "move" | "resize" | "position";
+export type AppAction = "create" | "components" | "resize" | "position";
 export type ResizeEdge = "top" | "right" | "bottom" | "left";
 
 export interface CanvasElem {
