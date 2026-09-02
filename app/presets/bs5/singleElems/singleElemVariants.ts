@@ -1,4 +1,4 @@
-import { buildSingleElemPresets } from "../utils";
+import { buildSingleElemPresets } from "../../utils";
 
 export const bootstrapElemVariants = buildSingleElemPresets({
 	div: [

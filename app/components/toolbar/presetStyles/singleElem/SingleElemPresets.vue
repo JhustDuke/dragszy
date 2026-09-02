@@ -1,5 +1,5 @@
 <template>
-	<div v-if="appActionStore.getActiveAction === 'create'">
+	<div>
 		<ElemTypes
 			:elem-types="allElemTypes"
 			:selected-elem-type="selectedElemType"
@@ -74,10 +74,8 @@
 	}
 
 	function handleVariantSelect(variant: Preset): void {
-		//clicking the already-active variant again deselects it, falling
 		//back to the elem type's normal default classes
 		if (isVariantActive(variant)) {
-			appActionStore.setSelectedPresetClasses([]);
 			return;
 		}
 

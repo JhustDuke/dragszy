@@ -48,9 +48,6 @@
 		document.removeEventListener("keydown", handleDuplicateShortcut);
 	});
 
-	//what do i want?
-	//i want to get
-
 	//"D" duplicates the currently selected elem as a sibling right after
 	//first, then drag it wherever you actually want it, rather than
 	//baking direction into the shortcut itself

@@ -1,4 +1,4 @@
-import { allElems, type AllElemType } from "../common";
+import { allElems, type AllElemType } from "../../common";
 
 //keyed directly off allElems - if allElems gains or loses an elem type,
 //this object breaks at compile time until every key is accounted for.

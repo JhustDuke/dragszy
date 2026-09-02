@@ -29,9 +29,7 @@
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
-			:height="activeHeight"
-			widthUnit="px"
-			heightUnit="px" />
+			:height="activeHeight" />
 
 		<!-- delete button -->
 		<button

@@ -1,7 +1,7 @@
-import { allElems, type AllElemType } from "../common";
+import { allElems, type AllElemType } from "../../common";
 import { defaultClasses } from "./elemDefaultClasses";
-import { bootstrapElemVariants } from "./elemVariants";
-import type { Preset } from "../types";
+import { bootstrapElemVariants } from "./singleElemVariants";
+import type { Preset } from "../../types";
 
 export const elemDataFactory = (function () {
 	//builds a fresh, populated attrs object for one elem type.
