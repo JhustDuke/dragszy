@@ -9,6 +9,7 @@
 	<div
 		class="position-relative d-inline-block my-2 green"
 		:class="{
+			'border border-dark': appActionStore().getShowElemOutlines,
 			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,
 		}"
@@ -16,6 +17,8 @@
 		:style="props.newElemInfo.customStyles ?? {}"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
+		@mouseenter="isMouseOver = true"
+		@mouseleave="isMouseOver = false"
 		@click="onClick">
 		<!-- the actual elem the user is building, e.g. <img src="..." > -->
 		<!-- no textContent, no <NewElem> children slot: self-closing elems can't have either -->
@@ -34,8 +37,12 @@
 			:width="activeWidth"
 			:height="activeHeight" />
 
-		<!-- delete button (stays here - not part of resize, so not extracted) -->
+		<!-- delete button - only rendered while the mouse is directly over
+			THIS wrapper. mouseenter/mouseleave (not mouseover/mouseout) don't
+			bubble, so isMouseOver only flips for the exact elem the cursor is
+			on, never for a parent/child at the same time. -->
 		<button
+			v-if="isMouseOver"
 			id=""
 			style="right: 0; bottom: 0"
 			class="deleteBtn red position-absolute white-text"
@@ -49,6 +56,7 @@
 	import { ref, computed } from "vue";
 	import type { CanvasElem } from "~/types";
 	import ResizeButtons from "./ResizeButtons.vue";
+	import { useAppActionStore as appActionStore } from "~/store";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior
 	//(resize, selection, drag, delete). this component only renders.
@@ -82,6 +90,10 @@
 	//elems on the same canvas are no longer a problem either
 	//e.g. "dragzy-x7f2q9"
 	const wrapperId = ref("dragzy-img-" + Math.random().toString(36).slice(2, 9));
+
+	//local, per-instance only - tracks whether THIS wrapper's mouse is
+	//currently over it, purely to show/hide the delete button
+	const isMouseOver = ref(false);
 </script>
 
 <style scoped>

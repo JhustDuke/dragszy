@@ -21,6 +21,14 @@ export const useAppActionStore = defineStore("appAction", {
 				category: blockData.defaultCategory as string | null,
 				variant: blockData.defaultVariant as CanvasElem | null,
 			},
+
+			//canvas-only visual aid - shows a border outline on every
+			//elem so boundaries are visible while building. NEVER
+			//written into any elem's cssClasses/customStyles, so it
+			//can never leak into the compiled/exported output
+			//regardless of its current value. on by default, matching
+			//the previous always-on hardcoded border behavior.
+			showElemOutlines: true as boolean,
 		};
 	},
 	getters: {
@@ -35,6 +43,9 @@ export const useAppActionStore = defineStore("appAction", {
 		},
 		getActiveBlock: function (state) {
 			return state.activeBlock;
+		},
+		getShowElemOutlines: function (state): boolean {
+			return state.showElemOutlines;
 		},
 	},
 	actions: {
@@ -66,6 +77,14 @@ export const useAppActionStore = defineStore("appAction", {
 		//itself doesn't change, only which variant is staged for placement
 		setActiveBlockVariant: function (variant: CanvasElem): void {
 			this.activeBlock.variant = variant;
+		},
+
+		toggleElemOutlines: function (): void {
+			this.showElemOutlines = !this.showElemOutlines;
+		},
+
+		setShowElemOutlines: function (value: boolean): void {
+			this.showElemOutlines = value;
 		},
 	},
 });

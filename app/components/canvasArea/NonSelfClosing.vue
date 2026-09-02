@@ -1,18 +1,19 @@
 <template>
 	<!--
-	 non-self-closing elems (div, button, span, form, etc.) CAN hold children,
-	 so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
-	 this component IS the real elem the user is building.
+		non-self-closing elems (div, button, span, form, etc.) CAN hold children,
+		so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
+		this component IS the real elem the user is building.
 	-->
 	<component
 		:is="newElemInfo.elemType"
 		ref="elemRef"
 		:id="newElemInfo.id"
 		dragzy-elem
-		class="position-relative d-flex p-2 justify-content-between border border-dark my-2"
+		class="position-relative d-flex p-2 justify-content-between my-2"
 		:class="[
 			...(newElemInfo.cssClasses ?? []),
 			{
+				'border border-dark': appActionStore().getShowElemOutlines,
 				'border border-2': isHoveredWhileDragging,
 				edited: isLastEdited,
 			},
@@ -21,6 +22,8 @@
 		v-bind="newElemInfo.props"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
+		@mouseenter="isMouseOver = true"
+		@mouseleave="isMouseOver = false"
 		@click="onClick">
 		{{ newElemInfo.textContent }}
 
@@ -31,8 +34,12 @@
 			:width="activeWidth"
 			:height="activeHeight" />
 
-		<!-- delete button -->
+		<!-- delete button - only rendered while the mouse is directly over
+			THIS elem. mouseenter/mouseleave don't bubble, so isMouseOver
+			only flips for whichever exact elem (parent or nested child) the
+			cursor is actually on, never both at once. -->
 		<button
+			v-if="isMouseOver"
 			id=""
 			style="right: 0; bottom: 0"
 			class="deleteBtn red position-absolute white-text"
@@ -41,7 +48,7 @@
 		</button>
 
 		<!-- nested children, recursively rendered - this is the whole reason
-		 this elem type CAN'T be self-closing: it needs to hold these -->
+			this elem type CAN'T be self-closing: it needs to hold these -->
 		<NewElem
 			v-for="child in newElemInfo.children"
 			:key="child.id"
@@ -55,6 +62,7 @@
 	import type { CanvasElem } from "~/types";
 	import ResizeButtons from "./ResizeButtons.vue";
 	import NewElem from "./NewElem.vue";
+	import { useAppActionStore as appActionStore } from "~/store";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior
 	//(resize, selection, drag, delete). this component only renders.
@@ -80,6 +88,10 @@
 	//NewElem.vue needs a ref to the REAL dom elem for drag/hover comparisons
 	const elemRef = ref<HTMLElement | null>(null);
 	defineExpose({ elemRef });
+
+	//local, per-instance only - tracks whether THIS elem's mouse is
+	//currently over it, purely to show/hide the delete button
+	const isMouseOver = ref(false);
 </script>
 
 <style scoped>
