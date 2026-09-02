@@ -100,10 +100,12 @@
 			canvasElemsStore.setActiveElem(null);
 		}
 
-		const blockPreset = appActionStore.getSelectedBlockPreset;
+		//components mode: place whatever variant is currently staged
+		if (appActionStore.getActiveAction === "components") {
+			const stagedVariant = appActionStore.getActiveBlock.variant;
+			if (!stagedVariant) return;
 
-		if (blockPreset) {
-			//canvasElemsStore.addElemFromPreset(blockPreset);
+			canvasElemsStore.addElemFromPreset(stagedVariant);
 			return;
 		}
 

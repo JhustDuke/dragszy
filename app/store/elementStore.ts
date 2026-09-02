@@ -2,7 +2,11 @@ import { defineStore } from "pinia";
 import type { CanvasElem } from "~/types";
 
 import { useAppActionStore } from "~/store";
-import { createDefault, createClone } from "./utils/canvasElemFactory";
+import {
+	createDefault,
+	createClone,
+	createFromPreset,
+} from "./utils/canvasElemFactory";
 import { elemDataFactory } from "~/presets/bs5";
 
 export const useCanvasElemsStore = defineStore("canvasElems", {
@@ -68,6 +72,31 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			//find whether the newly-created element or any of its children
 			//uses position relative/absolute before adding it to the canvas tree
 			// findPositionedElemsIds(newElem, this.positionedElemsIds);
+
+			if (this.activeElemId) {
+				const activeResult = findElemAndContainer(
+					this.elems,
+					this.activeElemId
+				);
+
+				if (activeResult) {
+					activeResult.elem.children.push(newElem);
+					this.activeElemId = newElem.id;
+					return;
+				}
+			}
+
+			this.elems.push(newElem);
+			this.activeElemId = newElem.id;
+		},
+
+		//places a whole preset tree (card/navbar/footer) onto the canvas -
+		//clones the preset via createFromPreset (createClone under the hood),
+		//which regenerates every id in the tree recursively, so multiple
+		//placements of the same preset never collide on id. same insertion
+		//logic as addElem's tail end (into active elem's children, or root)
+		addElemFromPreset: function (preset: CanvasElem) {
+			const newElem = createFromPreset(preset);
 
 			if (this.activeElemId) {
 				const activeResult = findElemAndContainer(
