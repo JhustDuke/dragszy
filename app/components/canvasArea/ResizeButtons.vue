@@ -1,6 +1,8 @@
 <template>
-	<!-- width/height badge - shows current size while the elem is selected -->
+	<!-- width/height badge - now hover/resize-gated via the showBadge prop,
+		instead of always showing whenever this component is rendered -->
 	<small
+		v-if="showBadge"
 		class="position-absolute top-50 start-50 translate-middle badge bg-dark">
 		w:{{ width }}px h:{{ height }}px
 	</small>
@@ -29,7 +31,11 @@
 <script setup lang="ts">
 	//no logic here - resize.top/right/bottom/left are the SAME functions
 	//created once in NewElem.vue via createResize(). this component just
-	//wires them to buttons and shows the current w/h.
+	//wires them to buttons and shows the current w/h. showBadge is passed
+	//down from the parent (which already tracks hover state for the
+	//delete button) so the badge can follow its own hover/resize rule,
+	//separate from the handles, which stay purely selection-gated via
+	//the parent's v-if="isSelected" wrapping this whole component.
 	defineProps<{
 		resize: {
 			top: (ev: MouseEvent) => void;
@@ -39,6 +45,7 @@
 		};
 		width: number;
 		height: number;
+		showBadge: boolean;
 	}>();
 </script>
 

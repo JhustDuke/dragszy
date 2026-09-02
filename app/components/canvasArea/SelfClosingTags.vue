@@ -1,4 +1,4 @@
-<template>
+v<template>
 	<!--
 		self-closing elems (img, and any future void elem type) can't hold children,
 		so this outer div exists ONLY to give the delete button and resize buttons
@@ -9,9 +9,9 @@
 	<div
 		class="position-relative d-inline-block my-2 green"
 		:class="{
-			'border border-dark': appActionStore().getShowElemOutlines,
 			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,
+			'border border-dark': appActionStore.getShowElemOutlines,
 		}"
 		:id="wrapperId"
 		:style="props.newElemInfo.customStyles ?? {}"
@@ -30,12 +30,15 @@
 			:class="newElemInfo.cssClasses ?? []"
 			v-bind="newElemInfo.props" />
 
-		<!-- badge + 4 resize handles, only while selected - all handled by ResizeButtons now -->
+		<!-- badge + 4 resize handles, only while selected - showBadge
+			additionally gates the badge specifically to hover/active-resize,
+			independent of the handles which stay purely selection-gated -->
 		<ResizeButtons
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
-			:height="activeHeight" />
+			:height="activeHeight"
+			:showBadge="isMouseOver || isResizing" />
 
 		<!-- delete button - only rendered while the mouse is directly over
 			THIS wrapper. mouseenter/mouseleave (not mouseover/mouseout) don't
@@ -53,10 +56,10 @@
 </template>
 
 <script setup lang="ts">
-	import { ref, computed } from "vue";
+	import { ref } from "vue";
 	import type { CanvasElem } from "~/types";
+	import { useAppActionStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
-	import { useAppActionStore as appActionStore } from "~/store";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior
 	//(resize, selection, drag, delete). this component only renders.
@@ -67,6 +70,7 @@
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
+		isResizing: boolean;
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;
@@ -78,6 +82,8 @@
 		onClick: (ev: MouseEvent) => void;
 		onDelete: (ev: MouseEvent) => void;
 	}>();
+
+	const appActionStore = useAppActionStore();
 
 	//NewElem.vue needs a ref to the REAL dom elem (the <img>, not this wrapper div)
 	//so it must reach through this component - expose the inner ref by name
@@ -92,7 +98,7 @@
 	const wrapperId = ref("dragzy-img-" + Math.random().toString(36).slice(2, 9));
 
 	//local, per-instance only - tracks whether THIS wrapper's mouse is
-	//currently over it, purely to show/hide the delete button
+	//currently over it, purely to show/hide the delete button and badge
 	const isMouseOver = ref(false);
 </script>
 

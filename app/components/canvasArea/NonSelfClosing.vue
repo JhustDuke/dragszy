@@ -13,9 +13,9 @@
 		:class="[
 			...(newElemInfo.cssClasses ?? []),
 			{
-				'border border-dark': appActionStore().getShowElemOutlines,
 				'border border-2': isHoveredWhileDragging,
 				edited: isLastEdited,
+				'border border-dark': appActionStore.getShowElemOutlines,
 			},
 		]"
 		:style="newElemInfo.customStyles ?? {}"
@@ -27,12 +27,15 @@
 		@click="onClick">
 		{{ newElemInfo.textContent }}
 
-		<!-- badge + 4 resize handles, only while selected -->
+		<!-- badge + 4 resize handles, only while selected - showBadge
+			additionally gates the badge specifically to hover/active-resize,
+			independent of the handles which stay purely selection-gated -->
 		<ResizeButtons
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
-			:height="activeHeight" />
+			:height="activeHeight"
+			:showBadge="isMouseOver || isResizing" />
 
 		<!-- delete button - only rendered while the mouse is directly over
 			THIS elem. mouseenter/mouseleave don't bubble, so isMouseOver
@@ -60,9 +63,9 @@
 <script setup lang="ts">
 	import { ref } from "vue";
 	import type { CanvasElem } from "~/types";
+	import { useAppActionStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
 	import NewElem from "./NewElem.vue";
-	import { useAppActionStore as appActionStore } from "~/store";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior
 	//(resize, selection, drag, delete). this component only renders.
@@ -73,6 +76,7 @@
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
+		isResizing: boolean;
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;
@@ -85,12 +89,14 @@
 		onDelete: (ev: MouseEvent) => void;
 	}>();
 
+	const appActionStore = useAppActionStore();
+
 	//NewElem.vue needs a ref to the REAL dom elem for drag/hover comparisons
 	const elemRef = ref<HTMLElement | null>(null);
 	defineExpose({ elemRef });
 
 	//local, per-instance only - tracks whether THIS elem's mouse is
-	//currently over it, purely to show/hide the delete button
+	//currently over it, purely to show/hide the delete button and badge
 	const isMouseOver = ref(false);
 </script>
 
