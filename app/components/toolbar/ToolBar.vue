@@ -21,23 +21,7 @@
 			</div>
 
 			<div class="d-flex align-items-center gap-3">
-				<div class="form-check form-switch">
-					<input
-						id="showBorders"
-						class="form-check-input"
-						type="checkbox"
-						:checked="appActionStore().getShowElemOutlines"
-						@change="
-							appActionStore().setShowElemOutlines(
-								($event.target as HTMLInputElement).checked
-							)
-						" />
-					<label
-						class="form-check-label"
-						for="showBorders">
-						Show borders
-					</label>
-				</div>
+				<ToggleBorder />
 				<UndoRedo />
 				<saveBtn />
 			</div>
@@ -51,9 +35,8 @@
 <script setup lang="ts">
 	import ToolBarActionSelect from "./ToolBarActionSelect.vue";
 	import CompilerSelect from "./Compile.vue";
-	import SingleElemPresets from "./presetStyles/singleElem/SingleElemPresets.vue";
 	import Presets from "./presetStyles/presets.vue";
 	import UndoRedo from "./UndoRedo.vue";
 	import saveBtn from "./SaveBtn.vue";
-	import { useAppActionStore as appActionStore } from "~/store";
+	import ToggleBorder from "./ToggleBorders.vue";
 </script>
