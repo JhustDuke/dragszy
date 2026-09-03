@@ -12,6 +12,14 @@ export const useAppActionStore = defineStore("appAction", {
 
 			selectedPresetClasses: [] as string[],
 
+			//canvas-only visual aid - shows a border outline on every
+			//elem so boundaries are visible while building. NEVER
+			//written into any elem's cssClasses/customStyles, so it
+			//can never leak into the compiled/exported output
+			//regardless of its current value. on by default, matching
+			//the previous always-on hardcoded border behavior.
+			showElemOutlines: true as boolean,
+
 			//category is the STRING KEY (e.g. "card"), matching the
 			//blockPresets.card.variant shape. variant is the actual
 			//staged CanvasElem. defaults to the first real category/
@@ -22,13 +30,8 @@ export const useAppActionStore = defineStore("appAction", {
 				variant: blockData.defaultVariant as CanvasElem | null,
 			},
 
-			//canvas-only visual aid - shows a border outline on every
-			//elem so boundaries are visible while building. NEVER
-			//written into any elem's cssClasses/customStyles, so it
-			//can never leak into the compiled/exported output
-			//regardless of its current value. on by default, matching
-			//the previous always-on hardcoded border behavior.
-			showElemOutlines: true as boolean,
+			// appActionStore.ts - one more field
+			importedElems: [] as { label: string; preset: CanvasElem }[],
 		};
 	},
 	getters: {
@@ -85,6 +88,9 @@ export const useAppActionStore = defineStore("appAction", {
 
 		setShowElemOutlines: function (value: boolean): void {
 			this.showElemOutlines = value;
+		},
+		addImportedElem: function (label: string, preset: CanvasElem): void {
+			this.importedElems.push({ label, preset });
 		},
 	},
 });

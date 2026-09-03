@@ -35,7 +35,7 @@
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver || isResizing" />
+			:showBadge="isMouseOver" />
 
 		<!-- delete button - only rendered while the mouse is directly over
 			THIS elem. mouseenter/mouseleave don't bubble, so isMouseOver
@@ -76,7 +76,7 @@
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
-		isResizing: boolean;
+
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;

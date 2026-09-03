@@ -38,7 +38,7 @@ v<template>
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver || isResizing" />
+			:showBadge="isMouseOver" />
 
 		<!-- delete button - only rendered while the mouse is directly over
 			THIS wrapper. mouseenter/mouseleave (not mouseover/mouseout) don't
@@ -70,7 +70,7 @@ v<template>
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
-		isResizing: boolean;
+
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;
