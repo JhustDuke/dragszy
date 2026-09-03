@@ -1,13 +1,5 @@
 <template>
 	<div>
-		<!-- always visible, regardless of how many imports exist -->
-		<button
-			type="button"
-			class="btn btn-sm btn-outline-primary"
-			@click="isModalOpen = true">
-			Import New
-		</button>
-
 		<div
 			v-if="appActionStore.getImportedElems.length > 0"
 			class="d-flex flex-wrap gap-1 mt-1">
@@ -20,11 +12,26 @@
 				@click="handleSelect(item)">
 				{{ item.label }}
 			</span>
+
+			<span
+				class="btn btn-sm btn-outline-primary"
+				@click="isModalOpen = true"
+				role="button">
+				Import New
+			</span>
 		</div>
+
+		<p
+			v-if="lastError"
+			class="text-danger mt-2">
+			{{ lastError }}
+		</p>
 
 		<ImportNewModal
 			v-if="isModalOpen"
-			@close="isModalOpen = false" />
+			@close="isModalOpen = false"
+			@error="handleImportError"
+			@success="handleImportSuccess" />
 	</div>
 </template>
 
@@ -37,12 +44,8 @@
 	const appActionStore = useAppActionStore();
 
 	const isModalOpen = ref(false);
+	const lastError = ref("");
 
-	//auto-opens the modal the first time this panel is shown with nothing
-	//imported yet - a one-shot convenience, not persistent nagging. if the
-	//user closes it without importing, it stays closed until they click
-	//"Import New" manually - this check simply never re-triggers true
-	//again once something's been imported, since importedElems only grows
 	onMounted(function () {
 		if (appActionStore.getImportedElems.length === 0) {
 			isModalOpen.value = true;
@@ -58,5 +61,24 @@
 
 	function handleSelect(item: { label: string; preset: CanvasElem }): void {
 		appActionStore.setActiveImportedElem(item.preset);
+	}
+
+	//parent owns the actual store write - modal only ever hands back
+	//parsed data, never touches appActionStore directly
+	function handleImportSuccess(label: string, tree: CanvasElem): void {
+		lastError.value = "";
+
+		appActionStore.addImportedElem(label, tree);
+		appActionStore.setActiveImportedElem(tree);
+
+		isModalOpen.value = false;
+	}
+
+	function handleImportError(message: string): void {
+		lastError.value = message;
+
+		setTimeout(function () {
+			lastError.value = "";
+		}, 3000);
 	}
 </script>

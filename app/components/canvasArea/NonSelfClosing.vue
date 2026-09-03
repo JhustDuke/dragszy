@@ -9,7 +9,7 @@
 		ref="elemRef"
 		:id="newElemInfo.id"
 		dragzy-elem
-		class="position-relative d-flex p-2 justify-content-between my-2"
+		class="position-relative"
 		:class="[
 			...(newElemInfo.cssClasses ?? []),
 			{

@@ -7,7 +7,7 @@ v<template>
 		its id always starts with "dragzy-" so the compiler can detect and strip it.
 	-->
 	<div
-		class="position-relative d-inline-block my-2 green"
+		class="position-relative"
 		:class="{
 			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,
