@@ -35,7 +35,7 @@
 <script setup lang="ts">
 	import ToolBarActionSelect from "./ToolBarActionSelect.vue";
 	import CompilerSelect from "./Compile.vue";
-	import Presets from "./presetStyles/presets.vue";
+	import Presets from "../presetStyles/presets.vue";
 	import UndoRedo from "./UndoRedo.vue";
 	import saveBtn from "./SaveBtn.vue";
 	import ToggleBorder from "./ToggleBorders.vue";

@@ -74,7 +74,7 @@
 		if (!elemNode) return;
 
 		const rect = elemNode.getBoundingClientRect();
-		console.log(rect.top);
+
 		canvasElemsStore.openEditModal(activeElemId, {
 			top: rect.top + rect.height - 45,
 			left: rect.left,

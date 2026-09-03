@@ -90,22 +90,27 @@
 	function handleCanvasDblClick(event: MouseEvent): void {
 		if (
 			appActionStore.getActiveAction !== "create" &&
-			appActionStore.getActiveAction !== "components"
+			appActionStore.getActiveAction !== "components" &&
+			appActionStore.getActiveAction !== "imports"
 		)
 			return;
 
 		const canvasRoot = event.target as HTMLElement;
-
 		if (canvasRoot.hasAttribute("dragzy-root")) {
 			canvasElemsStore.setActiveElem(null);
 		}
 
-		//components mode: place whatever variant is currently staged
 		if (appActionStore.getActiveAction === "components") {
 			const stagedVariant = appActionStore.getActiveBlock.variant;
 			if (!stagedVariant) return;
-
 			canvasElemsStore.addElemFromPreset(stagedVariant);
+			return;
+		}
+
+		if (appActionStore.getActiveAction === "imports") {
+			const stagedImport = appActionStore.getActiveImportedElem;
+			if (!stagedImport) return;
+			canvasElemsStore.addElemFromPreset(stagedImport);
 			return;
 		}
 

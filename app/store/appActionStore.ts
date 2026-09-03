@@ -30,11 +30,14 @@ export const useAppActionStore = defineStore("appAction", {
 				variant: blockData.defaultVariant as CanvasElem | null,
 			},
 
-			// appActionStore.ts - one more field
 			importedElems: [] as { label: string; preset: CanvasElem }[],
+			activeImportedElem: null as CanvasElem | null,
 		};
 	},
 	getters: {
+		getActiveImportedElem: function (state): CanvasElem | null {
+			return state.activeImportedElem;
+		},
 		getActiveAction: function (state): AppAction {
 			return state.currentAction;
 		},
@@ -49,6 +52,9 @@ export const useAppActionStore = defineStore("appAction", {
 		},
 		getShowElemOutlines: function (state): boolean {
 			return state.showElemOutlines;
+		},
+		getImportedElems: function (state) {
+			return state.importedElems;
 		},
 	},
 	actions: {
@@ -91,6 +97,9 @@ export const useAppActionStore = defineStore("appAction", {
 		},
 		addImportedElem: function (label: string, preset: CanvasElem): void {
 			this.importedElems.push({ label, preset });
+		},
+		setActiveImportedElem: function (preset: CanvasElem | null): void {
+			this.activeImportedElem = preset;
 		},
 	},
 });

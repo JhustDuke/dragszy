@@ -31,8 +31,8 @@
 	const Optionlabels: AppAction[] = [
 		"create",
 		"resize",
-		"position",
 		"components",
+		"imports",
 	];
 
 	watch(
@@ -63,8 +63,8 @@
 			selectedAction.value = "components";
 			return;
 		}
-		if (event.key === "p") {
-			selectedAction.value = "position";
+		if (event.key === "i") {
+			selectedAction.value = "imports";
 			return;
 		}
 	}
