@@ -10,6 +10,7 @@
 			</div>
 
 			<div class="d-flex align-items-center">
+				<UploadBtn />
 				<CompilerSelect />
 			</div>
 		</div>
@@ -39,4 +40,5 @@
 	import UndoRedo from "./UndoRedo.vue";
 	import saveBtn from "./SaveBtn.vue";
 	import ToggleBorder from "./ToggleBorders.vue";
+	import UploadBtn from "../uploadImg/uploadButton.vue";
 </script>

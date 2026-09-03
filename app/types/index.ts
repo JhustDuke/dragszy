@@ -15,6 +15,7 @@ export interface CanvasElem {
 	//never exported). this is the ONLY way an elem can carry a real
 	//id="..." attribute in the compiled file
 	customId?: string;
+	imageId?: string;
 	isHeightAdjusted?: boolean;
 	isWidthAdjusted?: boolean;
 	textContent?: string;
