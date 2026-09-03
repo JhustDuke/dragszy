@@ -9,7 +9,7 @@ v<template>
 	<div
 		class="position-relative"
 		:class="{
-			'border border-2': isHoveredWhileDragging,
+			'border border-2 my-2 ': isHoveredWhileDragging,
 			edited: isLastEdited,
 			'border border-dark': appActionStore.getShowElemOutlines,
 		}"

@@ -13,7 +13,7 @@
 		:class="[
 			...(newElemInfo.cssClasses ?? []),
 			{
-				'border border-2': isHoveredWhileDragging,
+				'border border-2 my-2': isHoveredWhileDragging,
 				edited: isLastEdited,
 				'border border-dark': appActionStore.getShowElemOutlines,
 			},

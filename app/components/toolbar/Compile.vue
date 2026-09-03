@@ -11,6 +11,7 @@
 				})
 			">
 			<option value="vue">Vue</option>
+			<option value="react">React</option>
 		</select>
 		<button
 			type="button"
@@ -24,7 +25,8 @@
 
 <script setup lang="ts">
 	import { ref } from "vue";
-	import { compiler } from "../../compiler";
+
+	import { vueCompiler, reactCompiler } from "../../compiler";
 	import { useCanvasElemsStore } from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
 
@@ -35,11 +37,25 @@
 
 	/**
 	 * Runs the compile process for whichever framework is selected,
-	 * then downloads the resulting file.
+	 * returning both the file content and the correct filename/extension
+	 * for that framework's output.
 	 */
-	function compileForSelectedFramework(): string {
+	function compileForSelectedFramework(): {
+		content: string;
+		fileName: string;
+	} {
 		if (selectedFramework.value === "vue") {
-			return compiler().createVueFile(canvasElemsStore.elems);
+			return {
+				content: vueCompiler().createVueFile(canvasElemsStore.elems),
+				fileName: "DragzyExport.vue",
+			};
+		}
+
+		if (selectedFramework.value === "react") {
+			return {
+				content: reactCompiler().createReactFile(canvasElemsStore.elems),
+				fileName: "DragzyExport.tsx",
+			};
 		}
 
 		throw new Error(`Unsupported framework: ${selectedFramework.value}`);
@@ -57,8 +73,8 @@
 		isCompiling.value = true;
 
 		try {
-			const fileContent = compileForSelectedFramework();
-			downloadFile(fileContent, "DragsyExport.vue");
+			const { content, fileName } = compileForSelectedFramework();
+			downloadFile(content, fileName);
 		} finally {
 			isCompiling.value = false;
 		}
