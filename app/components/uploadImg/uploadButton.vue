@@ -8,32 +8,69 @@
 
 	<UploadImageModal
 		v-if="isModalOpen"
-		:images="images"
+		:images="imageLibraryStore.getImages"
 		:error-message="errorMessage"
-		@close="isModalOpen = false"
-		@select="handleSelect"
-		@file-chosen="handleFileChosen" />
+		:is-loading="isLoading"
+		@close-image="closeImage"
+		@on-upload="onUpload"
+		@choose-image="chooseImage"
+		@upload-error="setUploadError"
+		@remove-image="removeImage" />
 </template>
 
 <script setup lang="ts">
-	import { ref } from "vue";
+	import { ref, watch } from "vue";
+	import { useImageLibraryStore } from "~/store";
 	import UploadImageModal from "./uploadModal.vue";
 
-	interface LibraryImage {
-		id: string;
-		fileName: string;
-		base64: string;
-	}
+	const imageLibraryStore = useImageLibraryStore();
 
 	const isModalOpen = ref(false);
-	const images = ref<LibraryImage[]>([]);
 	const errorMessage = ref("");
+	const isLoading = ref(false);
 
-	function handleSelect(id: string, fileName: string): void {
-		// handle selected image
+	watch(errorMessage, function (message) {
+		if (!message) return;
+
+		setTimeout(function () {
+			errorMessage.value = "";
+		}, 5000);
+	});
+
+	function closeImage(): void {
+		isModalOpen.value = false;
 	}
 
-	function handleFileChosen(file: File): void {
-		// handle selected file
+	function onUpload(file: File): void {
+		errorMessage.value = "";
+		isLoading.value = true;
+
+		const reader = new FileReader();
+
+		reader.onload = function () {
+			const base64 = reader.result as string;
+
+			imageLibraryStore.addImage(file.name, base64);
+			isLoading.value = false;
+		};
+
+		reader.onerror = function () {
+			errorMessage.value = "Couldn't read that file. Try again.";
+			isLoading.value = false;
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function chooseImage(id: string, fileName: string): void {
+		// Handle chosen image here.
+	}
+
+	function setUploadError(message: string): void {
+		errorMessage.value = message;
+	}
+
+	function removeImage(id: string): void {
+		imageLibraryStore.removeImage(id);
 	}
 </script>
