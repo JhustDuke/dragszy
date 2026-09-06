@@ -1,17 +1,9 @@
-v<template>
-	<!--
-		self-closing elems (img, and any future void elem type) can't hold children,
-		so this outer div exists ONLY to give the delete button and resize buttons
-		something to position:absolute against. it is NOT part of what the user built
-		and must be skipped/unwrapped when compiler.ts exports the final file.
-		its id always starts with "dragzy-" so the compiler can detect and strip it.
-	-->
+<template>
 	<div
-		class="position-relative"
+		class="position-relative d-inline-block my-2 green"
 		:class="{
-			'border border-2 my-2 ': isHoveredWhileDragging,
+			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,
-			'border border-dark': appActionStore.getShowElemOutlines,
 		}"
 		:id="wrapperId"
 		:style="props.newElemInfo.customStyles ?? {}"
@@ -20,8 +12,6 @@ v<template>
 		@mouseenter="isMouseOver = true"
 		@mouseleave="isMouseOver = false"
 		@click="onClick">
-		<!-- the actual elem the user is building, e.g. <img src="..." > -->
-		<!-- no textContent, no <NewElem> children slot: self-closing elems can't have either -->
 		<component
 			:style="props.newElemInfo.customStyles ?? {}"
 			:is="newElemInfo.elemType"
@@ -30,20 +20,33 @@ v<template>
 			:class="newElemInfo.cssClasses ?? []"
 			v-bind="newElemInfo.props" />
 
-		<!-- badge + 4 resize handles, only while selected - showBadge
-			additionally gates the badge specifically to hover/active-resize,
-			independent of the handles which stay purely selection-gated -->
+		<!-- floating "change src" trigger - ONLY shown while this
+			specific image is the active/selected one, matching how
+			ResizeButtons is already gated the same way. only ever one
+			button visible at a time, even with multiple images on canvas. -->
+		<button
+			v-if="isSelected"
+			type="button"
+			class="position-absolute start-50 translate-middle change-src-btn"
+			@click.stop="openLibraryForSrc"
+			style="top: -20px">
+			Change Image
+		</button>
+
+		<!-- update/edit modal - only rendered while THIS elem is both selected
+	AND the modal has been opened via U. lives inside this wrapper so it
+	positions itself with plain CSS (top: 100%) - no manual rect math
+	needed, unlike the old global-modal + calculated-position approach. -->
+		<updateCssModal
+			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
+			@mousedown.stop />
 		<ResizeButtons
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver" />
+			:showBadge="isMouseOver || isResizing" />
 
-		<!-- delete button - only rendered while the mouse is directly over
-			THIS wrapper. mouseenter/mouseleave (not mouseover/mouseout) don't
-			bubble, so isMouseOver only flips for the exact elem the cursor is
-			on, never for a parent/child at the same time. -->
 		<button
 			v-if="isMouseOver"
 			id=""
@@ -56,13 +59,16 @@ v<template>
 </template>
 
 <script setup lang="ts">
-	import { ref } from "vue";
+	import { ref, watch } from "vue";
 	import type { CanvasElem } from "~/types";
-	import { useAppActionStore } from "~/store";
+	import {
+		useAppActionStore,
+		useImageLibraryStore,
+		useCanvasElemsStore,
+	} from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
+	import UpdateCssModal from "./updateCss/updateCssModal.vue";
 
-	//no logic lives here on purpose - NewElem.vue owns all behavior
-	//(resize, selection, drag, delete). this component only renders.
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
 		isSelected: boolean;
@@ -70,7 +76,7 @@ v<template>
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
-
+		isResizing: boolean;
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;
@@ -84,22 +90,44 @@ v<template>
 	}>();
 
 	const appActionStore = useAppActionStore();
+	const imageLibraryStore = useImageLibraryStore();
 
-	//NewElem.vue needs a ref to the REAL dom elem (the <img>, not this wrapper div)
-	//so it must reach through this component - expose the inner ref by name
 	const elemRef = ref<HTMLElement | null>(null);
 	defineExpose({ elemRef });
 
-	//random per-instance id, but ALWAYS starts with "dragzy-" so compiler.ts
-	//can detect "this div is canvas scaffolding, not something the user built"
-	//just by checking the prefix - duplicate ids across multiple self-closing
-	//elems on the same canvas are no longer a problem either
-	//e.g. "dragzy-x7f2q9"
 	const wrapperId = ref("dragzy-img-" + Math.random().toString(36).slice(2, 9));
 
-	//local, per-instance only - tracks whether THIS wrapper's mouse is
-	//currently over it, purely to show/hide the delete button and badge
 	const isMouseOver = ref(false);
+
+	//opens the SAME shared library modal the Inline Styles tab uses -
+	//no separate modal built for this, just a different consumer of
+	//the same isFromInlineTab trigger mechanism
+	function openLibraryForSrc(): void {
+		imageLibraryStore.isFromInlineTab.shouldShow = true;
+	}
+
+	//watches for the library handing back a choice, same pattern as the
+	//Inline Styles tab's watcher - but writes to props.src and tags
+	//userImg instead of customStyles + userBgImg. only reacts while
+	//THIS elem is the selected one, so a choice made for some other
+	//elem's request can never land on the wrong image.
+	watch(
+		function () {
+			return imageLibraryStore.isFromInlineTab.imageData;
+		},
+		function (base64) {
+			if (!base64) return;
+			if (!props.isSelected) return;
+
+			props.newElemInfo.props = props.newElemInfo.props ?? {};
+			props.newElemInfo.props.src = base64;
+			props.newElemInfo.userImg =
+				imageLibraryStore.isFromInlineTab.imageId ?? undefined;
+
+			imageLibraryStore.isFromInlineTab.imageData = null;
+			imageLibraryStore.isFromInlineTab.imageId = null;
+		}
+	);
 </script>
 
 <style scoped>
@@ -109,5 +137,8 @@ v<template>
 	}
 	.edited {
 		border: 1px solid red !important;
+	}
+	.change-src-btn {
+		white-space: nowrap;
 	}
 </style>

@@ -1,21 +1,20 @@
 <template>
 	<div
 		id="updateModal"
-		v-if="canvasElemsStore.editModalPosition"
-		class="position-absolute start-50 translate-middle-x bg-white rounded shadow d-flex flex-column"
-		style="width: 75%; max-width: 80%; z-index: 1001"
-		:style="{
-			top: canvasElemsStore.editModalPosition.top + 'px',
-			left: canvasElemsStore.editModalPosition.left + 'px',
-		}">
-		<!-- Header / Drag Handle -->
+		v-if="canvasElemsStore.isEditModalOpen"
+		class="position-absolute bg-white rounded shadow d-flex flex-column"
+		style="
+			width: 75%;
+			max-width: 80%;
+			z-index: 1001;
+			top: calc(100% + 10px);
+			left: 50%;
+			transform: translateX(-50%);
+		">
+		<!-- Header -->
 		<div
-			class="border-bottom p-2 d-flex justify-content-between align-items-center"
-			style="cursor: move"
-			@mousedown="startDrag">
+			class="border-bottom p-2 d-flex justify-content-between align-items-center">
 			<h6 class="mb-0">Update CSS</h6>
-
-			<span class="small text-muted">↕ Drag me</span>
 
 			<button
 				type="button"
@@ -67,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-	import { onUnmounted, ref, shallowRef } from "vue";
+	import { shallowRef } from "vue";
 	import { useCanvasElemsStore } from "~/store";
 
 	import ClassesTab from "./ClassesTab.vue";
@@ -85,60 +84,6 @@
 	] as const;
 
 	const activeTab = shallowRef<(typeof tabs)[number]>(tabs[0]);
-
-	const isDragging = ref(false);
-	const dragStartX = ref(0);
-	const dragStartY = ref(0);
-	const modalStartX = ref(0);
-	const modalStartY = ref(0);
-
-	function startDrag(event: MouseEvent): void {
-		if (!canvasElemsStore.editModalPosition) return;
-
-		const modal = document.getElementById("updateModal");
-		if (!modal) return;
-
-		isDragging.value = true;
-
-		dragStartX.value = event.clientX;
-		dragStartY.value = event.clientY;
-
-		modalStartX.value = canvasElemsStore.editModalPosition.left as number;
-		modalStartY.value = canvasElemsStore.editModalPosition.top as number;
-
-		modal.addEventListener("mousemove", dragModal);
-		modal.addEventListener("mouseup", stopDrag);
-	}
-
-	function dragModal(event: MouseEvent): void {
-		if (!isDragging.value) return;
-
-		const deltaX = event.clientX - dragStartX.value;
-		const deltaY = event.clientY - dragStartY.value;
-
-		canvasElemsStore.editModalPosition = {
-			top: modalStartY.value + deltaY,
-			left: modalStartX.value + deltaX,
-		};
-	}
-
-	function stopDrag(): void {
-		const modal = document.getElementById("updateModal");
-		if (!modal) return;
-
-		isDragging.value = false;
-
-		modal.removeEventListener("mousemove", dragModal);
-		modal.removeEventListener("mouseup", stopDrag);
-	}
-
-	onUnmounted(function () {
-		const modal = document.getElementById("updateModal");
-		if (!modal) return;
-
-		modal.removeEventListener("mousemove", dragModal);
-		modal.removeEventListener("mouseup", stopDrag);
-	});
 
 	function closeModal(): void {
 		canvasElemsStore.closeEditModal();

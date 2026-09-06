@@ -1,7 +1,9 @@
+```vue
 <!--
 	InlineStylesTab.vue
 
 	Lets the user view/edit every inline CSS style (customStyles) on the
+ 
 	currently selected canvas elem, as editable property/value rows.
 	background/backgroundImage rows get an extra "Upload / Choose" button
 	that pulls a value from the shared image library instead of typing a
@@ -22,7 +24,7 @@
 				placeholder="property, e.g. display"
 				list="css-property-names"
 				v-model="styleRow.property"
-				@blur="styleRowManager.commitRows" />
+				@blur="rows.save" />
 
 			<!-- the value itself - free text for normal properties,
 				a link/base64 for image properties. @input fires on every
@@ -32,23 +34,23 @@
 				type="text"
 				class="form-control"
 				:placeholder="
-					styleRowManager.isImageProperty(styleRow.property)
+					rows.isImage(styleRow.property)
 						? 'https://example.com/photo.jpg'
 						: 'value'
 				"
-				:list="styleRowManager.valueListIdFor(styleRow.property)"
+				:list="rows.getValueListId(styleRow.property)"
 				v-model="styleRow.value"
-				@input="styleRowManager.handleManualEdit(styleRow)"
-				@keydown.enter.prevent="styleRowManager.commitRows"
-				@blur="styleRowManager.commitRows" />
+				@input="rows.handleEdit(styleRow)"
+				@keydown.enter.prevent="rows.save"
+				@blur="rows.save" />
 
 			<!-- background/backgroundImage rows ONLY - opens the shared
 				image library modal instead of typing a link by hand -->
 			<button
-				v-if="styleRowManager.isImageProperty(styleRow.property)"
+				v-if="rows.isImage(styleRow.property)"
 				type="button"
 				class="btn btn-sm btn-outline-secondary"
-				@click="styleRowManager.openLibraryFor(styleRow)">
+				@click="rows.openLibrary(styleRow)">
 				Upload / Choose
 			</button>
 
@@ -56,7 +58,7 @@
 			<button
 				type="button"
 				class="btn btn-sm btn-outline-danger"
-				@click="styleRowManager.removeRow(index)">
+				@click="rows.remove(index)">
 				X
 			</button>
 		</div>
@@ -65,7 +67,7 @@
 		<button
 			type="button"
 			class="btn btn-sm btn-outline-secondary mt-1"
-			@click="styleRowManager.addRow">
+			@click="rows.add">
 			+ Add Style
 		</button>
 
@@ -82,7 +84,7 @@
 		<datalist
 			v-for="propertyName in propertiesWithValueSuggestions"
 			:key="propertyName"
-			:id="styleRowManager.valueListIdFor(propertyName)">
+			:id="rows.getValueListId(propertyName)">
 			<option
 				v-for="propertyValue in cssValueSuggestions[propertyName]"
 				:key="propertyValue"
@@ -126,13 +128,13 @@
 
 	//load rows once on first mount...
 	onMounted(function () {
-		styleRowManager.loadStyleRows();
+		rows.load();
 	});
 
 	//...and again every time a DIFFERENT elem gets selected, so the tab
 	//never shows leftover rows from whatever was selected before
 	watch(activeElem, function () {
-		styleRowManager.loadStyleRows();
+		rows.load();
 	});
 
 	//remembers WHICH row asked to open the image library, so the
@@ -160,7 +162,7 @@
 			if (row) {
 				//base64 drives the live canvas preview...
 				row.value = base64;
-				styleRowManager.commitRows();
+				rows.save();
 
 				//...and the elem gets tagged with the library image's id,
 				//so export later knows to swap this for the real filename
@@ -189,11 +191,11 @@
 		return Object.keys(cssValueSuggestions);
 	});
 
-	const styleRowManager = {
+	const rows = {
 		//rebuilds styleRows entirely from the active elem's REAL
 		//customStyles - this is what keeps the tab honest: it only ever
 		//shows what's actually on the elem, nothing stale, nothing guessed
-		loadStyleRows: function (): void {
+		load: function (): void {
 			styleRows.splice(0, styleRows.length);
 
 			if (!activeElem.value) {
@@ -202,7 +204,7 @@
 
 			const customStyles = activeElem.value.customStyles;
 
-			const sortedPropertyNames = styleRowManager.getSortedPropertyNames(
+			const sortedPropertyNames = rows.sortProperties(
 				customStyles as Record<string, string>
 			);
 
@@ -210,14 +212,12 @@
 				// @ts-ignore
 				const propertyValue = customStyles?.[propertyName];
 
-				styleRows.push(
-					styleRowManager.createStyleRow(propertyName, propertyValue)
-				);
+				styleRows.push(rows.makeRow(propertyName, propertyValue));
 			}
 		},
 
 		//alphabetical order, purely for consistent/predictable display
-		getSortedPropertyNames: function (
+		sortProperties: function (
 			customStyles: Record<string, string> | undefined
 		): string[] {
 			const propertyNames = Object.keys(customStyles ?? {});
@@ -232,30 +232,28 @@
 		//builds one row - image property values get unwrapped from their
 		//CSS url("...") syntax first, so the input shows the raw link/
 		//base64 for editing, matching how it's typed in
-		createStyleRow: function (property: string, value: string): StyleRow {
+		makeRow: function (property: string, value: string): StyleRow {
 			return {
-				rowId: styleRowManager.createRowId(),
+				rowId: rows.makeId(),
 				property,
-				value: styleRowManager.isImageProperty(property)
-					? styleRowManager.unwrapUrl(value)
-					: value,
+				value: rows.isImage(property) ? rows.removeUrl(value) : value,
 			};
 		},
 
 		//strips the url("...") wrapper back off - e.g. url("dog.png") -> dog.png
-		unwrapUrl: function (value: string): string {
+		removeUrl: function (value: string): string {
 			const match = value.match(/^url\((["']?)(.*)\1\)$/);
 			return match ? match[2] ?? "" : value || "";
 		},
 
-		createRowId: function (): string {
+		makeId: function (): string {
 			return "row-" + Math.random().toString(36).slice(2, 9);
 		},
 
 		//appends a fresh, blank row for the user to fill in themselves
-		addRow: function (): void {
+		add: function (): void {
 			styleRows.push({
-				rowId: styleRowManager.createRowId(),
+				rowId: rows.makeId(),
 				property: "",
 				value: "",
 			});
@@ -263,27 +261,27 @@
 
 		//removes the row and immediately re-commits, so a deleted style
 		//actually disappears from the elem right away
-		removeRow: function (index: number): void {
+		remove: function (index: number): void {
 			styleRows.splice(index, 1);
-			styleRowManager.commitRows();
+			rows.save();
 		},
 
 		//builds the datalist id used for this property's value
 		//suggestions, e.g. "css-values-display"
-		valueListIdFor: function (property: string): string {
+		getValueListId: function (property: string): string {
 			return "css-values-" + property;
 		},
 
 		//only these two properties get the "or pick from library" option -
 		//no realistic way to hand-type a base64 image string, and no
 		//other property has any relationship to the image library at all
-		isImageProperty: function (property: string): boolean {
+		isImage: function (property: string): boolean {
 			return property === "backgroundImage" || property === "background";
 		},
 
 		//opens the shared image library modal - remembers which row
 		//triggered it so the watcher above knows where the result goes
-		openLibraryFor: function (styleRow: StyleRow): void {
+		openLibrary: function (styleRow: StyleRow): void {
 			activeImageRowId.value = styleRow.rowId;
 			imageLibraryStore.isFromInlineTab.shouldShow = true;
 		},
@@ -294,8 +292,8 @@
 		//comparison against the old value, no "did they really change it"
 		//check. this keeps "is this row library-sourced or not" always
 		//answerable with a single presence check at export time.
-		handleManualEdit: function (styleRow: StyleRow): void {
-			if (!styleRowManager.isImageProperty(styleRow.property)) return;
+		handleEdit: function (styleRow: StyleRow): void {
+			if (!rows.isImage(styleRow.property)) return;
 			if (!activeElem.value) return;
 
 			canvasElemsStore.setElemBgImageId(activeElem.value.id, null);
@@ -305,12 +303,12 @@
 		//authoritative customStyles - REPLACES entirely, never merges,
 		//so a deleted row can actually disappear rather than being
 		//silently restored by a stale spread
-		commitRows: function (): void {
+		save: function (): void {
 			if (!activeElem.value) {
 				return;
 			}
 
-			const updatedInlineStyles = styleRowManager.buildInlineStyles();
+			const updatedInlineStyles = rows.buildStyles();
 
 			canvasElemsStore.updateElemInlineStyles(
 				activeElem.value.id,
@@ -320,17 +318,17 @@
 
 		//converts the current rows into a flat property -> value object,
 		//skipping anything blank
-		buildInlineStyles: function (): Record<string, string> {
+		buildStyles: function (): Record<string, string> {
 			const inlineStyles: Record<string, string> = {};
 
 			for (const styleRow of styleRows) {
-				styleRowManager.addStyleToCollection(styleRow, inlineStyles);
+				rows.addStyle(styleRow, inlineStyles);
 			}
 
 			return inlineStyles;
 		},
 
-		addStyleToCollection: function (
+		addStyle: function (
 			styleRow: StyleRow,
 			inlineStyles: Record<string, string>
 		): void {
@@ -350,10 +348,7 @@
 			//by hand) - wrap it into real CSS url(...) here, once,
 			//automatically. skip wrapping if already wrapped, so
 			//re-committing an already-saved row doesn't double-wrap it.
-			if (
-				styleRowManager.isImageProperty(propertyName) &&
-				!propertyValue.startsWith("url(")
-			) {
+			if (rows.isImage(propertyName) && !propertyValue.startsWith("url(")) {
 				propertyValue = `url("${propertyValue}")`;
 			}
 
@@ -361,3 +356,4 @@
 		},
 	};
 </script>
+```

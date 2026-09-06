@@ -18,21 +18,12 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
 			isDragging: false as boolean,
+			isEditModalOpen: false as boolean,
 
 			positionedElemsIds: {
 				relative: [] as string[],
 				absolute: [] as string[],
 			},
-
-			//where the double-click edit modal should appear - null means
-			//the modal isn't open. reuses activeElemId as "which elem is
-			//being edited", so double-clicking an elem also selects it
-			editModalPosition: null as {
-				top?: number;
-				left?: number;
-				bottom?: number;
-				right?: number;
-			} | null,
 		};
 	},
 	getters: {
@@ -244,6 +235,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			result.elem.customId = customId;
 		},
+
 		//this is used in the inline tab to set bg-image
 		setElemBgImageId: function (id: string, imageId: string | null): void {
 			const result = findElemAndContainer(this.elems, id);
@@ -251,21 +243,19 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			result.elem.userBgImg = imageId ?? undefined;
 		},
+
 		//called when the user presses U - reuses activeElemId as "which elem is
 		//being edited" (so double-clicking also selects), and stores where
 		//the modal should appear (usually just below the clicked elem's
 		//real on-screen position, measured via getBoundingClientRect at
 		//the call site in NewElem.vue)
-		openEditModal: function (
-			id: string,
-			position: { top?: number; right?: number; bottom?: number; left?: number }
-		): void {
+		openEditModal: function (id: string): void {
 			this.activeElemId = id;
-			this.editModalPosition = position;
+			this.isEditModalOpen = true;
 		},
 
 		closeEditModal: function (): void {
-			this.editModalPosition = null;
+			this.isEditModalOpen = false;
 		},
 
 		duplicateActiveElem: function (): void {

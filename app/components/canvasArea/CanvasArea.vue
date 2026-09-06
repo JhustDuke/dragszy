@@ -5,7 +5,6 @@
 			:key="elem.id"
 			:id="elem.id"
 			:newElemInfo="elem" />
-		<updateCssModal />
 		<undoRedoToast />
 	</div>
 
@@ -25,10 +24,9 @@
 
 <!-- CanvasArea.vue -->
 <script setup lang="ts">
-	import { onMounted, onUnmounted, ref, provide } from "vue";
+	import { onMounted, onUnmounted, ref } from "vue";
 	import { useCanvasElemsStore } from "../../store";
 	import CanvasElement from "./NewElem.vue";
-	import updateCssModal from "./updateCss/updateCssModal.vue";
 	import undoRedoToast from "./undoRedoToast.vue";
 	import { isTyping } from "../../utils";
 
@@ -48,9 +46,6 @@
 		document.removeEventListener("keydown", handleDuplicateShortcut);
 	});
 
-	//"D" duplicates the currently selected elem as a sibling right after
-	//first, then drag it wherever you actually want it, rather than
-	//baking direction into the shortcut itself
 	const handleDuplicateShortcut = function (ev: KeyboardEvent): void {
 		if (isTyping(ev.target)) return;
 		if (ev.key.toLowerCase() !== "d") return;
@@ -60,9 +55,9 @@
 	};
 
 	//"U" opens the edit modal for whichever elem is currently selected -
-	//"Inspect Element" context menu. Guards against firing while the user
-	//is typing inside any text input/textarea (e.g. a class draft field),
-	//so typing the letter "u" anywhere doesn't accidentally trigger it.
+	//no position math needed anymore, since the modal now lives INSIDE
+	//each elem's own wrapper and positions itself via plain CSS
+	//(position: absolute; top: 100%) relative to that wrapper.
 	const activateUpdateModal = function (ev: KeyboardEvent) {
 		if (ev.key.toLowerCase() !== "u") return;
 		if (isTyping(ev.target)) return;
@@ -70,15 +65,7 @@
 		const activeElemId = canvasElemsStore.activeElemId;
 		if (!activeElemId) return;
 
-		const elemNode = document.getElementById(activeElemId);
-		if (!elemNode) return;
-
-		const rect = elemNode.getBoundingClientRect();
-
-		canvasElemsStore.openEditModal(activeElemId, {
-			top: rect.top + rect.height - 45,
-			left: rect.left,
-		});
+		canvasElemsStore.openEditModal(activeElemId);
 	};
 
 	const dragX = ref(0);

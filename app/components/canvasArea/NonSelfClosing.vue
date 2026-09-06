@@ -27,6 +27,14 @@
 		@click="onClick">
 		{{ newElemInfo.textContent }}
 
+		<!-- update/edit modal - only rendered while THIS elem is both selected
+	AND the modal has been opened via U. lives inside this wrapper so it
+	positions itself with plain CSS (top: 100%) - no manual rect math
+	needed, unlike the old global-modal + calculated-position approach. -->
+		<updateCssModal
+			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
+			@mousedown.stop />
+
 		<!-- badge + 4 resize handles, only while selected - showBadge
 			additionally gates the badge specifically to hover/active-resize,
 			independent of the handles which stay purely selection-gated -->
@@ -63,8 +71,9 @@
 <script setup lang="ts">
 	import { ref } from "vue";
 	import type { CanvasElem } from "~/types";
-	import { useAppActionStore } from "~/store";
+	import { useAppActionStore, useCanvasElemsStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
+	import UpdateCssModal from "./updateCss/updateCssModal.vue";
 	import NewElem from "./NewElem.vue";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior
