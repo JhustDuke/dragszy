@@ -1,9 +1,21 @@
+<!--
+	InlineStylesTab.vue
+
+	Lets the user view/edit every inline CSS style (customStyles) on the
+	currently selected canvas elem, as editable property/value rows.
+	background/backgroundImage rows get an extra "Upload / Choose" button
+	that pulls a value from the shared image library instead of typing a
+	link by hand - the elem gets tagged (userBgImg) whenever that happens,
+	so the compiler knows to swap in the real filename later.
+-->
 <template>
 	<div v-if="activeElem">
+		<!-- one row per existing style on the active elem -->
 		<div
 			v-for="(styleRow, index) in styleRows"
 			:key="styleRow.rowId"
 			class="d-flex gap-2 mb-2 align-items-center">
+			<!-- property name, e.g. "color", "background" -->
 			<input
 				type="text"
 				class="form-control"
@@ -12,6 +24,10 @@
 				v-model="styleRow.property"
 				@blur="styleRowManager.commitRows" />
 
+			<!-- the value itself - free text for normal properties,
+				a link/base64 for image properties. @input fires on every
+				keystroke so a manual edit can immediately clear any
+				library tag (see handleManualEdit below) -->
 			<input
 				type="text"
 				class="form-control"
@@ -22,21 +38,21 @@
 				"
 				:list="styleRowManager.valueListIdFor(styleRow.property)"
 				v-model="styleRow.value"
+				@input="styleRowManager.handleManualEdit(styleRow)"
 				@keydown.enter.prevent="styleRowManager.commitRows"
 				@blur="styleRowManager.commitRows" />
 
-			<!-- backgroundImage/background can ALSO be set by uploading a
-				file directly, as an alternative to pasting a link above -
-				testing the simplest version first: straight to base64,
-				no IndexedDB yet -->
-			<input
+			<!-- background/backgroundImage rows ONLY - opens the shared
+				image library modal instead of typing a link by hand -->
+			<button
 				v-if="styleRowManager.isImageProperty(styleRow.property)"
-				type="file"
-				accept="image/*"
-				class="form-control"
-				style="max-width: 160px"
-				@change="styleRowManager.onImageFileSelected($event, styleRow)" />
+				type="button"
+				class="btn btn-sm btn-outline-secondary"
+				@click="styleRowManager.openLibraryFor(styleRow)">
+				Upload / Choose
+			</button>
 
+			<!-- removes this row entirely -->
 			<button
 				type="button"
 				class="btn btn-sm btn-outline-danger"
@@ -45,6 +61,7 @@
 			</button>
 		</div>
 
+		<!-- appends a blank row for the user to fill in -->
 		<button
 			type="button"
 			class="btn btn-sm btn-outline-secondary mt-1"
@@ -52,7 +69,7 @@
 			+ Add Style
 		</button>
 
-		<!-- CSS property suggestions -->
+		<!-- CSS property name suggestions - pure UI sugar, no logic -->
 		<datalist id="css-property-names">
 			<option
 				v-for="propertyName in commonCssProperties"
@@ -60,7 +77,8 @@
 				:value="propertyName" />
 		</datalist>
 
-		<!-- CSS value suggestions -->
+		<!-- CSS value suggestions, one datalist per property that has
+			known common values (see cssPropertySuggestions.ts) -->
 		<datalist
 			v-for="propertyName in propertiesWithValueSuggestions"
 			:key="propertyName"
@@ -72,6 +90,7 @@
 		</datalist>
 	</div>
 
+	<!-- nothing selected on the canvas - nothing to edit -->
 	<div
 		v-else
 		class="text-muted">
@@ -80,8 +99,8 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, reactive, watch, onMounted } from "vue";
-	import { useCanvasElemsStore } from "~/store";
+	import { computed, reactive, ref, watch, onMounted } from "vue";
+	import { useCanvasElemsStore, useImageLibraryStore } from "~/store";
 
 	import {
 		getCommonCssProperties,
@@ -91,7 +110,10 @@
 	const commonCssProperties = getCommonCssProperties();
 
 	const canvasElemsStore = useCanvasElemsStore();
+	const imageLibraryStore = useImageLibraryStore();
 
+	//the elem currently selected on the canvas - this tab only ever
+	//reflects/edits THIS elem, never a stale reference to a previous one
 	const activeElem = computed(function () {
 		return canvasElemsStore.activeElem;
 	});
@@ -102,17 +124,65 @@
 		value: string;
 	}
 
+	//load rows once on first mount...
 	onMounted(function () {
-		//this code doesnt touch the dom just here for easily readability
-		//and understanding the concept
-		//instead of calling it on the setup body
 		styleRowManager.loadStyleRows();
 	});
 
+	//...and again every time a DIFFERENT elem gets selected, so the tab
+	//never shows leftover rows from whatever was selected before
 	watch(activeElem, function () {
 		styleRowManager.loadStyleRows();
 	});
 
+	//remembers WHICH row asked to open the image library, so the
+	//watcher below knows where to apply the result once it arrives -
+	//null means "no row is currently waiting on a library pick"
+	const activeImageRowId = ref<string | null>(null);
+
+	//fires the moment the shared library modal hands back a chosen or
+	//freshly-uploaded image (imageLibraryStore.isFromInlineTab.imageData
+	//is set by UploadImageButton.vue elsewhere in the app). this is the
+	//ONE place that turns a library pick into an actual row value +
+	//elem tag - nothing else in this file talks to the library directly.
+	watch(
+		function () {
+			return imageLibraryStore.isFromInlineTab.imageData;
+		},
+		function (base64) {
+			//nothing to do if there's no image, or no row is waiting for one
+			if (!base64 || !activeImageRowId.value) return;
+
+			const row = styleRows.find(function (r) {
+				return r.rowId === activeImageRowId.value;
+			});
+
+			if (row) {
+				//base64 drives the live canvas preview...
+				row.value = base64;
+				styleRowManager.commitRows();
+
+				//...and the elem gets tagged with the library image's id,
+				//so export later knows to swap this for the real filename
+				//instead of leaving raw base64 in the compiled output
+				if (activeElem.value) {
+					canvasElemsStore.setElemBgImageId(
+						activeElem.value.id,
+						imageLibraryStore.isFromInlineTab.imageId
+					);
+				}
+			}
+
+			//reset all "waiting" state so a stray future change to
+			//imageData can't accidentally reapply to the wrong row
+			activeImageRowId.value = null;
+			imageLibraryStore.isFromInlineTab.imageData = null;
+			imageLibraryStore.isFromInlineTab.imageId = null;
+		}
+	);
+
+	//the live, editable rows backing the template - rebuilt from scratch
+	//by loadStyleRows whenever the active elem changes
 	const styleRows = reactive<StyleRow[]>([]);
 
 	const propertiesWithValueSuggestions = computed(function () {
@@ -120,6 +190,9 @@
 	});
 
 	const styleRowManager = {
+		//rebuilds styleRows entirely from the active elem's REAL
+		//customStyles - this is what keeps the tab honest: it only ever
+		//shows what's actually on the elem, nothing stale, nothing guessed
 		loadStyleRows: function (): void {
 			styleRows.splice(0, styleRows.length);
 
@@ -143,6 +216,7 @@
 			}
 		},
 
+		//alphabetical order, purely for consistent/predictable display
 		getSortedPropertyNames: function (
 			customStyles: Record<string, string> | undefined
 		): string[] {
@@ -155,6 +229,9 @@
 			return propertyNames;
 		},
 
+		//builds one row - image property values get unwrapped from their
+		//CSS url("...") syntax first, so the input shows the raw link/
+		//base64 for editing, matching how it's typed in
 		createStyleRow: function (property: string, value: string): StyleRow {
 			return {
 				rowId: styleRowManager.createRowId(),
@@ -165,8 +242,7 @@
 			};
 		},
 
-		//strips the url("...") wrapper back off, so the input always shows
-		//just the raw link/base64 for editing - matches how it's typed in
+		//strips the url("...") wrapper back off - e.g. url("dog.png") -> dog.png
 		unwrapUrl: function (value: string): string {
 			const match = value.match(/^url\((["']?)(.*)\1\)$/);
 			return match ? match[2] ?? "" : value || "";
@@ -176,6 +252,7 @@
 			return "row-" + Math.random().toString(36).slice(2, 9);
 		},
 
+		//appends a fresh, blank row for the user to fill in themselves
 		addRow: function (): void {
 			styleRows.push({
 				rowId: styleRowManager.createRowId(),
@@ -184,41 +261,50 @@
 			});
 		},
 
+		//removes the row and immediately re-commits, so a deleted style
+		//actually disappears from the elem right away
 		removeRow: function (index: number): void {
 			styleRows.splice(index, 1);
 			styleRowManager.commitRows();
 		},
 
+		//builds the datalist id used for this property's value
+		//suggestions, e.g. "css-values-display"
 		valueListIdFor: function (property: string): string {
 			return "css-values-" + property;
 		},
 
-		//only these properties get the "or upload a file" option -
-		//no realistic way to hand-type a base64 image string
+		//only these two properties get the "or pick from library" option -
+		//no realistic way to hand-type a base64 image string, and no
+		//other property has any relationship to the image library at all
 		isImageProperty: function (property: string): boolean {
 			return property === "backgroundImage" || property === "background";
 		},
 
-		//simplest possible version for testing: reads the picked file,
-		//converts to a base64 data URI, stores it RAW (no url() wrapper -
-		//that gets added automatically for every image property at
-		//commit time, same as the link input). no IndexedDB yet - that's
-		//the next step once this is confirmed working end to end.
-		onImageFileSelected: function (event: Event, styleRow: StyleRow): void {
-			const input = event.target as HTMLInputElement;
-			const file = input.files?.[0];
-			if (!file) return;
-
-			const reader = new FileReader();
-
-			reader.onload = function () {
-				styleRow.value = reader.result as string;
-				styleRowManager.commitRows();
-			};
-
-			reader.readAsDataURL(file);
+		//opens the shared image library modal - remembers which row
+		//triggered it so the watcher above knows where the result goes
+		openLibraryFor: function (styleRow: StyleRow): void {
+			activeImageRowId.value = styleRow.rowId;
+			imageLibraryStore.isFromInlineTab.shouldShow = true;
 		},
 
+		//THE key rule for this feature: typing by hand ALWAYS wins.
+		//the instant the user edits an image row's value themselves, the
+		//library tag is cleared immediately and unconditionally - no
+		//comparison against the old value, no "did they really change it"
+		//check. this keeps "is this row library-sourced or not" always
+		//answerable with a single presence check at export time.
+		handleManualEdit: function (styleRow: StyleRow): void {
+			if (!styleRowManager.isImageProperty(styleRow.property)) return;
+			if (!activeElem.value) return;
+
+			canvasElemsStore.setElemBgImageId(activeElem.value.id, null);
+		},
+
+		//pushes the current rows to the store as the elem's real,
+		//authoritative customStyles - REPLACES entirely, never merges,
+		//so a deleted row can actually disappear rather than being
+		//silently restored by a stale spread
 		commitRows: function (): void {
 			if (!activeElem.value) {
 				return;
@@ -232,6 +318,8 @@
 			);
 		},
 
+		//converts the current rows into a flat property -> value object,
+		//skipping anything blank
 		buildInlineStyles: function (): Record<string, string> {
 			const inlineStyles: Record<string, string> = {};
 
@@ -257,11 +345,11 @@
 				return;
 			}
 
-			//backgroundImage/background take a raw link or raw base64 string
-			//in the UI (no one should ever have to type url(...) by hand) -
-			//wrap it into a real CSS url(...) here, once, automatically.
-			//skip wrapping if it's already wrapped, so re-committing an
-			//already-saved row doesn't double-wrap it.
+			//backgroundImage/background take a raw link or raw base64
+			//string in the UI (no one should ever have to type url(...)
+			//by hand) - wrap it into real CSS url(...) here, once,
+			//automatically. skip wrapping if already wrapped, so
+			//re-committing an already-saved row doesn't double-wrap it.
 			if (
 				styleRowManager.isImageProperty(propertyName) &&
 				!propertyValue.startsWith("url(")

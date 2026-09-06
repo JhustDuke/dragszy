@@ -7,11 +7,11 @@
 	</button>
 
 	<UploadImageModal
-		v-if="isModalOpen"
+		v-if="isModalOpen || imageLibraryStore.isFromInlineTab.shouldShow"
 		:images="imageLibraryStore.getImages"
 		:error-message="errorMessage"
 		:is-loading="isLoading"
-		@close-image="closeImage"
+		@close-image="closeModal"
 		@on-upload="onUpload"
 		@choose-image="chooseImage"
 		@upload-error="setUploadError"
@@ -37,10 +37,6 @@
 		}, 5000);
 	});
 
-	function closeImage(): void {
-		isModalOpen.value = false;
-	}
-
 	function onUpload(file: File): void {
 		errorMessage.value = "";
 		isLoading.value = true;
@@ -63,6 +59,9 @@
 	}
 
 	function chooseImage(id: string, fileName: string): void {
+		imageLibraryStore.setInlineTabImage(id);
+		closeModal();
+
 		// Handle chosen image here.
 	}
 
@@ -70,6 +69,10 @@
 		errorMessage.value = message;
 	}
 
+	function closeModal(): void {
+		isModalOpen.value = false;
+		imageLibraryStore.isFromInlineTab.shouldShow = false;
+	}
 	function removeImage(id: string): void {
 		imageLibraryStore.removeImage(id);
 	}

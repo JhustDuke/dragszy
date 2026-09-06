@@ -10,6 +10,11 @@ export const useImageLibraryStore = defineStore("imageLibrary", {
 	state: function () {
 		return {
 			images: [] as StoredImage[],
+			isFromInlineTab: {
+				shouldShow: false,
+				imageData: null as string | null,
+				imageId: null as string | null, // NEW - the id, not just the preview
+			},
 		};
 	},
 	getters: {
@@ -41,7 +46,12 @@ export const useImageLibraryStore = defineStore("imageLibrary", {
 
 			return id;
 		},
-
+		setInlineTabImage(id: string) {
+			const image = this.images.find(function (img) {
+				return img.id === id;
+			});
+			this.isFromInlineTab.imageData = image?.base64 ?? null;
+		},
 		//deletion is symmetric - removing an image just removes its
 		//entry, no cascading cleanup. any elem still referencing this id
 		//will simply fail the getImageById lookup at compile time -

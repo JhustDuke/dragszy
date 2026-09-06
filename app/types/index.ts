@@ -15,9 +15,17 @@ export interface CanvasElem {
 	//never exported). this is the ONLY way an elem can carry a real
 	//id="..." attribute in the compiled file
 	customId?: string;
-	imageId?: string;
-	isHeightAdjusted?: boolean;
-	isWidthAdjusted?: boolean;
+	//set only via the img-specific floating toolbar, when this elem's
+	//props.src was chosen from the shared image library (not typed by
+	//hand). tells export "resolve this to the real filename." absent =
+	//src was never touched by the library - leave it exactly as-is.
+	userImg?: string;
+	//set via the Inline Styles tab's background/backgroundImage row,
+	//when that row's value was chosen from the shared image library
+	//rather than typed by hand. same rule as userImg, but for
+	//customStyles.background/backgroundImage instead of props.src -
+	//any manual edit to that row clears this immediately.
+	userBgImg?: string;
 	textContent?: string;
 	cssClasses?: string[];
 	customStyles?: Partial<Properties<string | number>>;
