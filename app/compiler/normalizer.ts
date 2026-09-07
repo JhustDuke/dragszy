@@ -9,7 +9,32 @@ interface NormalizedTag {
 	children: NormalizedTag[];
 }
 
+//shape of one image library entry - kept as a plain interface here
+//(not imported from the store) so normalizer.ts stays fully
+//store-agnostic. the caller (vueCompiler/reactCompiler/export button)
+//is responsible for actually reading the real library and passing it in.
+interface LibraryImage {
+	id: string;
+	fileName: string;
+	base64: string;
+}
+
 const normalizer = function () {
+	/**
+	 * Looks up one image by id from whatever list was passed in.
+	 * Plain lookup, no store dependency - normalizer.ts never talks to
+	 * Pinia directly.
+	 */
+	const findImageById = function (
+		images: LibraryImage[],
+		id: string
+	): LibraryImage | null {
+		for (const img of images) {
+			if (img.id === id) return img;
+		}
+		return null;
+	};
+
 	/**
 	 * Creates an empty NormalizedTag shell from an elem type.
 	 * e.g. "img" -> { tagName: "img", isSelfClosingTag: true }
@@ -35,24 +60,42 @@ const normalizer = function () {
 	};
 
 	/**
-	 * Builds the style attribute from an elem's customStyles object.
+	 * Builds the style attribute from an elem's customStyles object. If
+	 * this elem's background/backgroundImage came from the image
+	 * library (elem.userBgImg set), the stored base64 gets swapped for
+	 * a real relative filename resolved from the library. Any elem
+	 * without userBgImg keeps its styles exactly as typed/stored.
 	 * e.g. elem.customStyles = { width: "100px", color: "red" }
 	 *   -> tag.attributes.style = "width: 100px; color: red"
 	 */
 	const insertInlineStyles = function (
 		tag: NormalizedTag,
-		elem: CanvasElem
+		elem: CanvasElem,
+		images: LibraryImage[]
 	): void {
 		if (!elem.customStyles) {
 			return;
 		}
 
+		const resolvedImage = elem.userBgImg
+			? findImageById(images, elem.userBgImg)
+			: null;
+
 		const styleParts: string[] = [];
 
 		for (const property in elem.customStyles) {
-			const value =
-				elem.customStyles[property as keyof typeof elem.customStyles];
+			let value = elem.customStyles[property as keyof typeof elem.customStyles];
 			if (!value) continue;
+
+			//only the property actually holding the uploaded image gets
+			//swapped - background/backgroundImage are the only two
+			//properties the Inline Styles tab's image upload ever writes to
+			if (
+				resolvedImage &&
+				(property === "background" || property === "backgroundImage")
+			) {
+				value = `url('./${resolvedImage.fileName}')`;
+			}
 
 			styleParts.push(`${property}: ${value}`);
 		}
@@ -110,10 +153,18 @@ const normalizer = function () {
 
 	/**
 	 * Copies an elem's type-specific props (href, type, name, etc.) onto
-	 * the tag, skipping any that are empty.
+	 * the tag, skipping any that are empty. src specifically gets
+	 * resolved against the image library first if this elem's src came
+	 * from an upload (elem.userImg set) - swaps the live base64 for a
+	 * real relative filename. Any elem without userImg keeps its src
+	 * exactly as-is (a plain URL, or empty).
 	 * e.g. elem.props = { href: "https://x.com" } -> tag.attributes.href = "https://x.com"
 	 */
-	const insertProps = function (tag: NormalizedTag, elem: CanvasElem): void {
+	const insertProps = function (
+		tag: NormalizedTag,
+		elem: CanvasElem,
+		images: LibraryImage[]
+	): void {
 		if (!elem.props) {
 			return;
 		}
@@ -122,6 +173,13 @@ const normalizer = function () {
 			const value = elem.props[key];
 			if (!value) continue;
 			if (value.startsWith("dragzy")) continue;
+
+			if (key === "src" && elem.userImg) {
+				const image = findImageById(images, elem.userImg);
+				tag.attributes.src = image ? `./${image.fileName}` : value;
+				continue;
+			}
+
 			tag.attributes[key] = value;
 		}
 	};
@@ -131,22 +189,27 @@ const normalizer = function () {
 	 * fully-populated NormalizedTag tree, by running every insert* step
 	 * on it in order, then recursing into children. Zero framework
 	 * knowledge lives here - this is the one tree shape every exporter
-	 * (Vue, React, plain HTML, whatever comes next) builds from.
+	 * (Vue, React, plain HTML, whatever comes next) builds from. images
+	 * is threaded through every recursive call unchanged, so the whole
+	 * tree resolves against the exact same library snapshot.
 	 * e.g. elem = { elemType: "div", cssClasses: ["box"], children: [{ elemType: "span", ... }] }
 	 *   -> { tagName: "div", attributes: { class: "box" }, children: [{ tagName: "span", ... }] }
 	 */
-	const buildNormalizedTag = function (elem: CanvasElem): NormalizedTag {
+	const buildNormalizedTag = function (
+		elem: CanvasElem,
+		images: LibraryImage[] = []
+	): NormalizedTag {
 		const tag = createTagShell(elem.elemType);
 
 		insertAttributes(tag);
-		insertInlineStyles(tag, elem);
+		insertInlineStyles(tag, elem, images);
 		insertCssClasses(tag, elem);
 		insertTextContent(tag, elem);
 		insertId(tag, elem);
-		insertProps(tag, elem);
+		insertProps(tag, elem, images);
 
 		tag.children = elem.children.map(function (child) {
-			return buildNormalizedTag(child);
+			return buildNormalizedTag(child, images);
 		});
 
 		return tag;
@@ -212,4 +275,4 @@ const normalizer = function () {
 };
 
 export { normalizer };
-export type { NormalizedTag };
+export type { NormalizedTag, LibraryImage };

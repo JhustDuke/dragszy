@@ -148,6 +148,7 @@
 
 	const handleElemClick = function (event: MouseEvent): void {
 		event.stopPropagation();
+
 		canvasElemsStore.setActiveElem(props.newElemInfo.id);
 	};
 

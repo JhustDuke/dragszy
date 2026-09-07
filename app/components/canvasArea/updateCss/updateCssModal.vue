@@ -1,11 +1,11 @@
 <template>
 	<div
 		id="updateModal"
-		v-if="canvasElemsStore.isEditModalOpen"
+		
 		class="position-absolute bg-white rounded shadow d-flex flex-column"
 		style="
-			width: 75%;
-			max-width: 80%;
+			width: 75vw;
+			max-width: 80vw;
 			z-index: 1001;
 			top: calc(100% + 10px);
 			left: 50%;

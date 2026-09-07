@@ -1,6 +1,6 @@
 import type { CanvasElem } from "~/types";
 import { normalizer } from "./normalizer";
-import type { NormalizedTag } from "./normalizer";
+import type { NormalizedTag, LibraryImage } from "./normalizer";
 import { escapeAttr, escapeText } from "./utils";
 
 const reactCompiler = function () {
@@ -132,17 +132,20 @@ const reactCompiler = function () {
 
 	/**
 	 * Public entry point: takes the raw elems array from the store and
-	 * produces a complete .tsx file as a string. Mirrors createVueFile
-	 * exactly - same buildNormalizedTag step (fully reused from the
-	 * shared normalizer, zero changes), just a different
-	 * serializer/wrapper at the final string-formatting stage.
+	 * produces a complete .tsx file as a string. images is the current
+	 * image library snapshot, used to resolve any userImg/userBgImg
+	 * references into real relative filenames instead of raw base64.
+	 * Mirrors createVueFile exactly - same buildNormalizedTag step
+	 * (fully reused from the shared normalizer, zero changes), just a
+	 * different serializer/wrapper at the final string-formatting stage.
 	 */
 	const createReactFile = function (
 		elems: CanvasElem[],
+		images: LibraryImage[] = [],
 		componentName?: string
 	): string {
 		const normalizedTags = elems.map(function (elem) {
-			return buildNormalizedTag(elem);
+			return buildNormalizedTag(elem, images);
 		});
 
 		//indentLevel starts at 3 (inside return ( -> <> -> content) so

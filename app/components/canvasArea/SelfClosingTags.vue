@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="position-relative d-inline-block my-2 green"
+		class="position-relative my-2 green"
 		:class="{
 			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,
@@ -37,15 +37,25 @@
 	AND the modal has been opened via U. lives inside this wrapper so it
 	positions itself with plain CSS (top: 100%) - no manual rect math
 	needed, unlike the old global-modal + calculated-position approach. -->
-		<updateCssModal
+		<div
 			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
-			@mousedown.stop />
+			class="position-absolute"
+			:style="{
+				width: '600px',
+				maxWidth: '80vw',
+				top: activeHeight + 10 + 'px',
+				left: '0',
+				zIndex: 1001,
+			}">
+			<updateCssModal @mousedown.stop />
+		</div>
+
 		<ResizeButtons
 			v-if="isSelected"
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver || isResizing" />
+			:showBadge="isMouseOver" />
 
 		<button
 			v-if="isMouseOver"
@@ -76,7 +86,7 @@
 		activeHeight: number;
 		isHoveredWhileDragging: boolean;
 		isLastEdited: boolean;
-		isResizing: boolean;
+
 		resize: {
 			top: (ev: MouseEvent) => void;
 			right: (ev: MouseEvent) => void;

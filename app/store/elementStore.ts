@@ -236,14 +236,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			result.elem.customId = customId;
 		},
 
-		//this is used in the inline tab to set bg-image
-		setElemBgImageId: function (id: string, imageId: string | null): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.elem.userBgImg = imageId ?? undefined;
-		},
-
 		//called when the user presses U - reuses activeElemId as "which elem is
 		//being edited" (so double-clicking also selects), and stores where
 		//the modal should appear (usually just below the clicked elem's
@@ -313,6 +305,13 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			for (const elem of this.elems) {
 				findPositionedElemsIds(elem, this.positionedElemsIds);
 			}
+		},
+		//this is used in the inline tab to set bg-image
+		setElemBgImageId: function (id: string, imageId: string | null): void {
+			const result = findElemAndContainer(this.elems, id);
+			if (!result) return;
+
+			result.elem.userBgImg = imageId ?? undefined;
 		},
 	},
 });

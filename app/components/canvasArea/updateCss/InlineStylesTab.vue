@@ -349,7 +349,7 @@
 			//automatically. skip wrapping if already wrapped, so
 			//re-committing an already-saved row doesn't double-wrap it.
 			if (rows.isImage(propertyName) && !propertyValue.startsWith("url(")) {
-				propertyValue = `url("${propertyValue}")`;
+				propertyValue = `url('${propertyValue}')`;
 			}
 
 			inlineStyles[propertyName] = propertyValue;

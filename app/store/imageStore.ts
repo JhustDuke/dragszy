@@ -51,6 +51,7 @@ export const useImageLibraryStore = defineStore("imageLibrary", {
 				return img.id === id;
 			});
 			this.isFromInlineTab.imageData = image?.base64 ?? null;
+			this.isFromInlineTab.imageId = id;
 		},
 		//deletion is symmetric - removing an image just removes its
 		//entry, no cascading cleanup. any elem still referencing this id

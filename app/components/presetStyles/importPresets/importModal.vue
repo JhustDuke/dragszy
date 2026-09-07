@@ -28,6 +28,18 @@
 					@change="handleFileSelected" />
 			</div>
 
+			<div class="text-center text-muted mb-3">— or —</div>
+
+			<div class="mb-3">
+				<label class="form-label">Paste HTML</label>
+				<textarea
+					class="form-control"
+					rows="6"
+					placeholder="<div>...</div>"
+					v-model="pastedHtml"
+					@input="handlePasteInput"></textarea>
+			</div>
+
 			<p class="red-text text-darken-4 text-capitalize text-center fw-bold">
 				make sure the html contains the css of the active framework in use
 			</p>
@@ -60,7 +72,6 @@
 <script setup lang="ts">
 	import { ref, computed } from "vue";
 	import { parseHtmlToDragzy } from "~/compiler";
-
 	import type { CanvasElem } from "~/types";
 
 	const emit = defineEmits<{
@@ -71,15 +82,19 @@
 
 	const label = ref("");
 	const fileContent = ref<string | null>(null);
+	const pastedHtml = ref("");
 	const localError = ref("");
 
+	//either a real uploaded file OR pasted text counts as having
+	//content to import - both feed the exact same parser below
 	const canImport = computed(function () {
-		return label.value.trim().length > 0 && fileContent.value !== null;
+		const hasContent =
+			fileContent.value !== null || pastedHtml.value.trim().length > 0;
+		return label.value.trim().length > 0 && hasContent;
 	});
 
 	function handleFileSelected(event: Event): void {
 		localError.value = "";
-		fileContent.value = null;
 
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
@@ -91,7 +106,7 @@
 
 		if (!isHtmlFile) {
 			localError.value = "Please choose a .html file.";
-			input.value = ""; // clears the selection so canImport stays false
+			input.value = "";
 			return;
 		}
 
@@ -99,6 +114,9 @@
 
 		reader.onload = function () {
 			fileContent.value = reader.result as string;
+			//uploading a file clears any pasted text, so there's only
+			//ever one real source of content at a time, no ambiguity
+			pastedHtml.value = "";
 		};
 
 		reader.onerror = function () {
@@ -108,22 +126,28 @@
 		reader.readAsText(file);
 	}
 
-	//parses locally so the user can immediately retry with a different
-	//file/name without the modal closing on a bad attempt - only a
-	//successful parse gets emitted up for the parent to actually act on
+	//typing into the paste box clears any uploaded file, same reasoning
+	//as above - whichever one the user touched LAST wins
+	function handlePasteInput(): void {
+		localError.value = "";
+		fileContent.value = null;
+	}
+
 	function handleImport(): void {
 		localError.value = "";
 
-		if (!fileContent.value) {
-			localError.value = "Choose a file first.";
+		const htmlToParse = fileContent.value ?? pastedHtml.value;
+
+		if (!htmlToParse || htmlToParse.trim().length === 0) {
+			localError.value = "Upload a file or paste some HTML first.";
 			return;
 		}
 
-		const result = parseHtmlToDragzy(fileContent.value);
+		const result = parseHtmlToDragzy(htmlToParse);
 
 		if (result.error || !result.tree) {
 			localError.value =
-				result.error ?? "Something went wrong parsing that file.";
+				result.error ?? "Something went wrong parsing that content.";
 			emit("error", localError.value);
 			return;
 		}

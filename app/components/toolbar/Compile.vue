@@ -27,18 +27,21 @@
 	import { ref } from "vue";
 
 	import { vueCompiler, reactCompiler } from "../../compiler";
-	import { useCanvasElemsStore } from "~/store";
+	import { useCanvasElemsStore, useImageLibraryStore } from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
 
 	const selectedFramework = ref("vue");
 	const isCompiling = ref(false);
 
 	const canvasElemsStore = useCanvasElemsStore();
+	const imageLibraryStore = useImageLibraryStore();
 
 	/**
 	 * Runs the compile process for whichever framework is selected,
 	 * returning both the file content and the correct filename/extension
-	 * for that framework's output.
+	 * for that framework's output. Passes the current image library
+	 * snapshot through so any userImg/userBgImg references resolve to
+	 * real relative filenames instead of raw base64.
 	 */
 	function compileForSelectedFramework(): {
 		content: string;
@@ -46,14 +49,20 @@
 	} {
 		if (selectedFramework.value === "vue") {
 			return {
-				content: vueCompiler().createVueFile(canvasElemsStore.elems),
+				content: vueCompiler().createVueFile(
+					canvasElemsStore.elems,
+					imageLibraryStore.getImages
+				),
 				fileName: "DragzyExport.vue",
 			};
 		}
 
 		if (selectedFramework.value === "react") {
 			return {
-				content: reactCompiler().createReactFile(canvasElemsStore.elems),
+				content: reactCompiler().createReactFile(
+					canvasElemsStore.elems,
+					imageLibraryStore.getImages
+				),
 				fileName: "DragzyExport.tsx",
 			};
 		}
