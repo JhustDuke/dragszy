@@ -8,21 +8,29 @@ export type ElemStruc = {
 
 export type DefaultStruc = Record<SupportedElemType, ElemStruc>;
 
+
+
+/**
+	* this is the default struc of all elems 
+	* DON'T ADD CLASSES HERE
+	* ADD CLASSES IN THE DEFAULT CLASS FILE
+	* text and attr alone are needed here
+	*/
 export const allElems: DefaultStruc = {
 	div: {
-		text: "",
+		text: "dragzy-div this can be removed by selecting and pressing U",
 		classes: [],
 		attrs: [],
 	},
 
 	span: {
-		text: "dragzy-span",
+		text: "dragzy-span this can be removed by selecting and pressing U",
 		classes: [],
 		attrs: [],
 	},
 
 	p: {
-		text: "dragzy-p",
+		text: "dragzy-p this can be removed by selecting and pressing U",
 		classes: [],
 		attrs: [],
 	},
@@ -40,13 +48,13 @@ export const allElems: DefaultStruc = {
 	},
 
 	ul: {
-		text: "",
+		text: "dragzy-1",
 		classes: [],
 		attrs: [],
 	},
 
 	li: {
-		text: "",
+		text: "dragzy-li",
 		classes: [],
 		attrs: [],
 	},
@@ -70,7 +78,7 @@ export const allElems: DefaultStruc = {
 	},
 
 	textarea: {
-		text: "dragzy",
+		text: "dragzy-text area this can be removed by selecting and pressing U and some ONLY TEXT WORKS HERE IT CAN'T CARRY CHILDREN",
 		classes: [],
 		attrs: ["placeholder", "name"],
 	},

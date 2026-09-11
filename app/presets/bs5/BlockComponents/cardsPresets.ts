@@ -48,8 +48,10 @@ const imageTopCardPreset: CanvasElem = {
 	id: "preset-card-imgtop",
 	elemType: "div",
 	textContent: "",
-	cssClasses: ["card"],
-	props: {},
+	cssClasses: ["card mx-auto"],
+	props: {
+		width: "18rem",
+	},
 	customStyles: {},
 	children: [
 		{
@@ -58,7 +60,7 @@ const imageTopCardPreset: CanvasElem = {
 			textContent: "",
 			cssClasses: ["card-img-top"],
 			props: {
-				src: "https://via.placeholder.com/400x200",
+				src: "./dragzy2.jpg",
 				alt: "Card image",
 			},
 			customStyles: {},
@@ -111,7 +113,7 @@ const horizontalCardPreset: CanvasElem = {
 			textContent: "",
 			cssClasses: ["img-fluid"],
 			props: {
-				src: "https://via.placeholder.com/150",
+				src: "./dragzy3.jpg",
 				alt: "Card image",
 			},
 			customStyles: { width: "150px", height: "auto" },

@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="position-relative my-2 green"
+		class="position-relative my-2"
 		:class="{
 			'border border-2': isHoveredWhileDragging,
 			edited: isLastEdited,

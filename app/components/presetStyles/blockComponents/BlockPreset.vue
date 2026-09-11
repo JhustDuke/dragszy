@@ -50,8 +50,6 @@
 	}
 
 	function handleVariantSelect(variant: BlockPresetVariant): void {
-		console.log("clicked:", variant.label);
 		appActionStore.setActiveBlockVariant(variant.preset);
-		console.log("store now:", appActionStore.getActiveBlock.variant);
 	}
 </script>
