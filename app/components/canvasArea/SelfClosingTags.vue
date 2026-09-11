@@ -147,6 +147,7 @@
 		font-size: 16px;
 		line-height: 18px;
 		transition: opacity 0.15s ease;
+		z-index: 3333;
 	}
 	.deleteBtn:hover {
 		background-color: white !important;

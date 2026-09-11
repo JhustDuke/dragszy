@@ -122,7 +122,7 @@
 		padding: 0;
 		font-size: 16px;
 		line-height: 18px;
-
+		z-index: 3333;
 		transition: opacity 0.15s ease;
 	}
 	.deleteBtn:hover {
