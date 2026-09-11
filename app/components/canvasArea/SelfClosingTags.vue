@@ -29,7 +29,7 @@
 			type="button"
 			class="position-absolute start-50 translate-middle change-src-btn"
 			@click.stop="openLibraryForSrc"
-			style="top: -20px">
+			style="top: -20px; white-space: nowrap">
 			Change Image
 		</button>
 
@@ -58,9 +58,8 @@
 			:showBadge="isMouseOver" />
 
 		<button
-			v-if="isMouseOver"
-			id=""
-			style="right: 0; bottom: 0"
+			v-if="isSelected"
+			style="right: 0; bottom: -10px"
 			class="deleteBtn red position-absolute white-text"
 			@click.stop="onDelete">
 			X
@@ -141,14 +140,20 @@
 </script>
 
 <style scoped>
+	.deleteBtn {
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		font-size: 16px;
+		line-height: 18px;
+		transition: opacity 0.15s ease;
+	}
 	.deleteBtn:hover {
 		background-color: white !important;
+
 		color: red !important;
 	}
 	.edited {
 		border: 1px solid red !important;
-	}
-	.change-src-btn {
-		white-space: nowrap;
 	}
 </style>

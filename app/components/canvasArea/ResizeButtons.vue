@@ -2,7 +2,7 @@
 	<!-- width/height badge - now hover/resize-gated via the showBadge prop,
 		instead of always showing whenever this component is rendered -->
 	<small
-		v-if="showBadge"
+		v-if="(showBadge && width >= 100) || height >= 100"
 		class="position-absolute top-50 start-50 translate-middle badge bg-dark">
 		w:{{ width }}px h:{{ height }}px
 	</small>

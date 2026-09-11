@@ -50,9 +50,8 @@
 			only flips for whichever exact elem (parent or nested child) the
 			cursor is actually on, never both at once. -->
 		<button
-			v-if="isMouseOver"
-			id=""
-			style="right: 0; bottom: 0"
+			v-if="isSelected"
+			style="right: 0; bottom: -20px"
 			class="deleteBtn red position-absolute white-text"
 			@click.stop="onDelete">
 			X
@@ -115,6 +114,16 @@
 	}
 	.edited {
 		border: 1px solid red !important;
+	}
+
+	.deleteBtn {
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		font-size: 16px;
+		line-height: 18px;
+
+		transition: opacity 0.15s ease;
 	}
 	.deleteBtn:hover {
 		background-color: white !important;
