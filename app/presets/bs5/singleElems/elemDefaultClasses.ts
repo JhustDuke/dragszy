@@ -7,8 +7,9 @@ import { allElems, type AllElemType } from "../../common";
 export const defaultClasses: Record<AllElemType, string[]> = {
 	div: [
 		"d-flex",
-		"container-fluid green ",
-		"p-3 ",
+		"container-fluid",
+		"green",
+		"p-3",
 		"justify-content-between",
 		"my-2",
 		"border",
@@ -25,6 +26,6 @@ export const defaultClasses: Record<AllElemType, string[]> = {
 	input: ["form-control"],
 	textarea: ["form-control"],
 	select: ["form-select"],
-	img: ["img-fluid "],
+	img: ["img-fluid"],
 	option: [],
 };

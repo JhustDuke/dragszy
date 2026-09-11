@@ -58,6 +58,7 @@
 		useHistoryStore,
 	} from "./store";
 
+	//this composable is used as src doc for the preview windown
 	const { previewHtml } = usePreviewHtml();
 
 	onMounted(function () {

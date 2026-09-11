@@ -27,7 +27,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		};
 	},
 	getters: {
-		activeElem: function (state) {
+		activeElem: function (state): Readonly<CanvasElem> | null {
 			if (!state.activeElemId) return null;
 
 			return (

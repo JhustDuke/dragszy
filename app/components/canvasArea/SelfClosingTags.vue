@@ -9,9 +9,20 @@
 		:style="props.newElemInfo.customStyles ?? {}"
 		@mousemove="onMouseMove"
 		@mousedown="onMouseDown"
-		@mouseenter="isMouseOver = true"
-		@mouseleave="isMouseOver = false"
 		@click="onClick">
+		<!-- toolbar for quick actions -->
+		<QuickToolBar
+			v-if="isSelected"
+			:controls-override="[
+				'img-fluid',
+				'img-thumbnail',
+				'rounded',
+				'rounded-circle',
+			]"
+			:css-classes="props.newElemInfo.cssClasses"
+			class="position-absolute start-50 translate-middle"
+			style="top: -20px; white-space: nowrap" />
+
 		<component
 			:style="props.newElemInfo.customStyles ?? {}"
 			:is="newElemInfo.elemType"
@@ -21,22 +32,22 @@
 			v-bind="newElemInfo.props" />
 
 		<!-- floating "change src" trigger - ONLY shown while this
-			specific image is the active/selected one, matching how
-			ResizeButtons is already gated the same way. only ever one
-			button visible at a time, even with multiple images on canvas. -->
+		specific image is the active/selected one, matching how
+		ResizeButtons is already gated the same way. only ever one
+		button visible at a time, even with multiple images on canvas. -->
 		<button
 			v-if="isSelected"
 			type="button"
 			class="position-absolute start-50 translate-middle change-src-btn"
 			@click.stop="openLibraryForSrc"
-			style="top: -20px; white-space: nowrap">
+			style="top: -44px; white-space: nowrap">
 			Change Image
 		</button>
 
 		<!-- update/edit modal - only rendered while THIS elem is both selected
-	AND the modal has been opened via U. lives inside this wrapper so it
-	positions itself with plain CSS (top: 100%) - no manual rect math
-	needed, unlike the old global-modal + calculated-position approach. -->
+AND the modal has been opened via U. lives inside this wrapper so it
+positions itself with plain CSS (top: 100%) - no manual rect math
+needed, unlike the old global-modal + calculated-position approach. -->
 		<div
 			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
 			class="position-absolute"
@@ -57,6 +68,7 @@
 			:height="activeHeight"
 			:showBadge="isMouseOver" />
 
+		<!-- delete button -->
 		<button
 			v-if="isSelected"
 			style="right: 0; bottom: -10px"
@@ -70,13 +82,10 @@
 <script setup lang="ts">
 	import { ref, watch } from "vue";
 	import type { CanvasElem } from "~/types";
-	import {
-		useAppActionStore,
-		useImageLibraryStore,
-		useCanvasElemsStore,
-	} from "~/store";
+	import { useImageLibraryStore, useCanvasElemsStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
 	import UpdateCssModal from "./updateCss/updateCssModal.vue";
+	import QuickToolBar from "./QuickToolBar.vue";
 
 	const props = defineProps<{
 		newElemInfo: CanvasElem;
@@ -98,7 +107,6 @@
 		onDelete: (ev: MouseEvent) => void;
 	}>();
 
-	const appActionStore = useAppActionStore();
 	const imageLibraryStore = useImageLibraryStore();
 
 	const elemRef = ref<HTMLElement | null>(null);

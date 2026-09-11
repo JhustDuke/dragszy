@@ -4,6 +4,7 @@
 		so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
 		this component IS the real elem the user is building.
 	-->
+
 	<component
 		:is="newElemInfo.elemType"
 		ref="elemRef"
@@ -26,6 +27,12 @@
 		@mouseleave="isMouseOver = false"
 		@click="onClick">
 		{{ newElemInfo.textContent }}
+
+		<QuickToolBar
+			v-if="isSelected"
+			:css-classes="newElemInfo.cssClasses"
+			class="position-absolute start-50 translate-middle"
+			style="top: -20px; white-space: nowrap" />
 
 		<!-- update/edit modal - only rendered while THIS elem is both selected
 	AND the modal has been opened via U. lives inside this wrapper so it
@@ -73,6 +80,7 @@
 	import { useAppActionStore, useCanvasElemsStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
 	import UpdateCssModal from "./updateCss/updateCssModal.vue";
+	import QuickToolBar from "./QuickToolBar.vue";
 	import NewElem from "./NewElem.vue";
 
 	//no logic lives here on purpose - NewElem.vue owns all behavior

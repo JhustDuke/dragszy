@@ -1,6 +1,8 @@
 <template>
 	<div v-if="activeElem">
-		<label class="form-label">Classes (comma separated)</label>
+		<label class="form-label"
+			>Classes (comma separated),press enter for quick preview</label
+		>
 
 		<input
 			type="text"
@@ -47,24 +49,28 @@
 	//and commas isn't fought by live re-sorting on every keystroke
 	const classDraft = ref(sortedClasses.value.join(", "));
 
-	//keep the draft in sync if a different elem gets selected while this
-	//tab is open
-	watch(activeElem, function () {
+	//keep the draft in sync whenever the actual classes change - covers
+	//both switching to a different elem AND toggling a class on the
+	//same elem from elsewhere (e.g. QuickToolBar), since both cases
+	//flow through sortedClasses
+	watch(sortedClasses, function () {
 		classDraft.value = sortedClasses.value.join(", ");
 	});
 
 	function commitClasses(): void {
 		if (!activeElem.value) return;
 
-		const classes = classDraft.value
-			.split(",")
-			.map(function (className) {
-				return className.trim();
-			})
-			.filter(function (className) {
-				return className.length > 0;
-			})
-			.sort();
+		const classEntriesArr = classDraft.value.split(",");
+		const classes: string[] = [];
+
+		for (const classEntry of classEntriesArr) {
+			const cleanClass = classEntry.trim();
+			if (cleanClass.length > 0) {
+				classes.push(cleanClass);
+			}
+		}
+
+		classes.sort();
 
 		canvasElemsStore.updateElemClasses(activeElem.value.id, classes);
 		classDraft.value = classes.join(", ");
