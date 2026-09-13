@@ -10,9 +10,10 @@
 			</div>
 
 			<div class="d-flex align-items-center">
-				<Help />
+				<ImportButton />
 				<UploadBtn />
 				<CompilerSelect />
+				<Help />
 			</div>
 		</div>
 
@@ -43,4 +44,5 @@
 	import ToggleBorder from "./ToggleBorders.vue";
 	import UploadBtn from "../uploadImg/uploadButton.vue";
 	import Help from "../dragzyHelp/DragzyHelp.vue";
+	import ImportButton from "../importPresets/importButton.vue";
 </script>

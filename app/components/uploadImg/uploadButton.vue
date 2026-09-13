@@ -2,7 +2,13 @@
 	<button
 		type="button"
 		class="btn btn-sm white me-2"
-		@click="isModalOpen = true">
+		@click="isModalOpen = true"
+		@mouseenter="
+			showAndHideToolTip(hints.uploadInfo, {
+				left: 50,
+				top: 30,
+			})
+		">
 		Upload Image
 	</button>
 
@@ -22,6 +28,8 @@
 	import { ref, watch } from "vue";
 	import { useImageLibraryStore } from "~/store";
 	import UploadImageModal from "./uploadModal.vue";
+
+	import { showAndHideToolTip, hints } from "#imports";
 
 	const imageLibraryStore = useImageLibraryStore();
 

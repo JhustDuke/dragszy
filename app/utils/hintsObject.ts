@@ -8,4 +8,7 @@ export const hints = {
 	undo: "click to undo",
 	redo: "click to redo",
 	exportFormat: " click to select export type",
+	importInfo: "click to import a custom style",
+	uploadInfo: "all your images is kept here",
+	helpInfo: "Shortcuts,Tips and How-Tos",
 };

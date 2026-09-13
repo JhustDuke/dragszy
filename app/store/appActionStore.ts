@@ -32,6 +32,7 @@ export const useAppActionStore = defineStore("appAction", {
 
 			importedElems: [] as { label: string; preset: CanvasElem }[],
 			activeImportedElem: null as CanvasElem | null,
+			showImportModal: false,
 		};
 	},
 	getters: {

@@ -1,8 +1,14 @@
 <template>
 	<button
 		type="button"
-		class="info btn red me-2 white-text"
-		@click="isModalOpen = true">
+		class="info btn red mx-2 white-text"
+		@click="isModalOpen = true"
+		@mouseenter="
+			showAndHideToolTip(hints.helpInfo, {
+				left: 0,
+				top: 30,
+			})
+		">
 		<i class="fa fa-question-circle me-1"></i>
 		Help
 	</button>
@@ -54,6 +60,7 @@
 
 <script setup lang="ts">
 	import { ref } from "vue";
+	import { showAndHideToolTip, hints } from "#imports";
 
 	import HelpGettingStarted from "./GettingStarted.vue";
 	import HelpElements from "./HelpElements.vue";

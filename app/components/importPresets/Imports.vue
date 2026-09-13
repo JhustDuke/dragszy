@@ -15,7 +15,7 @@
 
 			<span
 				class="btn btn-sm btn-outline-primary"
-				@click="isModalOpen = true"
+				@click="appActionStore.showImportModal = true"
 				role="button">
 				Import New
 			</span>
@@ -28,27 +28,26 @@
 		</p>
 
 		<ImportNewModal
-			v-if="isModalOpen"
-			@close="isModalOpen = false"
+			v-if="appActionStore.showImportModal"
+			@close="appActionStore.showImportModal = false"
 			@error="handleImportError"
 			@success="handleImportSuccess" />
 	</div>
 </template>
 
 <script setup lang="ts">
-	import { ref, onMounted } from "vue";
+	import { onMounted, ref } from "vue";
 	import { useAppActionStore } from "~/store";
 	import type { CanvasElem } from "~/types";
 	import ImportNewModal from "./importModal.vue";
 
 	const appActionStore = useAppActionStore();
 
-	const isModalOpen = ref(false);
 	const lastError = ref("");
 
 	onMounted(function () {
 		if (appActionStore.getImportedElems.length === 0) {
-			isModalOpen.value = true;
+			appActionStore.showImportModal = true;
 		}
 	});
 
@@ -71,7 +70,7 @@
 		appActionStore.addImportedElem(label, tree);
 		appActionStore.setActiveImportedElem(tree);
 
-		isModalOpen.value = false;
+		appActionStore.showImportModal = false;
 	}
 
 	function handleImportError(message: string): void {

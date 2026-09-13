@@ -11,22 +11,28 @@
 		<option
 			v-for="label in Optionlabels"
 			:key="label"
-			:value="label"
-			:selected="label === 'create'">
+			:value="label">
 			{{ label }}
 		</option>
 	</select>
 </template>
 
 <script setup lang="ts">
-	import { ref, watch, onMounted, onUnmounted } from "vue";
+	import { computed, onMounted, onUnmounted } from "vue";
 	import { useAppActionStore } from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
 	import type { AppAction } from "~/types";
 
 	const appActionStore = useAppActionStore();
 
-	const selectedAction = ref<AppAction>("create");
+	const selectedAction = computed({
+		get: function (): AppAction {
+			return appActionStore.getActiveAction;
+		},
+		set: function (action: AppAction): void {
+			appActionStore.setActiveAction(action);
+		},
+	});
 
 	const Optionlabels: AppAction[] = [
 		"create",
@@ -35,19 +41,16 @@
 		"imports",
 	];
 
-	watch(
-		function () {
-			return selectedAction.value;
-		},
-		function (newVal) {
-			appActionStore.setActiveAction(newVal);
-		},
-		{ immediate: true }
-	);
-
 	function handleKeyDown(event: KeyboardEvent): void {
 		const target = event.target as HTMLElement;
-		if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+
+		if (
+			target.tagName === "INPUT" ||
+			target.tagName === "TEXTAREA" ||
+			target.tagName === "SELECT"
+		) {
+			return;
+		}
 
 		if (event.key === "r") {
 			selectedAction.value = "resize";
@@ -63,6 +66,7 @@
 			selectedAction.value = "components";
 			return;
 		}
+
 		if (event.key === "i") {
 			selectedAction.value = "imports";
 			return;
