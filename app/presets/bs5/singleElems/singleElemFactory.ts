@@ -23,6 +23,10 @@ export const elemDataFactory = (function () {
 			props.alt = "dragzy-image";
 		}
 
+		// gives a every a link a default # in the hrelf
+		if (type === "a") {
+			props.href = "#";
+		}
 		return props;
 	};
 

@@ -1,7 +1,6 @@
 <template>
 	<div
 		id="updateModal"
-		
 		class="position-absolute bg-white rounded shadow d-flex flex-column"
 		style="
 			width: 75vw;
@@ -72,6 +71,7 @@
 	import ClassesTab from "./ClassesTab.vue";
 	import InlineStylesTab from "./InlineStylesTab.vue";
 	import TextContentTab from "./InsertTextContent.vue";
+	import PerElemAttr from "./PerElemAttr.vue";
 	import CustomIdTab from "./CustomIDTab.vue";
 
 	const canvasElemsStore = useCanvasElemsStore();
@@ -79,6 +79,7 @@
 	const tabs = [
 		{ title: "Text", component: TextContentTab },
 		{ title: "Classes", component: ClassesTab },
+		{ title: "Atrrs", component: PerElemAttr },
 		{ title: "Inline Styles", component: InlineStylesTab },
 		{ title: "ID", component: CustomIdTab },
 	] as const;
