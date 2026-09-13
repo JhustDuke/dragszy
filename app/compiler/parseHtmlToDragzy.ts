@@ -2,7 +2,7 @@ import type { CanvasElem } from "~/types";
 import { allElems } from "~/presets/common";
 import { generateId } from "~/store/utils/canvasElemFactory";
 
-const MAX_IMPORT_ELEMENTS = 50;
+const MAX_IMPORT_ELEMENTS = 100;
 
 export interface ParseResult {
 	tree: CanvasElem | null;
