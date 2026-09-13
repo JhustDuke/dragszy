@@ -51,6 +51,12 @@ export const supportedElemTypes = [
 	"select",
 	"option",
 	"img",
+	"h1",
+	"h2",
+	"h3",
+	"h4",
+	"h5",
+	"h6",
 ] as const satisfies (keyof HTMLElementTagNameMap)[];
 
 export type SupportedElemType = (typeof supportedElemTypes)[number];

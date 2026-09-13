@@ -51,7 +51,7 @@
 
 	//elem types that can't have children/text in real HTML
 	//e.g. img - add more here later (input, br, hr, etc.) if you support them
-	const selfClosingElemTypes = ["img"];
+	const selfClosingElemTypes = ["img", "input"];
 
 	const isSelfClosing = computed(function () {
 		return selfClosingElemTypes.includes(props.newElemInfo.elemType);

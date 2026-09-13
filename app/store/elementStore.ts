@@ -7,7 +7,7 @@ import {
 	createClone,
 	createFromPreset,
 } from "./utils/canvasElemFactory";
-import { elemDataFactory } from "~/presets/bs5";
+import { SingleElemDataFactory } from "~/presets/bs5";
 
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
@@ -38,7 +38,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap) {
 			const appActionStore = useAppActionStore();
-			const elemData = elemDataFactory.getElemData(type as any);
+			const elemData = SingleElemDataFactory.getElemData(type as any);
 			//createDefault (in canvasElemFactory.ts) now owns all the
 			//width/height/attribute-parsing logic internally - this action
 			//just gathers the raw defaults/presets and hands them over

@@ -41,7 +41,7 @@
 <script setup lang="ts">
 	import { computed } from "vue";
 	import { useCanvasElemsStore } from "~/store";
-	import { elemDataFactory } from "~/presets/bs5";
+	import { SingleElemDataFactory } from "~/presets/bs5";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
@@ -84,7 +84,7 @@
 		if (!selectedElem.value) return [];
 
 		const elemType = selectedElem.value.elemType;
-		const elemData = elemDataFactory.getElemData(elemType as any);
+		const elemData = SingleElemDataFactory.getElemData(elemType as any);
 		const declaredAttrNames = Object.keys(elemData.defaults.attributes ?? {});
 		const excluded = EXCLUDED_ATTRS_BY_ELEM[elemType] ?? [];
 

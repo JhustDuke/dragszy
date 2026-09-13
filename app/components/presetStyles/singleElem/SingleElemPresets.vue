@@ -25,7 +25,7 @@
 <script setup lang="ts">
 	import { computed } from "vue";
 	import { useAppActionStore } from "~/store";
-	import { elemDataFactory } from "~/presets/bs5";
+	import { SingleElemDataFactory } from "~/presets/bs5";
 	import { allElems, type AllElemType } from "~/presets/common";
 	import type { Preset } from "~/presets";
 	import ElemTypes from "./ElemTypes.vue";
@@ -47,7 +47,7 @@
 	//variants for whichever elem type is currently selected
 	//e.g. selectedElemType = "div" -> [Centered, Container, Card, Aside]
 	const variants = computed(function () {
-		return elemDataFactory.getElemData(selectedElemType.value).variants;
+		return SingleElemDataFactory.getElemData(selectedElemType.value).variants;
 	});
 
 	function handleElemTypeSelect(elemType: AllElemType): void {
