@@ -40,7 +40,7 @@
 	needed, unlike the old global-modal + calculated-position approach. -->
 		<updateCssModal
 			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
-			@mousedown.stop />
+		 />
 
 		<!-- badge + 4 resize handles, only while selected - showBadge
 			additionally gates the badge specifically to hover/active-resize,

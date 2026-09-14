@@ -9,7 +9,7 @@
 <script setup lang="ts">
 	import SingleElemPresets from "./singleElem/SingleElemPresets.vue";
 	import BlockElemPresets from "./blockComponents/BlockPreset.vue";
-	import Imports from "../importPresets/Imports.vue";
+	import Imports from "./importPresets/Imports.vue";
 	import { useAppActionStore } from "~/store";
 
 	const appActionStore = useAppActionStore();

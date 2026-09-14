@@ -14,7 +14,7 @@
 			<div
 				style="min-height: 5000px; max-width: 1400px; margin: 0 auto"
 				v-if="viewportStore.activeViewport === 'desktop'"
-				class="py-1 px-2"
+				class=""
 				dragzy-root
 				@dblclick="handleCanvasDblClick">
 				<CanvasArea />

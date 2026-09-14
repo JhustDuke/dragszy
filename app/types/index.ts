@@ -6,6 +6,10 @@ export type AppAction = "create" | "components" | "resize" | "imports";
 export type ResizeEdge = "top" | "right" | "bottom" | "left";
 
 export interface CanvasElem {
+	//this is used by the compiler to know whether to include or exclude the app-root
+	//div from the exported file or keep it
+	//e.g if true export file has a root div enclosing all components
+	excludeRootFromExport?: boolean;
 	id: string;
 	width?: number;
 	height?: number;

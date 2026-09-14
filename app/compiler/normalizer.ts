@@ -7,6 +7,12 @@ interface NormalizedTag {
 	attributes: Record<string, string>;
 	textContent: string;
 	children: NormalizedTag[];
+	//carried over from elem.excludeRootFromExport. only meaningful when
+	//this tag came from app-root, set directly on the elem object by
+	//the export flow (CompileFeedback checkbox) right before compiling -
+	//no store action involved. when true, parseHtml skips this tag's
+	//own opening/closing tag and emits its children directly instead.
+	excludeRootFromExport: boolean;
 }
 
 //shape of one image library entry - kept as a plain interface here
@@ -47,6 +53,7 @@ const normalizer = function () {
 			attributes: {},
 			textContent: "",
 			children: [],
+			excludeRootFromExport: false,
 		};
 	};
 
@@ -184,6 +191,17 @@ const normalizer = function () {
 		}
 	};
 
+	//copies elem.excludeRootFromExport onto the tag as-is. whatever the
+	//elem currently holds - whether it's the default false, or true
+	//because the export flow mutated app-root's own object directly
+	//right before calling the compiler.
+	const insertExcludeRootFromExport = function (
+		tag: NormalizedTag,
+		elem: CanvasElem
+	): void {
+		tag.excludeRootFromExport = elem.excludeRootFromExport ?? false;
+	};
+
 	/**
 	 * Walks a single CanvasElem (and its nested children) and builds a
 	 * fully-populated NormalizedTag tree, by running every insert* step
@@ -207,6 +225,7 @@ const normalizer = function () {
 		insertTextContent(tag, elem);
 		insertId(tag, elem);
 		insertProps(tag, elem, images);
+		insertExcludeRootFromExport(tag, elem);
 
 		tag.children = elem.children.map(function (child) {
 			return buildNormalizedTag(child, images);
@@ -221,13 +240,27 @@ const normalizer = function () {
 	 * <template> block (and any other framework that accepts real HTML
 	 * syntax) can use it directly. indentLevel tracks how deep in the
 	 * tree we are, increasing by 1 per recursive call into a child.
+	 * When a tag has excludeRootFromExport set (app-root only), its own
+	 * opening/closing tag is skipped entirely - only its children are
+	 * emitted, at the SAME indent level the excluded tag itself would
+	 * have used (since there's no wrapping tag anymore to indent under).
 	 * e.g. parseHtml({ tagName: "div", children: [{ tagName: "span", ... }] })
 	 *   -> "<div>\n\t<span></span>\n</div>"
+	 * e.g. root.excludeRootFromExport = true, root.children = [div, span]
+	 *   -> "<div>...</div>\n<span>...</span>" (no wrapping root tag)
 	 */
 	const parseHtml = function (
 		element: NormalizedTag,
 		indentLevel: number = 0
 	): string {
+		if (element.excludeRootFromExport) {
+			return element.children
+				.map(function (childElement) {
+					return parseHtml(childElement, indentLevel);
+				})
+				.join("\n");
+		}
+
 		const indentation = "\t".repeat(indentLevel);
 
 		let openingTag = `<${element.tagName}`;

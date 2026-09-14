@@ -58,7 +58,7 @@ needed, unlike the old global-modal + calculated-position approach. -->
 				left: '0',
 				zIndex: 1001,
 			}">
-			<updateCssModal @mousedown.stop />
+			<updateCssModal />
 		</div>
 
 		<ResizeButtons

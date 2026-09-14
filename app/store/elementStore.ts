@@ -9,11 +9,26 @@ import {
 } from "./utils/canvasElemFactory";
 import { SingleElemDataFactory } from "~/presets/bs5";
 
+const APP_ROOT_ID = "app-root";
+
+const createAppRoot = function (): CanvasElem {
+	return {
+		id: APP_ROOT_ID,
+		elemType: "div",
+		children: [],
+		customStyles: {
+			minHeight: "5000px",
+		},
+		cssClasses: ["w-100", "p-1"],
+		excludeRootFromExport: false,
+	};
+};
+
 export const useCanvasElemsStore = defineStore("canvasElems", {
 	state: function () {
 		return {
 			lastEditedId: null as string | null,
-			elems: [] as CanvasElem[],
+			elems: [createAppRoot()] as CanvasElem[],
 			currentlyDragged: null as HTMLElement | null,
 			currentlyHovered: null as HTMLElement | null,
 			activeElemId: null as string | null,
@@ -26,6 +41,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			},
 		};
 	},
+
 	getters: {
 		activeElem: function (state): Readonly<CanvasElem> | null {
 			if (!state.activeElemId) return null;
@@ -35,10 +51,12 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			);
 		},
 	},
+
 	actions: {
 		addElem: function (type: keyof HTMLElementTagNameMap) {
 			const appActionStore = useAppActionStore();
 			const elemData = SingleElemDataFactory.getElemData(type as any);
+
 			//createDefault (in canvasElemFactory.ts) now owns all the
 			//width/height/attribute-parsing logic internally - this action
 			//just gathers the raw defaults/presets and hands them over
@@ -77,7 +95,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				}
 			}
 
-			this.elems.push(newElem);
+			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
+
+			if (!appRoot) {
+				console.warn("Cannot add element: app-root was not found.");
+				return;
+			}
+
+			appRoot.elem.children.push(newElem);
 			this.activeElemId = newElem.id;
 		},
 
@@ -102,7 +127,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				}
 			}
 
-			this.elems.push(newElem);
+			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
+
+			if (!appRoot) {
+				console.warn("Cannot add preset: app-root was not found.");
+				return;
+			}
+
+			appRoot.elem.children.push(newElem);
 			this.activeElemId = newElem.id;
 		},
 
@@ -129,6 +161,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		appendToNewParent: function (draggedId: string, parentId: string): boolean {
 			if (draggedId === parentId) return false;
 
+			//app-root is the permanent canvas root and cannot itself
+			//be moved into another element.
+			if (draggedId === APP_ROOT_ID) return false;
+
 			const draggedResult = findElemAndContainer(this.elems, draggedId);
 			if (!draggedResult) return false;
 
@@ -153,11 +189,20 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		},
 
 		unparentElem: function (id: string): boolean {
+			//app-root is already the permanent top-level container
+			//and can never be unparented.
+			if (id === APP_ROOT_ID) return false;
+
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return false;
 
-			// already top-level, nothing to do
-			if (result.container === this.elems) return false;
+			//already a direct child of app-root, so there is nowhere
+			//higher in the canvas tree to move it.
+			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
+
+			if (!appRoot) return false;
+
+			if (result.container === appRoot.elem.children) return false;
 
 			const index = result.container.findIndex(function (elem) {
 				return elem.id === id;
@@ -169,11 +214,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			if (!movedElem) return false;
 
-			this.elems.push(movedElem);
+			appRoot.elem.children.push(movedElem);
 			return true;
 		},
 
 		deleteElem: function (id: string) {
+			//app-root is the permanent canvas root and cannot be deleted.
+			if (id === APP_ROOT_ID) return;
+
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
@@ -187,7 +235,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			if (this.activeElemId === id) {
 				this.activeElemId =
-					result.container.length > 0 ? result.container[0]?.id ?? null : null;
+					result.container.length > 0
+						? result.container[0]?.id ?? null
+						: APP_ROOT_ID;
 			}
 
 			// //rebuild the positioned element IDs after removing an element
@@ -269,6 +319,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			if (!result) return;
 
+			//app-root is structural and must never be duplicated.
+			if (result.elem.id === APP_ROOT_ID) return;
+
 			const clone = createClone(result.elem);
 
 			const index = result.container.findIndex(function (elem) {
@@ -318,6 +371,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				findPositionedElemsIds(elem, this.positionedElemsIds);
 			}
 		},
+
 		//this is used in the inline tab to set bg-image
 		setElemBgImageId: function (id: string, imageId: string | null): void {
 			const result = findElemAndContainer(this.elems, id);
