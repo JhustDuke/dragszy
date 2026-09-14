@@ -1,7 +1,5 @@
 <template>
-	<Teleport
-		to="body"
-		:disabled="canvasElemsStore.activeElemId !== 'app-root'">
+	<Teleport to="body">
 		<div
 			id="updateModal"
 			class="bg-white rounded shadow d-flex flex-column"
@@ -84,31 +82,19 @@
 
 	const activeTab = shallowRef<(typeof tabs)[number]>(tabs[0]);
 
-	//normal case: positioned relative to the elem's own wrapper, exactly
-	//as before. app-root case: once teleported to body, there's no
-	//positioned ancestor to sit "just below" anymore, so this switches
-	//to fixed + centered on the screen instead.
+	//experiment: always fixed + centered on screen now, regardless of
+	//which elem is being edited, since the modal always teleports to
+	//body and there's never a positioned ancestor to sit "just below"
+	//anymore.
 	const modalStyle = computed(function () {
-		if (canvasElemsStore.activeElemId === "app-root") {
-			return {
-				position: "fixed" as const,
-				top: "50%",
-				left: "50%",
-				transform: "translate(-50%, -50%)",
-				width: "75vw",
-				maxWidth: "80vw",
-				zIndex: 1001,
-			};
-		}
-
 		return {
-			position: "absolute" as const,
+			position: "fixed" as const,
+			top: "50%",
+			left: "50%",
+			transform: "translate(-50%, -50%)",
 			width: "75vw",
 			maxWidth: "80vw",
 			zIndex: 1001,
-			top: "calc(100% + 10px)",
-			left: "50%",
-			transform: "translateX(-50%)",
 		};
 	});
 
