@@ -7,8 +7,10 @@
 			@mousedown.stop>
 			<!-- Header -->
 			<div
-				class="border-bottom p-2 d-flex justify-content-between align-items-center">
-				<h6 class="mb-0">Update CSS</h6>
+				class="border-bottom p-2 d-flex justify-content-between align-items-center"
+				style="cursor: move"
+				@mousedown="startDragging">
+				<h6 class="mb-0">Update CSS (you can drag me)</h6>
 
 				<button
 					type="button"
@@ -61,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-	import { shallowRef, computed } from "vue";
+	import { shallowRef, computed, ref, onUnmounted } from "vue";
 	import { useCanvasElemsStore } from "~/store";
 
 	import ClassesTab from "./ClassesTab.vue";
@@ -82,11 +84,31 @@
 
 	const activeTab = shallowRef<(typeof tabs)[number]>(tabs[0]);
 
+	const modalLeft = ref<number | null>(null);
+	const modalTop = ref<number | null>(null);
+
+	const isDragging = ref(false);
+	const dragStartX = ref(0);
+	const dragStartY = ref(0);
+	const initialLeft = ref(0);
+	const initialTop = ref(0);
+
 	//experiment: always fixed + centered on screen now, regardless of
 	//which elem is being edited, since the modal always teleports to
 	//body and there's never a positioned ancestor to sit "just below"
 	//anymore.
 	const modalStyle = computed(function () {
+		if (modalLeft.value !== null && modalTop.value !== null) {
+			return {
+				position: "fixed" as const,
+				top: modalTop.value + "px",
+				left: modalLeft.value + "px",
+				width: "75vw",
+				maxWidth: "80vw",
+				zIndex: 1001,
+			};
+		}
+
 		return {
 			position: "fixed" as const,
 			top: "50%",
@@ -96,6 +118,54 @@
 			maxWidth: "80vw",
 			zIndex: 1001,
 		};
+	});
+
+	const startDragging = function (ev: MouseEvent): void {
+		const modal = document.getElementById("updateModal");
+
+		if (!modal) return;
+
+		const modalRect = modal.getBoundingClientRect();
+
+		//Convert the initially centered modal position into actual
+		//viewport coordinates before dragging starts.
+		modalLeft.value = modalRect.left;
+		modalTop.value = modalRect.top;
+
+		dragStartX.value = ev.clientX;
+		dragStartY.value = ev.clientY;
+
+		initialLeft.value = modalRect.left;
+		initialTop.value = modalRect.top;
+
+		isDragging.value = true;
+
+		document.addEventListener("mousemove", handleDragging);
+		document.addEventListener("mouseup", stopDragging);
+	};
+
+	const handleDragging = function (ev: MouseEvent): void {
+		if (!isDragging.value) return;
+
+		const horizontalMovement = ev.clientX - dragStartX.value;
+		const verticalMovement = ev.clientY - dragStartY.value;
+
+		modalLeft.value = initialLeft.value + horizontalMovement;
+		modalTop.value = initialTop.value + verticalMovement;
+	};
+
+	const stopDragging = function (): void {
+		if (!isDragging.value) return;
+
+		isDragging.value = false;
+
+		document.removeEventListener("mousemove", handleDragging);
+		document.removeEventListener("mouseup", stopDragging);
+	};
+
+	onUnmounted(function () {
+		document.removeEventListener("mousemove", handleDragging);
+		document.removeEventListener("mouseup", stopDragging);
 	});
 
 	function closeModal(): void {
