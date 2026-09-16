@@ -55,12 +55,18 @@ export const SingleElemDataFactory = (function () {
 	//returns a fresh copy (both the outer array and each variant's classes array)
 	//so nothing the caller does can mutate the factory's internal data
 	const getVariants = function (type: AllElemType): Preset[] {
-		return bootstrapElemVariants[type].map(function (variant) {
-			return {
+		const sourceVariants = bootstrapElemVariants[type];
+		const variants: Preset[] = [];
+
+		for (const variant of sourceVariants) {
+			variants.push({
 				label: variant.label,
 				classes: [...variant.classes],
-			};
-		});
+				customStyles: variant.customStyles ? { ...variant.customStyles } : {},
+			});
+		}
+
+		return variants;
 	};
 
 	//the ONLY public method - one call in, everything out.

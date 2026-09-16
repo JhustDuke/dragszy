@@ -66,6 +66,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				defaultClasses: elemData.defaults.classes,
 				defaultAttributes: elemData.defaults.attributes,
 				presetClasses: appActionStore.getSelectedPresetClasses,
+				presetCustomStyles: appActionStore.getSelectedPreseCustomStyles,
 			});
 
 			//img is the one elem type that needs a real starting size seeded

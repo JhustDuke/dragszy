@@ -1,7 +1,9 @@
 import type { CanvasElem } from "~/types";
+
 export interface Preset {
 	label: string;
 	classes: string[];
+	customStyles?: Record<string, string>;
 }
 
 export interface BlockPresetVariant {

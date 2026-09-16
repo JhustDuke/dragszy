@@ -16,13 +16,13 @@ export type DefaultStruc = Record<SupportedElemType, ElemStruc>;
  */
 export const allElems: DefaultStruc = {
 	div: {
-		text: "dragzy-div this can be removed by selecting and pressing U",
+		text: "",
 		classes: [],
 		attrs: [],
 	},
 
 	span: {
-		text: "dragzy-span this can be removed by selecting and pressing U",
+		text: "span",
 		classes: [],
 		attrs: [],
 	},
@@ -46,7 +46,7 @@ export const allElems: DefaultStruc = {
 	},
 
 	ul: {
-		text: "dragzy-1",
+		text: "",
 		classes: [],
 		attrs: [],
 	},

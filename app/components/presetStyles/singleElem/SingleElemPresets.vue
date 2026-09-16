@@ -55,30 +55,47 @@
 	}
 
 	function isVariantActive(variant: Preset): boolean {
-		const selected = appActionStore.getSelectedPresetClasses;
+		const selectedClasses = appActionStore.getSelectedPresetClasses;
+		const selectedCustomStyles = appActionStore.getSelectedPreseCustomStyles;
+		const variantStyles = variant.customStyles ?? {};
 
 		//different lengths means they can't be the same list at all
-		if (selected.length !== variant.classes.length) {
+		if (selectedClasses.length !== variant.classes.length) {
 			return false;
 		}
 
 		//same length, so check every class matches in the same position
-		for (let i = 0; i < selected.length; i++) {
-			if (selected[i] !== variant.classes[i]) {
+		for (let i = 0; i < selectedClasses.length; i++) {
+			if (selectedClasses[i] !== variant.classes[i]) {
 				return false;
 			}
 		}
 
-		//got through the loop with no mismatch - they're identical
+		const selectedStyleKeys = Object.keys(selectedCustomStyles);
+		const variantStyleKeys = Object.keys(variantStyles);
+
+		//different key counts means they can't be the same styles object
+		if (selectedStyleKeys.length !== variantStyleKeys.length) {
+			return false;
+		}
+
+		//same key count, so check every key's value matches
+		for (const key of variantStyleKeys) {
+			if (selectedCustomStyles[key] !== variantStyles[key]) {
+				return false;
+			}
+		}
+
+		//classes matched AND styles matched - genuinely the same variant
 		return true;
 	}
 
 	function handleVariantSelect(variant: Preset): void {
-		//back to the elem type's normal default classes
 		if (isVariantActive(variant)) {
 			return;
 		}
 
 		appActionStore.setSelectedPresetClasses(variant.classes);
+		appActionStore.setSelectedPresetCustomStyles(variant.customStyles ?? {});
 	}
 </script>

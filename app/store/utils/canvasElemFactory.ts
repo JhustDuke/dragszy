@@ -7,6 +7,7 @@ export interface CreateDefaultInterface {
 
 	defaultText: string;
 	defaultClasses: string[];
+	presetCustomStyles?: Record<string, string>;
 
 	defaultAttributes: Record<string, string>;
 
@@ -32,10 +33,11 @@ export function createDefault(params: CreateDefaultInterface): CanvasElem {
 
 		children: [],
 
-		//always a real object, never undefined - so any code that does
-		//elem.customStyles.width = "..." without a fallback check never
-		//throws, even for elem types that start with nothing in here
-		customStyles: {},
+		customStyles:
+			params.presetCustomStyles &&
+			Object.keys(params.presetCustomStyles).length > 0
+				? { ...params.presetCustomStyles }
+				: undefined,
 	};
 }
 

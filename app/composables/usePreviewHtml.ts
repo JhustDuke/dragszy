@@ -16,7 +16,7 @@ export function usePreviewHtml() {
 		const { buildNormalizedTag, parseHtml } = normalizer();
 
 		const normalizedTags = canvasElemsStore.elems.map(function (elem) {
-			return buildNormalizedTag(elem, imageLibraryStore.getImages);
+			return buildNormalizedTag(elem, imageLibraryStore.getImages, "preview");
 		});
 
 		const bodyMarkup = normalizedTags

@@ -1,16 +1,20 @@
 import type { CanvasElem } from "~/types";
+
 import type { BlockPresets } from "~/presets/types";
+
 //placeholder ids everywhere - createClone regenerates every one of these
+
 //the moment a preset is actually placed, so these values never reach the canvas
 
 //1. Basic card - title, text, one button. The default "just a card" option.
+
 const basicCardPreset: CanvasElem = {
 	id: "preset-card-basic",
 	elemType: "div",
 	textContent: "",
-	cssClasses: ["card", "p-3"],
+	cssClasses: ["card", "p-3", "w-100", "mx-auto"],
 	props: {},
-	customStyles: {},
+	customStyles: { maxWidth: "540px" },
 	children: [
 		{
 			id: "preset-card-basic-title",
@@ -44,15 +48,14 @@ const basicCardPreset: CanvasElem = {
 };
 
 //2. Image-top card - img above title/text, common "product/blog" card shape.
+
 const imageTopCardPreset: CanvasElem = {
 	id: "preset-card-imgtop",
 	elemType: "div",
 	textContent: "",
-	cssClasses: ["card mx-auto"],
-	props: {
-		width: "18rem",
-	},
-	customStyles: {},
+	cssClasses: ["card", "w-100", "mx-auto"],
+	props: {},
+	customStyles: { maxWidth: "540px" },
 	children: [
 		{
 			id: "preset-card-imgtop-img",
@@ -99,13 +102,14 @@ const imageTopCardPreset: CanvasElem = {
 };
 
 //3. Horizontal card - img beside content, side-by-side using flex utilities.
+
 const horizontalCardPreset: CanvasElem = {
 	id: "preset-card-horizontal",
 	elemType: "div",
 	textContent: "",
-	cssClasses: ["card", "d-flex", "flex-row"],
+	cssClasses: ["card", "d-flex", "flex-row", "w-100", "mx-auto"],
 	props: {},
-	customStyles: {},
+	customStyles: { maxWidth: "540px" },
 	children: [
 		{
 			id: "preset-card-horizontal-img",
@@ -152,6 +156,7 @@ const horizontalCardPreset: CanvasElem = {
 };
 
 //the ONE public export for cards, keyed by category name
+
 export const blockPresets: BlockPresets = {
 	card: {
 		variant: [

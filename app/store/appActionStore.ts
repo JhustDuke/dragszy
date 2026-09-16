@@ -10,7 +10,9 @@ export const useAppActionStore = defineStore("appAction", {
 			currentAction: "create" as AppAction,
 			selectedElemType: "div" as keyof HTMLElementTagNameMap,
 
+			// in state():
 			selectedPresetClasses: [] as string[],
+			selectedPresetCustomStyles: {} as Record<string, string>,
 
 			//canvas-only visual aid - shows a border outline on every
 			//elem so boundaries are visible while building. NEVER
@@ -45,8 +47,12 @@ export const useAppActionStore = defineStore("appAction", {
 		getSelectedElemType: function (state): keyof HTMLElementTagNameMap {
 			return state.selectedElemType;
 		},
+		// in getters:
 		getSelectedPresetClasses: function (state): string[] {
 			return state.selectedPresetClasses;
+		},
+		getSelectedPreseCustomStyles: function (state): Record<string, string> {
+			return state.selectedPresetCustomStyles;
 		},
 		getActiveBlock: function (state) {
 			return state.activeBlock;
@@ -68,8 +74,13 @@ export const useAppActionStore = defineStore("appAction", {
 		): void {
 			this.selectedElemType = elemType;
 			this.selectedPresetClasses = [];
+			this.selectedPresetCustomStyles = {};
 		},
-
+		setSelectedPresetCustomStyles: function (
+			styles: Record<string, string>
+		): void {
+			this.selectedPresetCustomStyles = styles;
+		},
 		setSelectedPresetClasses: function (classes: string[]): void {
 			this.selectedPresetClasses = classes;
 		},

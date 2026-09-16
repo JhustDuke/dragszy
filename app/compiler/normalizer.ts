@@ -78,7 +78,8 @@ const normalizer = function () {
 	const insertInlineStyles = function (
 		tag: NormalizedTag,
 		elem: CanvasElem,
-		images: LibraryImage[]
+		images: LibraryImage[],
+		mode: "preview" | "export"
 	): void {
 		if (!elem.customStyles) {
 			return;
@@ -94,17 +95,26 @@ const normalizer = function () {
 			let value = elem.customStyles[property as keyof typeof elem.customStyles];
 			if (!value) continue;
 
-			//only the property actually holding the uploaded image gets
-			//swapped - background/backgroundImage are the only two
-			//properties the Inline Styles tab's image upload ever writes to
 			if (
 				resolvedImage &&
 				(property === "background" || property === "backgroundImage")
 			) {
-				value = `url('./${resolvedImage.fileName}')`;
+				value =
+					mode === "preview"
+						? `url('${resolvedImage.base64}')`
+						: `url('./${resolvedImage.fileName}')`;
 			}
 
-			styleParts.push(`${property}: ${value}`);
+			let kebabProperty = "";
+			for (const char of property) {
+				if (char >= "A" && char <= "Z") {
+					kebabProperty += "-" + char.toLowerCase();
+				} else {
+					kebabProperty += char;
+				}
+			}
+
+			styleParts.push(`${kebabProperty}: ${value}`);
 		}
 
 		tag.attributes.style = styleParts.join("; ");
@@ -170,7 +180,8 @@ const normalizer = function () {
 	const insertProps = function (
 		tag: NormalizedTag,
 		elem: CanvasElem,
-		images: LibraryImage[]
+		images: LibraryImage[],
+		mode: "preview" | "export"
 	): void {
 		if (!elem.props) {
 			return;
@@ -183,7 +194,11 @@ const normalizer = function () {
 
 			if (key === "src" && elem.userImg) {
 				const image = findImageById(images, elem.userImg);
-				tag.attributes.src = image ? `./${image.fileName}` : value;
+				tag.attributes.src = image
+					? mode === "preview"
+						? image.base64
+						: `./${image.fileName}`
+					: value;
 				continue;
 			}
 
@@ -215,20 +230,21 @@ const normalizer = function () {
 	 */
 	const buildNormalizedTag = function (
 		elem: CanvasElem,
-		images: LibraryImage[] = []
+		images: LibraryImage[] = [],
+		mode: "preview" | "export" = "export"
 	): NormalizedTag {
 		const tag = createTagShell(elem.elemType);
 
 		insertAttributes(tag);
-		insertInlineStyles(tag, elem, images);
+		insertInlineStyles(tag, elem, images, mode);
 		insertCssClasses(tag, elem);
 		insertTextContent(tag, elem);
 		insertId(tag, elem);
-		insertProps(tag, elem, images);
+		insertProps(tag, elem, images, mode);
 		insertExcludeRootFromExport(tag, elem);
 
 		tag.children = elem.children.map(function (child) {
-			return buildNormalizedTag(child, images);
+			return buildNormalizedTag(child, images, mode);
 		});
 
 		return tag;

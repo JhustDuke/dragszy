@@ -2,14 +2,28 @@ import { buildSingleElemPresets } from "../../utils";
 
 export const bootstrapElemVariants = buildSingleElemPresets({
 	div: [
-		{ label: "Container", classes: ["container"] },
-		{ label: "Container Fluid", classes: ["container-fluid"] },
-		{ label: "Centered", classes: ["mx-auto"] },
-		{ label: "Flex Row", classes: ["d-flex", "flex-row"] },
-		{ label: "Flex Column", classes: ["d-flex", "flex-column"] },
-		{ label: "Grid Row", classes: ["row"] },
-		{ label: "Card", classes: ["card", "p-3"] },
-		{ label: "Bordered", classes: ["border", "rounded", "p-3"] },
+		{ label: "Blank", classes: ["p-1", "my-2"] },
+		{
+			label: "Mobile First",
+			classes: ["d-flex", "flex-column", "flex-md-row", "align-items-start"],
+		},
+		{ label: "Container", classes: ["container", "mx-auto", "p-3"] },
+		{ label: "Full Width", classes: ["container-fluid", "p-3"] },
+		{
+			label: "Grid 2 Col",
+			classes: ["d-grid", "gap-2", "p-3"],
+			customStyles: { gridTemplateColumns: "repeat(2, 1fr)" },
+		},
+		{
+			label: "Grid 3 Col",
+			classes: ["d-grid", "gap-2", "p-3"],
+			customStyles: { gridTemplateColumns: "repeat(3, 1fr)" },
+		},
+		{
+			label: "Grid 4 Col",
+			classes: ["d-grid", "gap-2", "p-3"],
+			customStyles: { gridTemplateColumns: "repeat(4, 1fr)" },
+		},
 	],
 
 	span: [
