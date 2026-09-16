@@ -76,9 +76,9 @@ export const allElems: DefaultStruc = {
 	},
 
 	textarea: {
-		text: "dragzy-text area this can be removed by selecting and pressing U and some ONLY TEXT WORKS HERE IT CAN'T CARRY CHILDREN",
+		text: "",
 		classes: [],
-		attrs: ["placeholder", "name"],
+		attrs: ["name", "placeholder", "rows", "cols", "maxlength", "minlength"],
 	},
 
 	select: {

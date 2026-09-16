@@ -50,8 +50,9 @@
 	const historyStore = useHistoryStore();
 
 	//elem types that can't have children/text in real HTML
-	//e.g. img - add more here later (input, br, hr, etc.) if you support them
-	const selfClosingElemTypes = ["img", "input"];
+	//e.g. img - add more here later (input, br, hr, etc.) if you support
+	//text area is here cos it can't too
+	const selfClosingElemTypes = ["img", "input", "textarea"];
 
 	const isSelfClosing = computed(function () {
 		return selfClosingElemTypes.includes(props.newElemInfo.elemType);
@@ -158,11 +159,11 @@
 
 		const isTextField = elemType === "input" || elemType === "textarea";
 
-		// if (elemType === "textarea") {
-		// 	console.log("Textarea cannot be dragged");
-		// 	ev.stopPropagation();
-		// 	return;
-		// }
+		if (elemType === "textarea") {
+			console.log("Textarea cannot be dragged");
+			ev.stopPropagation();
+			return;
+		}
 
 		if (
 			elemType === "input" &&
