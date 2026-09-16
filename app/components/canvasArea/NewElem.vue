@@ -153,9 +153,29 @@
 	};
 
 	const onMouseDown = function (ev: MouseEvent) {
+		const elem = ev.currentTarget as HTMLElement;
+		const elemType = props.newElemInfo.elemType;
+
+		const isTextField = elemType === "input" || elemType === "textarea";
+
+		// if (elemType === "textarea") {
+		// 	console.log("Textarea cannot be dragged");
+		// 	ev.stopPropagation();
+		// 	return;
+		// }
+
+		if (
+			elemType === "input" &&
+			canvasElemsStore.activeElemId === props.newElemInfo.id
+		) {
+			console.log("Active input - allow typing");
+			ev.stopPropagation();
+			return;
+		}
+
 		ev.preventDefault();
 		ev.stopPropagation();
-		const elem = ev.currentTarget as HTMLElement;
+
 		canvasElemsStore.setCurrentlyDragged(elem);
 	};
 
