@@ -12,13 +12,19 @@
 		@click="onClick">
 		<!-- toolbar for quick actions -->
 		<QuickToolBar
-			v-if="isSelected"
+			v-if="isSelected && newElemInfo.elemType === 'img'"
 			:controls-override="[
 				'img-fluid',
 				'img-thumbnail',
 				'rounded',
 				'rounded-circle',
 			]"
+			:css-classes="props.newElemInfo.cssClasses"
+			class="position-absolute start-50 translate-middle"
+			style="top: -20px; white-space: nowrap" />
+
+		<QuickToolBar
+			v-else-if="isSelected"
 			:css-classes="props.newElemInfo.cssClasses"
 			class="position-absolute start-50 translate-middle"
 			style="top: -20px; white-space: nowrap" />
@@ -36,7 +42,7 @@
 		ResizeButtons is already gated the same way. only ever one
 		button visible at a time, even with multiple images on canvas. -->
 		<button
-			v-if="isSelected"
+			v-if="isSelected && newElemInfo.elemType === 'img'"
 			type="button"
 			class="position-absolute start-50 translate-middle change-src-btn"
 			@click.stop="openLibraryForSrc"

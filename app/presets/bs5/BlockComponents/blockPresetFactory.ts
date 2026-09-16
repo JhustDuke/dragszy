@@ -1,12 +1,14 @@
 import { blockPresets as cardBlockPresets } from "./cardsPresets";
 import { navbarPresets } from "./navbarPresets";
 import { footerPresets } from "./footerPresets";
+import { formPresets } from "./formPresets";
 import type { BlockPresetVariant, BlockPresets } from "~/presets/types";
 
 const blockPresets: BlockPresets = {
 	...cardBlockPresets,
 	...navbarPresets,
 	...footerPresets,
+	...formPresets,
 };
 
 export const blockPresetFactory = (function () {
