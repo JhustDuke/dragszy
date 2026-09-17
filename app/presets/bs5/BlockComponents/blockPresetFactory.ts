@@ -2,6 +2,10 @@ import { blockPresets as cardBlockPresets } from "./cardsPresets";
 import { navbarPresets } from "./navbarPresets";
 import { footerPresets } from "./footerPresets";
 import { formPresets } from "./formPresets";
+import { dashboardPresets } from "./dashboardPresets";
+import { heroPresets } from "./heroPreset";
+import { featuresPresets } from "./featuresPreset";
+import { ctaPresets } from "./ctaPresets";
 import type { BlockPresetVariant, BlockPresets } from "~/presets/types";
 
 const blockPresets: BlockPresets = {
@@ -9,6 +13,10 @@ const blockPresets: BlockPresets = {
 	...navbarPresets,
 	...footerPresets,
 	...formPresets,
+	...dashboardPresets,
+	...heroPresets,
+	...featuresPresets,
+	...ctaPresets,
 };
 
 export const blockPresetFactory = (function () {
