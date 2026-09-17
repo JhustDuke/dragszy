@@ -89,10 +89,25 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 					this.activeElemId
 				);
 
-				if (activeResult) {
-					activeResult.elem.children.push(newElem);
-					this.activeElemId = newElem.id;
-					return;
+				if (this.activeElemId) {
+					const activeResult = findElemAndContainer(
+						this.elems,
+						this.activeElemId
+					);
+
+					if (activeResult) {
+						if (
+							activeResult.elem.elemType === "select" &&
+							!newElem.elemType.startsWith("opt")
+						) {
+							console.log("Select can only accept option or optgroup");
+							return;
+						}
+
+						activeResult.elem.children.push(newElem);
+						this.activeElemId = newElem.id;
+						return;
+					}
 				}
 			}
 
@@ -171,6 +186,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			const parentResult = findElemAndContainer(this.elems, parentId);
 			if (!parentResult) return false;
+
+			if (
+				parentResult.elem.elemType === "select" &&
+				!draggedResult.elem.elemType.startsWith("opt")
+			) {
+				console.log("Select can only accept option or optgroup");
+				return false;
+			}
 
 			// Prevent creating circular trees.
 			if (containsChild(draggedResult.elem, parentId)) return false;

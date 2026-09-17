@@ -71,18 +71,29 @@
 	import TextContentTab from "./InsertTextContent.vue";
 	import PerElemAttr from "./PerElemAttr.vue";
 	import CustomIdTab from "./CustomIDTab.vue";
+	import SelectOptionsEditor from "./selectOptionEditor.vue";
 
 	const canvasElemsStore = useCanvasElemsStore();
 
-	const tabs = [
-		{ title: "Text", component: TextContentTab },
-		{ title: "Classes", component: ClassesTab },
-		{ title: "Atrrs", component: PerElemAttr },
-		{ title: "Inline Styles", component: InlineStylesTab },
-		{ title: "ID", component: CustomIdTab },
-	] as const;
+	//"Options" only appears in the list while a <select> is the active
+	//elem - every other elem type sees the original five tabs, unchanged
+	const tabs = computed(function () {
+		const baseTabs = [
+			{ title: "Text", component: TextContentTab },
+			{ title: "Classes", component: ClassesTab },
+			{ title: "Atrrs", component: PerElemAttr },
+			{ title: "Inline Styles", component: InlineStylesTab },
+			{ title: "ID", component: CustomIdTab },
+		];
 
-	const activeTab = shallowRef<(typeof tabs)[number]>(tabs[0]);
+		if (canvasElemsStore.activeElem?.elemType === "select") {
+			baseTabs.push({ title: "Options", component: SelectOptionsEditor });
+		}
+
+		return baseTabs;
+	});
+
+	const activeTab = shallowRef(tabs.value[0] || { title: "", component: null });
 
 	const modalLeft = ref<number | null>(null);
 	const modalTop = ref<number | null>(null);

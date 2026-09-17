@@ -1,11 +1,74 @@
 <template>
 	<!--
+		select is not self-closing, but its children must be rendered
+		directly inside the native select element as option elements.
+
+		Dragzy controls stay outside select inside this wrapper so
+		QuickToolBar, ResizeButtons and the delete button do not become
+		invalid select children.
+	-->
+	<div
+		v-if="newElemInfo.elemType === 'select'"
+		class="position-relative d-inline-block">
+		<select
+			:id="newElemInfo.id"
+			ref="elemRef"
+			dragzy-elem
+			:class="[
+				...(newElemInfo.cssClasses ?? []),
+				{
+					'border border-2 my-2': isHoveredWhileDragging,
+					edited: isLastEdited,
+					'border border-dark': appActionStore.getShowElemOutlines,
+				},
+			]"
+			:style="newElemInfo.customStyles ?? {}"
+			v-bind="newElemInfo.props"
+			@mousemove="onMouseMove"
+			@mousedown="onMouseDown"
+			@mouseenter="isMouseOver = true"
+			@mouseleave="isMouseOver = false"
+			@click="onClick">
+			<option
+				v-for="child in newElemInfo.children"
+				:key="child.id"
+				:value="child.textContent">
+				{{ child.textContent }}
+			</option>
+		</select>
+
+		<QuickToolBar
+			v-if="isSelected"
+			:css-classes="newElemInfo.cssClasses"
+			class="position-absolute start-50 translate-middle"
+			style="top: -20px; white-space: nowrap" />
+
+		<updateCssModal
+			v-if="isSelected && useCanvasElemsStore().isEditModalOpen" />
+
+		<ResizeButtons
+			v-if="isSelected"
+			:resize="resize"
+			:width="activeWidth"
+			:height="activeHeight"
+			:showBadge="isMouseOver" />
+
+		<button
+			v-if="isSelected"
+			style="right: 0; bottom: -20px"
+			class="deleteBtn red position-absolute white-text"
+			@click.stop="onDelete">
+			X
+		</button>
+	</div>
+
+	<!--
 		non-self-closing elems (div, button, span, form, etc.) CAN hold children,
 		so no extra wrapper div is needed here - unlike SelfClosingTags.vue.
 		this component IS the real elem the user is building.
 	-->
-
 	<component
+		v-else
 		:is="newElemInfo.elemType"
 		ref="elemRef"
 		:id="newElemInfo.id"
@@ -35,12 +98,11 @@
 			style="top: -20px; white-space: nowrap" />
 
 		<!-- update/edit modal - only rendered while THIS elem is both selected
-	AND the modal has been opened via U. lives inside this wrapper so it
-	positions itself with plain CSS (top: 100%) - no manual rect math
-	needed, unlike the old global-modal + calculated-position approach. -->
+		AND the modal has been opened via U. lives inside this wrapper so it
+		positions itself with plain CSS (top: 100%) - no manual rect math
+		needed, unlike the old global-modal + calculated-position approach. -->
 		<updateCssModal
-			v-if="isSelected && useCanvasElemsStore().isEditModalOpen"
-		 />
+			v-if="isSelected && useCanvasElemsStore().isEditModalOpen" />
 
 		<!-- badge + 4 resize handles, only while selected - showBadge
 			additionally gates the badge specifically to hover/active-resize,

@@ -174,6 +174,15 @@
 			return;
 		}
 
+		if (
+			elemType === "select" &&
+			canvasElemsStore.activeElemId === props.newElemInfo.id
+		) {
+			console.log("Active select - allow operation");
+			ev.stopPropagation();
+			return;
+		}
+
 		ev.preventDefault();
 		ev.stopPropagation();
 
