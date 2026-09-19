@@ -7,6 +7,34 @@ interface CanvasHistory {
 	action: string;
 }
 
+//maps a store action name to a readable label for the undo/redo toast.
+//add a line here whenever a new canvas action is added - an action
+//without an entry just falls back to its raw name
+const actionLabels: Record<string, string> = {
+	addElem: "add element",
+	addElemFromPreset: "add preset",
+	appendToNewParent: "move element into new parent",
+	unparentElem: "move element to root",
+	deleteElem: "delete element",
+	duplicateActiveElem: "duplicate element",
+	moveElemUp: "move element up",
+	moveElemDown: "move element down",
+	updateElemClasses: "update on elem class",
+	updateElemInlineStyles: "update on elem inline styles",
+	updateElemTextContent: "update on elem text",
+	updateElemCustomId: "update on elem id",
+	updateElemAttribute: "update on elem attribute",
+	setElemBgImageId: "update on elem background image",
+};
+
+const getActionLabel = function (name: string): string {
+	if (actionLabels[name]) {
+		return actionLabels[name];
+	}
+
+	return name;
+};
+
 export const useHistoryStore = defineStore("history", {
 	state: function () {
 		return {
@@ -34,7 +62,7 @@ export const useHistoryStore = defineStore("history", {
 
 					historyStore.previousCanvasStates.push({
 						canvasState: JSON.parse(canvasStateBeforeAction),
-						action: name,
+						action: getActionLabel(name),
 					});
 					historyStore.futureCanvasStates = [];
 					historyStore.lastUndoneAction = null;
