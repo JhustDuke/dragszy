@@ -7,6 +7,7 @@ import {
 	createClone,
 	createFromPreset,
 } from "./utils/canvasElemFactory";
+import { findElemAndContainer } from "./utils";
 import { SingleElemDataFactory } from "~/presets/bs5";
 
 const APP_ROOT_ID = "app-root";
@@ -47,7 +48,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!state.activeElemId) return null;
 
 			return (
-				findElemAndContainer(state.elems, state.activeElemId)?.elem ?? null
+				findElemAndContainer(state.elems, state.activeElemId)?.foundElem ?? null
 			);
 		},
 	},
@@ -97,14 +98,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 					if (activeResult) {
 						if (
-							activeResult.elem.elemType === "select" &&
+							activeResult.foundElem.elemType === "select" &&
 							!newElem.elemType.startsWith("opt")
 						) {
 							console.log("Select can only accept option or optgroup");
 							return;
 						}
 
-						activeResult.elem.children.push(newElem);
+						activeResult.foundElem.children.push(newElem);
 						this.activeElemId = newElem.id;
 						return;
 					}
@@ -139,7 +140,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				);
 
 				if (activeResult) {
-					activeResult.elem.children.push(newElem);
+					activeResult.foundElem.children.push(newElem);
 					this.activeElemId = newElem.id;
 					return;
 				}
@@ -190,27 +191,32 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!parentResult) return false;
 
 			if (
-				parentResult.elem.elemType === "select" &&
-				!draggedResult.elem.elemType.startsWith("opt")
+				parentResult.foundElem.elemType === "select" &&
+				!draggedResult.foundElem.elemType.startsWith("opt")
 			) {
 				console.log("Select can only accept option or optgroup");
 				return false;
 			}
 
 			// Prevent creating circular trees.
-			if (containsChild(draggedResult.elem, parentId)) return false;
+			if (containsChild(draggedResult.foundElem, parentId)) return false;
 
-			const draggedIndex = draggedResult.container.findIndex(function (elem) {
+			const draggedIndex = draggedResult.containingArr.findIndex(function (
+				elem
+			) {
 				return elem.id === draggedId;
 			});
 
 			if (draggedIndex === -1) return false;
 
-			const draggedElem = draggedResult.container.splice(draggedIndex, 1)[0];
+			const draggedElem = draggedResult.containingArr.splice(
+				draggedIndex,
+				1
+			)[0];
 
 			if (!draggedElem) return false;
 
-			parentResult.elem.children.push(draggedElem);
+			parentResult.foundElem.children.push(draggedElem);
 			return true;
 		},
 
@@ -228,19 +234,19 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			if (!appRoot) return false;
 
-			if (result.container === appRoot.elem.children) return false;
+			if (result.containingArr === appRoot.foundElem.children) return false;
 
-			const index = result.container.findIndex(function (elem) {
+			const index = result.containingArr.findIndex(function (elem) {
 				return elem.id === id;
 			});
 
 			if (index === -1) return false;
 
-			const movedElem = result.container.splice(index, 1)[0];
+			const movedElem = result.containingArr.splice(index, 1)[0];
 
 			if (!movedElem) return false;
 
-			appRoot.elem.children.push(movedElem);
+			appRoot.foundElem.children.push(movedElem);
 			return true;
 		},
 
@@ -251,18 +257,18 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			const index = result.container.findIndex(function (elem) {
+			const index = result.containingArr.findIndex(function (elem) {
 				return elem.id === id;
 			});
 
 			if (index === -1) return;
 
-			result.container.splice(index, 1);
+			result.containingArr.splice(index, 1);
 
 			if (this.activeElemId === id) {
 				this.activeElemId =
-					result.container.length > 0
-						? result.container[0]?.id ?? null
+					result.containingArr.length > 0
+						? result.containingArr[0]?.id ?? null
 						: APP_ROOT_ID;
 			}
 
@@ -274,7 +280,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.cssClasses = classes;
+			result.foundElem.cssClasses = classes;
 
 			// //classes may have added or removed the relative/absolute class
 			// this.refreshPositionedElemsIds();
@@ -292,7 +298,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.customStyles = customStyles;
+			result.foundElem.customStyles = customStyles;
 
 			//inline styles may have added or removed position: relative/absolute
 			// this.refreshPositionedElemsIds();
@@ -302,14 +308,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.textContent = textContent;
+			result.foundElem.textContent = textContent;
 		},
 
 		updateElemCustomId: function (id: string, customId: string): void {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.customId = customId;
+			result.foundElem.customId = customId;
 		},
 
 		updateElemAttribute: function (
@@ -320,8 +326,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.props = result.elem.props ?? {};
-			result.elem.props[attrName] = value;
+			result.foundElem.props = result.foundElem.props ?? {};
+			result.foundElem.props[attrName] = value;
 		},
 
 		//called when the user presses U - reuses activeElemId as "which elem is
@@ -346,17 +352,17 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!result) return;
 
 			//app-root is structural and must never be duplicated.
-			if (result.elem.id === APP_ROOT_ID) return;
+			if (result.foundElem.id === APP_ROOT_ID) return;
 
-			const clone = createClone(result.elem);
+			const clone = createClone(result.foundElem);
 
-			const index = result.container.findIndex(function (elem) {
-				return elem.id === result.elem.id;
+			const index = result.containingArr.findIndex(function (elem) {
+				return elem.id === result.foundElem.id;
 			});
 
 			if (index === -1) return;
 
-			result.container.splice(index + 1, 0, clone);
+			result.containingArr.splice(index + 1, 0, clone);
 
 			this.activeElemId = clone.id;
 			this.lastEditedId = clone.id;
@@ -384,7 +390,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			Object.assign(result.elem, changes);
+			Object.assign(result.foundElem, changes);
 		},
 
 		//rebuilds both lists from the complete canvas tree so removed
@@ -403,7 +409,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			const result = findElemAndContainer(this.elems, id);
 			if (!result) return;
 
-			result.elem.userBgImg = imageId ?? undefined;
+			result.foundElem.userBgImg = imageId ?? undefined;
 		},
 	},
 });
@@ -445,30 +451,6 @@ const findPositionedElemsIds = function (
 	for (const child of elem.children) {
 		findPositionedElemsIds(child, ids);
 	}
-};
-
-const findElemAndContainer = function (
-	elems: CanvasElem[],
-	id: string
-): { elem: CanvasElem; container: CanvasElem[] } | null {
-	for (const elem of elems) {
-		if (elem.id === id) {
-			return {
-				elem: elem,
-				container: elems,
-			};
-		}
-
-		if (elem.children.length > 0) {
-			const found = findElemAndContainer(elem.children, id);
-
-			if (found) {
-				return found;
-			}
-		}
-	}
-
-	return null;
 };
 
 const containsChild = function (parent: CanvasElem, childId: string): boolean {

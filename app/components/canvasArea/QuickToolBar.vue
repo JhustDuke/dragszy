@@ -91,6 +91,10 @@
 		canvasElemsStore.updateElemClasses(activeElem.value.id, classes);
 	};
 
+	const reorderElemUp = function () {};
+
+	const reorderElemDown = function () {};
+
 	function openUpdateModal() {
 		canvasElemsStore.isEditModalOpen = true;
 	}

@@ -1,6 +1,6 @@
 import type { CanvasElem } from "~/types";
 import { allElems } from "~/presets/common";
-import { generateId } from "~/store/utils/canvasElemFactory";
+import { generateId } from "~/store/elementStore/utils/canvasElemFactory";
 
 const MAX_IMPORT_ELEMENTS = 100;
 
