@@ -111,6 +111,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				}
 			}
 
+			//by this point the root elem should have been created and thus
+			//i can find it by id being app-root
 			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
 
 			if (!appRoot) {

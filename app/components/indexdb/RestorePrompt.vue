@@ -29,7 +29,7 @@
 
 			<div class="d-block grey text-center">OR START NEW</div>
 			<hr />
-
+<!-- this component is the startnew option in the promp modal -->
 			<NewOption
 				:is-starting-new="canvasPersistenceStore.isStartingNew"
 				:on-start-new="startNewCanvas" />
@@ -61,6 +61,8 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- the user decides to create first then save, this is the component that is fired -->
 		<SaveNameOnSaveButtonClick
 			:show="canvasPersistenceStore.saveNamePrompt.show"
 			:is-saving="canvasPersistenceStore.saveNamePrompt.isSaving"

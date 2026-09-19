@@ -153,7 +153,7 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 				}
 
 				canvasElemsStore.elems = savedCanvas.elems;
-				canvasElemsStore.refreshPositionedElemsIds();
+				//canvasElemsStore.refreshPositionedElemsIds();
 
 				this.currentCanvasId = savedCanvas.id;
 				this.canvasName = savedCanvas.name;
@@ -213,7 +213,11 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 			try {
 				const canvasElemsStore = useCanvasElemsStore();
 
-				canvasElemsStore.elems = [];
+				//elems[0] is the approot
+				//we go into it and reset the children to an empty
+				//array  cos all elems in d2x are its children
+
+				canvasElemsStore.elems[0]!.children = [];
 				canvasElemsStore.setActiveElem(null);
 
 				this.currentCanvasId = null;
