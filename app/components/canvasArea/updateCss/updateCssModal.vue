@@ -27,10 +27,13 @@
 					class="nav-item">
 					<button
 						type="button"
-						class="nav-link"
+						class="nav-link position-relative"
 						:class="{ active: activeTab.title === tab.title }"
 						@click="activeTab = tab">
 						{{ tab.title }}
+						<span
+							v-if="tab.title === 'Inline Styles' && hasCustomStyle"
+							class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
 					</button>
 				</li>
 			</ul>
@@ -93,6 +96,15 @@
 		return baseTabs;
 	});
 
+	const hasCustomStyle = computed(function () {
+		if (
+			canvasElemsStore.activeElem?.customStyles &&
+			Object.keys(canvasElemsStore.activeElem.customStyles).length > 0
+		) {
+			return true;
+		}
+		return false;
+	});
 	const activeTab = shallowRef(tabs.value[0] || { title: "", component: null });
 
 	const modalLeft = ref<number | null>(null);

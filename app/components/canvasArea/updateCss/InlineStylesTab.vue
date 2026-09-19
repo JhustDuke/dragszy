@@ -1,4 +1,3 @@
-```vue
 <!--
 	InlineStylesTab.vue
 
@@ -356,4 +355,3 @@
 		},
 	};
 </script>
-```
