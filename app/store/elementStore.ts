@@ -113,14 +113,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 			//by this point the root elem should have been created and thus
 			//i can find it by id being app-root
-			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
+			const appRoot = this.elems[0];
 
 			if (!appRoot) {
 				console.warn("Cannot add element: app-root was not found.");
 				return;
 			}
 
-			appRoot.elem.children.push(newElem);
+			appRoot.children.push(newElem);
 			this.activeElemId = newElem.id;
 		},
 
@@ -145,14 +145,14 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				}
 			}
 
-			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
+			const appRoot = this.elems[0];
 
 			if (!appRoot) {
 				console.warn("Cannot add preset: app-root was not found.");
 				return;
 			}
 
-			appRoot.elem.children.push(newElem);
+			appRoot.children.push(newElem);
 			this.activeElemId = newElem.id;
 		},
 
