@@ -2,15 +2,16 @@ import { defineStore } from "pinia";
 import type { CanvasElem } from "~/types";
 
 import { useAppActionStore } from "~/store";
+import { createDefault, createFromPreset } from "./utils/canvasElemFactory";
 import {
-	createDefault,
-	createClone,
-	createFromPreset,
-} from "./utils/canvasElemFactory";
-import { findElemAndContainer } from "./utils";
+	findElemAndContainer,
+	APP_ROOT_ID,
+	findPositionedElemsIds,
+} from "./utils";
 import { SingleElemDataFactory } from "~/presets/bs5";
-
-const APP_ROOT_ID = "app-root";
+import { reorderElem } from "./reorderElem";
+import { moveElem } from "./moveElem";
+import { updateElem } from "./updateElem";
 
 const createAppRoot = function (): CanvasElem {
 	return {
@@ -90,25 +91,18 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 					this.activeElemId
 				);
 
-				if (this.activeElemId) {
-					const activeResult = findElemAndContainer(
-						this.elems,
-						this.activeElemId
-					);
-
-					if (activeResult) {
-						if (
-							activeResult.foundElem.elemType === "select" &&
-							!newElem.elemType.startsWith("opt")
-						) {
-							console.log("Select can only accept option or optgroup");
-							return;
-						}
-
-						activeResult.foundElem.children.push(newElem);
-						this.activeElemId = newElem.id;
+				if (activeResult) {
+					if (
+						activeResult.foundElem.elemType === "select" &&
+						!newElem.elemType.startsWith("opt")
+					) {
+						console.log("Select can only accept option or optgroup");
 						return;
 					}
+
+					activeResult.foundElem.children.push(newElem);
+					this.activeElemId = newElem.id;
+					return;
 				}
 			}
 
@@ -178,98 +172,20 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		},
 
 		appendToNewParent: function (draggedId: string, parentId: string): boolean {
-			if (draggedId === parentId) return false;
-
-			//app-root is the permanent canvas root and cannot itself
-			//be moved into another element.
-			if (draggedId === APP_ROOT_ID) return false;
-
-			const draggedResult = findElemAndContainer(this.elems, draggedId);
-			if (!draggedResult) return false;
-
-			const parentResult = findElemAndContainer(this.elems, parentId);
-			if (!parentResult) return false;
-
-			if (
-				parentResult.foundElem.elemType === "select" &&
-				!draggedResult.foundElem.elemType.startsWith("opt")
-			) {
-				console.log("Select can only accept option or optgroup");
-				return false;
-			}
-
-			// Prevent creating circular trees.
-			if (containsChild(draggedResult.foundElem, parentId)) return false;
-
-			const draggedIndex = draggedResult.containingArr.findIndex(function (
-				elem
-			) {
-				return elem.id === draggedId;
-			});
-
-			if (draggedIndex === -1) return false;
-
-			const draggedElem = draggedResult.containingArr.splice(
-				draggedIndex,
-				1
-			)[0];
-
-			if (!draggedElem) return false;
-
-			parentResult.foundElem.children.push(draggedElem);
-			return true;
+			return moveElem.appendToNewParent(this.elems, draggedId, parentId);
 		},
 
 		unparentElem: function (id: string): boolean {
-			//app-root is already the permanent top-level container
-			//and can never be unparented.
-			if (id === APP_ROOT_ID) return false;
-
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return false;
-
-			//already a direct child of app-root, so there is nowhere
-			//higher in the canvas tree to move it.
-			const appRoot = findElemAndContainer(this.elems, APP_ROOT_ID);
-
-			if (!appRoot) return false;
-
-			if (result.containingArr === appRoot.foundElem.children) return false;
-
-			const index = result.containingArr.findIndex(function (elem) {
-				return elem.id === id;
-			});
-
-			if (index === -1) return false;
-
-			const movedElem = result.containingArr.splice(index, 1)[0];
-
-			if (!movedElem) return false;
-
-			appRoot.foundElem.children.push(movedElem);
-			return true;
+			return moveElem.unparent(this.elems, id);
 		},
 
 		deleteElem: function (id: string) {
-			//app-root is the permanent canvas root and cannot be deleted.
-			if (id === APP_ROOT_ID) return;
-
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			const index = result.containingArr.findIndex(function (elem) {
-				return elem.id === id;
-			});
-
-			if (index === -1) return;
-
-			result.containingArr.splice(index, 1);
+			const containingArr = moveElem.remove(this.elems, id);
+			if (!containingArr) return;
 
 			if (this.activeElemId === id) {
 				this.activeElemId =
-					result.containingArr.length > 0
-						? result.containingArr[0]?.id ?? null
-						: APP_ROOT_ID;
+					containingArr.length > 0 ? containingArr[0]?.id ?? null : APP_ROOT_ID;
 			}
 
 			// //rebuild the positioned element IDs after removing an element
@@ -277,10 +193,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		},
 
 		updateElemClasses: function (id: string, classes: string[]): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.foundElem.cssClasses = classes;
+			updateElem.classes(this.elems, id, classes);
 
 			// //classes may have added or removed the relative/absolute class
 			// this.refreshPositionedElemsIds();
@@ -295,27 +208,18 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			id: string,
 			customStyles: CanvasElem["customStyles"]
 		): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.foundElem.customStyles = customStyles;
+			updateElem.inlineStyles(this.elems, id, customStyles);
 
 			//inline styles may have added or removed position: relative/absolute
 			// this.refreshPositionedElemsIds();
 		},
 
 		updateElemTextContent: function (id: string, textContent: string): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.foundElem.textContent = textContent;
+			updateElem.textContent(this.elems, id, textContent);
 		},
 
 		updateElemCustomId: function (id: string, customId: string): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.foundElem.customId = customId;
+			updateElem.customId(this.elems, id, customId);
 		},
 
 		updateElemAttribute: function (
@@ -323,11 +227,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			attrName: string,
 			value: string
 		): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			result.foundElem.props = result.foundElem.props ?? {};
-			result.foundElem.props[attrName] = value;
+			updateElem.attribute(this.elems, id, attrName, value);
 		},
 
 		//called when the user presses U - reuses activeElemId as "which elem is
@@ -347,22 +247,8 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		duplicateActiveElem: function (): void {
 			if (!this.activeElemId) return;
 
-			const result = findElemAndContainer(this.elems, this.activeElemId);
-
-			if (!result) return;
-
-			//app-root is structural and must never be duplicated.
-			if (result.foundElem.id === APP_ROOT_ID) return;
-
-			const clone = createClone(result.foundElem);
-
-			const index = result.containingArr.findIndex(function (elem) {
-				return elem.id === result.foundElem.id;
-			});
-
-			if (index === -1) return;
-
-			result.containingArr.splice(index + 1, 0, clone);
+			const clone = moveElem.duplicate(this.elems, this.activeElemId);
+			if (!clone) return;
 
 			this.activeElemId = clone.id;
 			this.lastEditedId = clone.id;
@@ -383,14 +269,9 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			changes: {
 				width?: number;
 				height?: number;
-				isWidthAdjusted?: boolean;
-				isHeightAdjusted?: boolean;
 			}
 		): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
-
-			Object.assign(result.foundElem, changes);
+			updateElem.size(this.elems, id, changes);
 		},
 
 		//rebuilds both lists from the complete canvas tree so removed
@@ -406,63 +287,19 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 		//this is used in the inline tab to set bg-image
 		setElemBgImageId: function (id: string, imageId: string | null): void {
-			const result = findElemAndContainer(this.elems, id);
-			if (!result) return;
+			updateElem.bgImageId(this.elems, id, imageId);
+		},
 
-			result.foundElem.userBgImg = imageId ?? undefined;
+		moveElemUp: function (): void {
+			if (!this.activeElemId) return;
+
+			reorderElem.moveUp(this.elems, this.activeElemId);
+		},
+
+		moveElemDown: function (): void {
+			if (!this.activeElemId) return;
+
+			reorderElem.moveDown(this.elems, this.activeElemId);
 		},
 	},
 });
-
-const findPositionedElemsIds = function (
-	elem: CanvasElem,
-	ids: { relative: string[]; absolute: string[] }
-) {
-	// Bootstrap 5 uses "position-relative"/"position-absolute".
-	// Tailwind uses "relative"/"absolute".
-	// Keep both checks here so Absolute-To works regardless of
-	// which framework is currently active.
-	if (
-		elem.cssClasses?.includes("position-relative") ||
-		elem.cssClasses?.includes("relative")
-	) {
-		ids.relative.push(elem.id);
-	}
-
-	if (
-		elem.cssClasses?.includes("position-absolute") ||
-		elem.cssClasses?.includes("absolute")
-	) {
-		ids.absolute.push(elem.id);
-	}
-
-	// An inline style with position: relative/absolute should also count,
-	// regardless of the active framework.
-	if (elem.customStyles?.position === "relative") {
-		ids.relative.push(elem.id);
-	}
-
-	if (elem.customStyles?.position === "absolute") {
-		ids.absolute.push(elem.id);
-	}
-
-	// Check nested children because a positioned element can exist
-	// anywhere inside the canvas element tree.
-	for (const child of elem.children) {
-		findPositionedElemsIds(child, ids);
-	}
-};
-
-const containsChild = function (parent: CanvasElem, childId: string): boolean {
-	for (const child of parent.children) {
-		if (child.id === childId) {
-			return true;
-		}
-
-		if (containsChild(child, childId)) {
-			return true;
-		}
-	}
-
-	return false;
-};

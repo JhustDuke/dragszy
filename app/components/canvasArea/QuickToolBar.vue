@@ -12,12 +12,14 @@
 		<span
 			class="ctrl fa fa-step-backward"
 			:class="sharedSpanClasses"
+			@click="reorderElemUp"
 			@mouseenter="
 				showAndHideToolTip(hints.moveDown, { top: 30, right: 100 })
 			"></span>
 		<span
 			class="ctrl fa fa-step-forward"
 			:class="sharedSpanClasses"
+			@click="reorderElemDown"
 			@mouseenter="
 				showAndHideToolTip(hints.moveUp, { top: 30, left: 100 })
 			"></span>
@@ -91,9 +93,13 @@
 		canvasElemsStore.updateElemClasses(activeElem.value.id, classes);
 	};
 
-	const reorderElemUp = function () {};
+	const reorderElemUp = function () {
+		canvasElemsStore.moveElemUp();
+	};
 
-	const reorderElemDown = function () {};
+	const reorderElemDown = function () {
+		canvasElemsStore.moveElemDown();
+	};
 
 	function openUpdateModal() {
 		canvasElemsStore.isEditModalOpen = true;
