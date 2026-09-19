@@ -10,9 +10,25 @@
 		</span>
 
 		<span
+			class="ctrl fa fa-step-backward"
+			:class="sharedSpanClasses"
+			@mouseenter="
+				showAndHideToolTip(hints.moveDown, { top: 30, right: 100 })
+			"></span>
+		<span
+			class="ctrl fa fa-step-forward"
+			:class="sharedSpanClasses"
+			@mouseenter="
+				showAndHideToolTip(hints.moveUp, { top: 30, left: 100 })
+			"></span>
+
+		<span
 			class="ctrl"
 			@click="openUpdateModal"
 			:class="sharedSpanClasses"
+			@mouseenter="
+				showAndHideToolTip(hints.openUpdateModal, { top: 30, left: 100 })
+			"
 			>+</span
 		>
 	</div>
@@ -21,6 +37,7 @@
 <script setup lang="ts">
 	import { computed } from "vue";
 	import { useCanvasElemsStore } from "~/store";
+	import { showAndHideToolTip, hints } from "#imports";
 
 	// Shared classes for spans
 	const sharedSpanClasses = "mx-1 border rounded px-1";
