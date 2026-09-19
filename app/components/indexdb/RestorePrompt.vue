@@ -29,7 +29,7 @@
 
 			<div class="d-block grey text-center">OR START NEW</div>
 			<hr />
-<!-- this component is the startnew option in the promp modal -->
+			<!-- this component is the startnew option in the promp modal -->
 			<NewOption
 				:is-starting-new="canvasPersistenceStore.isStartingNew"
 				:on-start-new="startNewCanvas" />
@@ -88,6 +88,9 @@
 	const saveCanvasWithName = async function (name: string): Promise<void> {
 		await canvasPersistenceStore.saveCanvas(name);
 	};
+	const startNewCanvas = async function (name: string): Promise<void> {
+		await canvasPersistenceStore.saveCanvas(name);
+	};
 
 	const cancelSaveName = function (): void {
 		canvasPersistenceStore.saveNamePrompt.show = false;
@@ -103,10 +106,6 @@
 
 	const deleteCanvas = async function (id: string): Promise<void> {
 		await canvasPersistenceStore.deleteSavedCanvas(id);
-	};
-
-	const startNewCanvas = async function (name: string): Promise<void> {
-		await canvasPersistenceStore.startNewCanvas(name);
 	};
 
 	const clearError = function (): void {

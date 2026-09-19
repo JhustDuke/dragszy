@@ -205,38 +205,6 @@ export const useCanvasPersistenceStore = defineStore("canvasPersistence", {
 				this.canvasOperation.deletingId = null;
 			}
 		},
-
-		startNewCanvas: async function (newName: string): Promise<boolean> {
-			this.errorMessage = null;
-			this.isStartingNew = true;
-
-			try {
-				const canvasElemsStore = useCanvasElemsStore();
-
-				//elems[0] is the approot
-				//we go into it and reset the children to an empty
-				//array  cos all elems in d2x are its children
-
-				canvasElemsStore.elems[0]!.children = [];
-				canvasElemsStore.setActiveElem(null);
-
-				this.currentCanvasId = null;
-				this.canvasName = newName.trim();
-				this.savedAt = null;
-
-				this.showRestorePrompt = false;
-				this.saveNamePrompt.show = false;
-
-				return true;
-			} catch (error: any) {
-				this.errorMessage =
-					error.message || "Couldn't start a new canvas. Please try again";
-
-				return false;
-			} finally {
-				this.isStartingNew = false;
-			}
-		},
 	},
 });
 
