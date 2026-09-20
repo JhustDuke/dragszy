@@ -95,8 +95,6 @@
 				canvasElemsStore.commitElemSize(props.newElemInfo.id, {
 					width: badgeWidth.value,
 					height: badgeHeight.value,
-					isWidthAdjusted: true,
-					isHeightAdjusted: true,
 				});
 			},
 		}

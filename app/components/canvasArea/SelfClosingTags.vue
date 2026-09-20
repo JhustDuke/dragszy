@@ -90,7 +90,7 @@ needed, unlike the old global-modal + calculated-position approach. -->
 	import type { CanvasElem } from "~/types";
 	import { useImageLibraryStore, useCanvasElemsStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
-	import UpdateCssModal from "./updateCss/updateCssModal.vue";
+	import UpdateCssModal from "../updateCssModal/updateCssModal.vue";
 	import QuickToolBar from "./QuickToolBar.vue";
 
 	const props = defineProps<{
