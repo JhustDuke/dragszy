@@ -79,7 +79,11 @@ export const dragMethod = {
 	//pick the next active elem), or null if nothing was deleted
 	remove: function (elems: CanvasElem[], id: string): CanvasElem[] | null {
 		//app-root is the permanent canvas root and cannot be deleted.
-		if (id === APP_ROOT_ID) return null;
+		if (id === APP_ROOT_ID) {
+			elems[0]!.children = [];
+			console.log("clearing canvas");
+			return null;
+		}
 
 		const result = findElemAndContainer(elems, id);
 		if (!result) return null;
