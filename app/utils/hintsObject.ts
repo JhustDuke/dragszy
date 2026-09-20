@@ -16,4 +16,10 @@ export const hints = {
 		"click to move the active elem upwards depending on the style of the parent",
 	moveDown:
 		"click to move the active elem downwards depending on the style of the parent ",
+	duplicateHint: "click to duplicate the active elem shortcut-press 'd' ",
+	createHint: 'click to enter create mode, shortcut-press "c"',
+	importHint: 'click to imports, shortcut-press "i"',
+	presetHint: 'click to enter presets mode,shortcut-press "p" ',
+	resizeHint: 'click to enter resize mode,shortcut-press "r" ',
+	changeImageHint: "click to change this image",
 };

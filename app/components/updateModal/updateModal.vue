@@ -69,10 +69,10 @@
 	import { shallowRef, computed, ref, onUnmounted } from "vue";
 	import { useCanvasElemsStore } from "~/store";
 
-	import ClassesTab from "./ClassesTab.vue";
+	import ClassesTab from "./UpdateClassesTab.vue";
 	import InlineStylesTab from "./InlineStylesTab.vue";
-	import TextContentTab from "./InsertTextContent.vue";
-	import PerElemAttr from "./PerElemAttr.vue";
+	import TextContentTab from "./UpdateTextContent.vue";
+	import PerElemAttr from "./UpdateAttrTab.vue";
 	import CustomIdTab from "./CustomIDTab.vue";
 	import SelectOptionsEditor from "./selectOptionEditor.vue";
 

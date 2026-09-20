@@ -62,8 +62,6 @@ export const updateElem = {
 		changes: {
 			width?: number;
 			height?: number;
-			isWidthAdjusted?: boolean;
-			isHeightAdjusted?: boolean;
 		}
 	): void {
 		const result = findElemAndContainer(elems, id);
@@ -78,9 +76,31 @@ export const updateElem = {
 		id: string,
 		imageId: string | null
 	): void {
-		const result = findElemAndContainer(elems, id);
-		if (!result) return;
+		const searchResult = findElemAndContainer(elems, id);
+		if (!searchResult) {
+			console.error("elem not found");
+			return;
+		}
 
-		result.foundElem.userBgImg = imageId ?? undefined;
+		searchResult.foundElem.userBgImg = imageId ?? undefined;
 	},
+
+	changeImageSrc: function (
+		elems: CanvasElem[],
+		elemId: string,
+		imageId: string | null,
+		imageData: string
+	): void {
+		const searchElem = findElemAndContainer(elems, elemId);
+		if (!searchElem) {
+			console.error("elem not found");
+			return;
+		}
+
+		searchElem.foundElem.props = searchElem.foundElem.props ?? {};
+		searchElem.foundElem.props.src = imageData;
+		searchElem.foundElem.userImg = imageId ?? undefined;
+	},
+
+	//
 };

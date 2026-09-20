@@ -2,7 +2,7 @@ import type { CanvasElem } from "~/types";
 import { createClone } from "./utils/canvasElemFactory";
 import { findElemAndContainer, containsChild, APP_ROOT_ID } from "./utils";
 
-export const moveElem = {
+export const dragMethod = {
 	appendToNewParent: function (
 		elems: CanvasElem[],
 		draggedId: string,

@@ -25,6 +25,7 @@ const actionLabels: Record<string, string> = {
 	updateElemCustomId: "update on elem id",
 	updateElemAttribute: "update on elem attribute",
 	setElemBgImageId: "update on elem background image",
+	changeSelectedImage: "change element image",
 };
 
 const getActionLabel = function (name: string): string {

@@ -89,7 +89,7 @@
 	function handleCanvasDblClick(event: MouseEvent): void {
 		if (
 			appActionStore.getActiveAction !== "create" &&
-			appActionStore.getActiveAction !== "components" &&
+			appActionStore.getActiveAction !== "presets" &&
 			appActionStore.getActiveAction !== "imports"
 		)
 			return;
@@ -99,7 +99,7 @@
 			canvasElemsStore.setActiveElem(null);
 		}
 
-		if (appActionStore.getActiveAction === "components") {
+		if (appActionStore.getActiveAction === "presets") {
 			const stagedVariant = appActionStore.getActiveBlock.variant;
 			if (!stagedVariant) return;
 			canvasElemsStore.addElemFromPreset(stagedVariant);

@@ -141,7 +141,7 @@
 	import type { CanvasElem } from "~/types";
 	import { useAppActionStore, useCanvasElemsStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
-	import UpdateCssModal from "../updateCssModal/updateCssModal.vue";
+	import UpdateCssModal from "../updateModal/updateModal.vue";
 	import QuickToolBar from "./QuickToolBar.vue";
 	import NewElem from "./NewElem.vue";
 

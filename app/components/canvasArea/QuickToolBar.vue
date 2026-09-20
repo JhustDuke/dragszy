@@ -5,11 +5,20 @@
 			class="grey lighten-1 mx-auto p-1"
 			style="width: max-content">
 			<span
-				v-for="(ctrl, index) in actionControls"
+				v-for="(ctrl, index) in appActionsControls"
 				:key="index"
 				class="text-uppercase ctrl"
-				:class="[sharedSpanClasses, { active: isActionActive(ctrl) }]"
-				@click="handleActionControl(ctrl)">
+				:class="[
+					sharedSpanClasses,
+					{
+						'grey-text text-darken-3 fw-bold': isActionActive(ctrl),
+						active: isActionFlashing(ctrl),
+					},
+				]"
+				@click="switchAppAction(ctrl)"
+				@mouseenter="
+					showAndHideToolTip(actionHints[ctrl], { top: 30, left: 100 })
+				">
 				{{ ctrl }}
 			</span>
 		</div>
@@ -24,45 +33,64 @@
 				@click="addOrRemoveControl(ctrl)">
 				{{ ctrl }}
 			</span>
+
+			<!-- reorder up icon -->
+			<span
+				class="ctrl fa fa-step-backward"
+				:class="sharedSpanClasses"
+				@click="reorderElemUp"
+				@mouseenter="
+					showAndHideToolTip(hints.moveDown, { top: 30, right: 100 })
+				"></span>
+
+			<!-- reorder down icon -->
+			<span
+				class="ctrl fa fa-step-forward"
+				:class="sharedSpanClasses"
+				@click="reorderElemDown"
+				@mouseenter="
+					showAndHideToolTip(hints.moveUp, { top: 30, left: 100 })
+				"></span>
+
+			<!-- img control, only when active elem is an img -->
+			<span
+				v-if="isImgActive"
+				class="ctrl fa fa-image"
+				:class="sharedSpanClasses"
+				@click.stop="openLibraryForSrc"
+				@mouseenter="
+					showAndHideToolTip(hints.changeImageHint, { top: 30, left: 100 })
+				"></span>
+
+			<!-- open modal icon -->
+			<span
+				class="ctrl"
+				@click="openUpdateModal"
+				:class="sharedSpanClasses"
+				@mouseenter="
+					showAndHideToolTip(hints.openUpdateModal, { top: 30, left: 10 })
+				">
+				+
+			</span>
 		</div>
-
-		<span
-			class="ctrl fa fa-step-backward"
-			:class="sharedSpanClasses"
-			@click="reorderElemUp"
-			@mouseenter="
-				showAndHideToolTip(hints.moveDown, { top: 30, right: 100 })
-			"></span>
-
-		<span
-			class="ctrl fa fa-step-forward"
-			:class="sharedSpanClasses"
-			@click="reorderElemDown"
-			@mouseenter="
-				showAndHideToolTip(hints.moveUp, { top: 30, left: 100 })
-			"></span>
-
-		<span
-			class="ctrl"
-			@click="openUpdateModal"
-			:class="sharedSpanClasses"
-			@mouseenter="
-				showAndHideToolTip(hints.openUpdateModal, { top: 30, left: 100 })
-			">
-			+
-		</span>
 	</div>
 </template>
 
 <script setup lang="ts">
-	import { computed } from "vue";
-	import { useCanvasElemsStore } from "~/store";
+	import { computed, ref, watch } from "vue";
+	import {
+		useCanvasElemsStore,
+		useAppActionStore,
+		useImageLibraryStore,
+	} from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
+	import type { AppAction } from "~/types";
 
-	// Shared classes for spans
 	const sharedSpanClasses = "mx-1 border rounded px-1";
 
 	const canvasElemsStore = useCanvasElemsStore();
+	const appActionStore = useAppActionStore();
+	const imageLibraryStore = useImageLibraryStore();
 
 	const props = defineProps<{
 		cssClasses?: string[];
@@ -73,12 +101,113 @@
 		return canvasElemsStore.activeElem;
 	});
 
-	const actionControls = ["c", "p", "d", "i", "x"];
+	const isImgActive = computed(function () {
+		return activeElem.value?.elemType === "img";
+	});
+
+	//watches for the library handing back a choice, same pattern as the
+	//Inline Styles tab's watcher - but writes to props.src and tags
+	//userImg instead of customStyles + userBgImg. only reacts while
+	//THIS elem is the selected one, so a choice made for some other
+	//elem's request can never land on the wrong image.
+	watch(
+		function () {
+			return imageLibraryStore.isFromInlineTab.imageData;
+		},
+		function (base64Image) {
+			if (!base64Image) return;
+			if (!isImgActive.value) return;
+
+			canvasElemsStore.changeSelectedImage(
+				imageLibraryStore.isFromInlineTab.imageId,
+				base64Image
+			);
+
+			imageLibraryStore.isFromInlineTab.imageData = null;
+			imageLibraryStore.isFromInlineTab.imageId = null;
+		}
+	);
+
+	// c = create, r = resize, i = imports.
+	// p = presets
+	// d = duplicate
+	const appActionsControls = ["c", "r", "i", "p", "d"] as const;
+	type appActionInitials = (typeof appActionsControls)[number];
+
+	const actionHints: Record<appActionInitials, string> = {
+		c: hints.createHint,
+		r: hints.resizeHint,
+		i: hints.importHint,
+		p: hints.presetHint,
+		d: hints.duplicateHint,
+	};
+
+	const currentAppAction = computed(function (): AppAction {
+		return appActionStore.getActiveAction;
+	});
+
+	const flashingAction = ref<appActionInitials | null>(null);
+
+	const isActionActive = function (ctrl: appActionInitials) {
+		switch (ctrl) {
+			case "c":
+				return currentAppAction.value === "create";
+
+			case "r":
+				return currentAppAction.value === "resize";
+
+			case "i":
+				return currentAppAction.value === "imports";
+
+			case "p":
+				return currentAppAction.value === "presets";
+
+			default:
+				return false;
+		}
+	};
+
+	const isActionFlashing = function (ctrl: appActionInitials) {
+		return flashingAction.value === ctrl;
+	};
+
+	const switchAppAction = function (ctrl: appActionInitials) {
+		switch (ctrl) {
+			case "c":
+				appActionStore.setActiveAction("create");
+				break;
+
+			case "r":
+				appActionStore.setActiveAction("resize");
+				break;
+
+			case "i":
+				appActionStore.setActiveAction("imports");
+				break;
+
+			case "p":
+				appActionStore.setActiveAction("presets");
+				break;
+
+			case "d":
+				canvasElemsStore.duplicateActiveElem();
+				break;
+
+			default:
+				return;
+		}
+
+		flashingAction.value = ctrl;
+
+		window.setTimeout(function () {
+			if (flashingAction.value === ctrl) {
+				flashingAction.value = null;
+			}
+		}, 3000);
+	};
 
 	const quickControls = ["p-1", "p-3", "rounded", "mx-auto"];
 
-	// If the parent passes its own set (e.g. image passing img-fluid/img-thumbnail),
-	// use that instead of the generic default list.
 	const activeControls = computed(function () {
 		if (props.controlsOverride) {
 			return props.controlsOverride;
@@ -88,15 +217,7 @@
 	});
 
 	const isControlActive = function (ctrl: string) {
-		if ((props.cssClasses ?? []).includes(ctrl)) {
-			return true;
-		}
-
-		return false;
-	};
-
-	const isActionActive = function (_ctrl: string) {
-		return false;
+		return (props.cssClasses ?? []).includes(ctrl);
 	};
 
 	const addOrRemoveControl = function (ctrl: string) {
@@ -120,10 +241,6 @@
 		canvasElemsStore.updateElemClasses(activeElem.value.id, classes);
 	};
 
-	const handleActionControl = function (ctrl: string) {
-		console.log("Action:", ctrl);
-	};
-
 	const reorderElemUp = function () {
 		canvasElemsStore.moveElemUp();
 	};
@@ -131,6 +248,13 @@
 	const reorderElemDown = function () {
 		canvasElemsStore.moveElemDown();
 	};
+
+	//opens the SAME shared library modal the Inline Styles tab uses -
+	//no separate modal built for this, just a different consumer of
+	//the same isFromInlineTab trigger mechanism
+	function openLibraryForSrc(): void {
+		imageLibraryStore.isFromInlineTab.shouldShow = true;
+	}
 
 	function openUpdateModal() {
 		canvasElemsStore.isEditModalOpen = true;

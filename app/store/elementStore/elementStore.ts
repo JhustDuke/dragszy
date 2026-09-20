@@ -9,9 +9,9 @@ import {
 	findPositionedElemsIds,
 } from "./utils";
 import { SingleElemDataFactory } from "~/presets/bs5";
-import { reorderElem } from "./reorderElem";
-import { moveElem } from "./moveElem";
-import { updateElem } from "./updateElem";
+import { reorderElem } from "./reorderStoreElem";
+import { dragMethod } from "./dragMethods";
+import { updateElem } from "./updateStoreElem";
 
 const createAppRoot = function (): CanvasElem {
 	return {
@@ -172,15 +172,15 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		},
 
 		appendToNewParent: function (draggedId: string, parentId: string): boolean {
-			return moveElem.appendToNewParent(this.elems, draggedId, parentId);
+			return dragMethod.appendToNewParent(this.elems, draggedId, parentId);
 		},
 
 		unparentElem: function (id: string): boolean {
-			return moveElem.unparent(this.elems, id);
+			return dragMethod.unparent(this.elems, id);
 		},
 
 		deleteElem: function (id: string) {
-			const containingArr = moveElem.remove(this.elems, id);
+			const containingArr = dragMethod.remove(this.elems, id);
 			if (!containingArr) return;
 
 			if (this.activeElemId === id) {
@@ -222,6 +222,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			updateElem.customId(this.elems, id, customId);
 		},
 
+		//this is used by the perElem oomponent attribute in the updateModal dir
+		//to update the attr of a seleccted elem
+		//e.g img has src, alt, input has placeholder type
+		//this is the only way to update the
 		updateElemAttribute: function (
 			id: string,
 			attrName: string,
@@ -247,7 +251,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 		duplicateActiveElem: function (): void {
 			if (!this.activeElemId) return;
 
-			const clone = moveElem.duplicate(this.elems, this.activeElemId);
+			const clone = dragMethod.duplicate(this.elems, this.activeElemId);
 			if (!clone) return;
 
 			this.activeElemId = clone.id;
@@ -300,6 +304,21 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			if (!this.activeElemId) return;
 
 			reorderElem.moveDown(this.elems, this.activeElemId);
+		},
+		//swaps the src of the currently selected img elem. called from
+		//QuickToolBar.vue once the image library hands back a choice
+		changeSelectedImage: function (
+			imageId: string | null,
+			imageData: string
+		): void {
+			if (!this.activeElemId) return;
+
+			updateElem.changeImageSrc(
+				this.elems,
+				this.activeElemId,
+				imageId,
+				imageData
+			);
 		},
 	},
 });
