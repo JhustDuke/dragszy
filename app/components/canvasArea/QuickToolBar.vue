@@ -1,5 +1,8 @@
 <template>
-	<div class="text-center">
+	<div
+		style="z-index: 1500"
+		class="text-center"
+		id="quick-toolbar">
 		<!-- app action row -->
 		<div
 			class="grey lighten-1 mx-auto p-1"
@@ -77,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-	import { computed, ref, watch } from "vue";
+	import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 	import {
 		useCanvasElemsStore,
 		useAppActionStore,
@@ -85,6 +88,15 @@
 	} from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
 	import type { AppAction } from "~/types";
+
+	onMounted(function () {
+		adjustToolBarXposition();
+		window.addEventListener("resize", adjustToolBarXposition);
+	});
+
+	onUnmounted(function () {
+		window.removeEventListener("resize", adjustToolBarXposition);
+	});
 
 	const sharedSpanClasses = "mx-1 border rounded px-1";
 
@@ -259,6 +271,40 @@
 	function openUpdateModal() {
 		canvasElemsStore.isEditModalOpen = true;
 	}
+
+	const adjustToolBarXposition = function () {
+		const toolbar = document.getElementById("quick-toolbar");
+
+		if (!toolbar) {
+			console.log("Quick toolbar not found");
+			return;
+		}
+
+		//remove our previous nudge so we measure where the toolbar naturally sits
+		toolbar.style.removeProperty("left");
+
+		const toolbarRect = toolbar.getBoundingClientRect();
+		const edgeMargin = 15;
+
+		if (toolbarRect.left < edgeMargin) {
+			const overflowAmount = edgeMargin - toolbarRect.left;
+
+			toolbar.style.setProperty(
+				"left",
+				`${toolbar.offsetLeft + overflowAmount}px`,
+				"important"
+			);
+		} else if (toolbarRect.right > window.innerWidth - edgeMargin) {
+			const overflowAmount =
+				toolbarRect.right - (window.innerWidth - edgeMargin);
+
+			toolbar.style.setProperty(
+				"left",
+				`${toolbar.offsetLeft - overflowAmount}px`,
+				"important"
+			);
+		}
+	};
 </script>
 
 <style scoped>
