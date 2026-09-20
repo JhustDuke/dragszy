@@ -1,15 +1,15 @@
 <template>
 	<div
-		class="grey lighten-3"
+		class="grey lighten-3 d-flex flex-column"
 		id="dragzy"
-		style="height: 100%">
-		<nav>
+		style="min-height: 100vh">
+		<nav
+			class="flex-shrink-0 mb-5 pink"
+			style="position: sticky; top: 0; z-index: 1000">
 			<ToolBar class="d-none d-md-block d-sm-block" />
 		</nav>
 
-		<section
-			style="padding-top: 8rem"
-			class="">
+		<section class="flex-grow-1">
 			<!-- Desktop: unchanged, still the real interactive canvas -->
 			<div
 				style="min-height: 5000px; max-width: 1400px; margin: 0 auto"
@@ -21,9 +21,9 @@
 			</div>
 
 			<!-- Mobile/Tablet: now a read-only PREVIEW, rendered via iframe
-				so Bootstrap's media queries evaluate against the iframe's
-				own real width, matching actual browser behavior exactly -
-				not a div faking a width. -->
+    so Bootstrap's media queries evaluate against the iframe's
+    own real width, matching actual browser behavior exactly -
+    not a div faking a width. -->
 			<div
 				v-else
 				class="w-100 d-flex align-items-center justify-content-center grey lighten-1"
@@ -37,6 +37,11 @@
 					title="Responsive preview"></iframe>
 			</div>
 		</section>
+
+		<footer class="flex-shrink-0 black text-center text-white py-3 border-top">
+			Placeholder footer text — Dragzy
+		</footer>
+
 		<RestoreOrNewPrompt />
 		<ToggleView />
 	</div>

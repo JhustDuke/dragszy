@@ -1,7 +1,7 @@
 <template>
 	<!-- Toolbar -->
 	<div
-		class="container-fluid black border-bottom position-fixed py-1"
+		class="container-fluid black border-bottom py-1"
 		style="z-index: 1000">
 		<!-- Row 1 -->
 		<div class="d-flex justify-content-between align-items-center">
