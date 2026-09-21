@@ -94,8 +94,8 @@
 		<QuickToolBar
 			v-if="isSelected"
 			:css-classes="newElemInfo.cssClasses"
-			class="position-absolute start-50 translate-middle"
-			style="top: -20px; white-space: nowrap" />
+			class="position-absolute start-50 translate-middle-x"
+			style="top: -64px; white-space: nowrap" />
 
 		<!-- update/edit modal - only rendered while THIS elem is both selected
 		AND the modal has been opened via U. lives inside this wrapper so it
