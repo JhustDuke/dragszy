@@ -38,20 +38,24 @@ export const useAppActionStore = defineStore("appAction", {
 		};
 	},
 	getters: {
-		getActiveImportedElem: function (state): CanvasElem | null {
+		getActiveImportedElem: function (state): Readonly<CanvasElem> | null {
 			return state.activeImportedElem;
 		},
-		getActiveAction: function (state): AppAction {
+		getActiveAction: function (state): Readonly<AppAction> {
 			return state.currentAction;
 		},
-		getSelectedElemType: function (state): keyof HTMLElementTagNameMap {
+		getSelectedElemType: function (
+			state
+		): Readonly<keyof HTMLElementTagNameMap> {
 			return state.selectedElemType;
 		},
 		// in getters:
-		getSelectedPresetClasses: function (state): string[] {
+		getSelectedPresetClasses: function (state): Readonly<string[]> {
 			return state.selectedPresetClasses;
 		},
-		getSelectedPreseCustomStyles: function (state): Record<string, string> {
+		getSelectedPreseCustomStyles: function (
+			state
+		): Readonly<Record<string, string>> {
 			return state.selectedPresetCustomStyles;
 		},
 		getActiveBlock: function (state) {

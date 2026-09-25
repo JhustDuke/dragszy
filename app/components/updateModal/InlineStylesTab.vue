@@ -116,7 +116,7 @@
 	//the elem currently selected on the canvas - this tab only ever
 	//reflects/edits THIS elem, never a stale reference to a previous one
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	interface StyleRow {

@@ -30,7 +30,7 @@
 	const canvasElemsStore = useCanvasElemsStore();
 
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	const customIdDraft = ref("");

@@ -1,11 +1,27 @@
 <template>
 	<div>
+		<!-- shown when a single block is picked for export -->
+		<SingleBlockExport
+			v-if="useAppActionStore().currentAction === 'export'"
+			:is-exporting="isSingleExportBtnClicked"
+			@close="useAppActionStore().setActiveAction('create')"
+			:exportFormats="exportFormats"
+			@on-export-data="handleSingleBlockExport" />
+
+		<!-- shown after Go is clicked, exports the whole canvas -->
+		<EntireCanvasExport
+			v-if="shouldShowPreExportMsg"
+			:framework="canvasFramework"
+			:export-format="selectedExportFormat"
+			@start-entire-compile="handleEntireCanvasExport"
+			@close="shouldShowPreExportMsg = false" />
+
 		<!-- Framework picker + Go button, triggers compileForSelectedFramework -->
 		<div class="d-flex gap-1 align-items-center">
 			<span class="white-text me-1">Export</span>
 
 			<select
-				v-model="selectedFramework"
+				v-model="selectedExportFormat"
 				class="form-select form-select-sm w-auto"
 				@mouseenter="
 					showAndHideToolTip(hints.exportFormat, {
@@ -13,285 +29,164 @@
 						top: 30,
 					})
 				">
-				<option value="vue">Vue</option>
-				<option value="react">React</option>
+				<option
+					v-for="(format, index) in exportFormats"
+					:key="index"
+					:value="format"
+					:selected="format === selectedExportFormat">
+					{{ format }}</option
+				>
 			</select>
 
 			<button
 				type="button"
 				class="btn btn-success white-text"
-				:disabled="isCompiling"
-				@click="handleCompileClick">
-				{{ isCompiling ? "Compiling..." : "Go" }}
+				@click="shouldShowPreExportMsg = true">
+				Go
 			</button>
 		</div>
-
-		<!-- Compile modal: shows CompileFeedback's progress messages while
-		     compiling. Once handleCompileComplete fires, both Download and
-		     Close appear — closing here just dismisses without downloading.
-		     Wrapped in ClientOnly since download logic below needs
-		     document/window. -->
-		<ClientOnly>
-			<div
-				v-if="isCompiling"
-				class="compile-modal-backdrop">
-				<div class="compile-modal">
-					<CompileFeedback
-						:framework="canvasFramework"
-						@complete="handleCompileComplete" />
-
-					<!-- Lets the user decide whether the global root div should
-					     appear in the exported HTML. Its children are still
-					     exported when the root itself is excluded. Read fresh
-					     at DOWNLOAD time (not when Go was clicked), since this
-					     is the only point in the flow where the checkbox has
-					     actually been visible/settable by the user. -->
-					<div
-						v-if="isDownloadReady"
-						class="form-check mt-3">
-						<input
-							id="excludeRootFromExport"
-							v-model="excludeRootFromExport"
-							class="form-check-input"
-							type="checkbox" />
-
-						<label
-							for="excludeRootFromExport"
-							class="form-check-label">
-							Exclude root div from export
-						</label>
-
-						<small class="d-block text-muted">
-							Leaves the root div out of the exported HTML while keeping all of
-							its children.
-						</small>
-					</div>
-
-					<!-- Only shown once the message sequence has finished -->
-					<div
-						v-if="isDownloadReady"
-						class="d-flex gap-2 mt-2">
-						<button
-							type="button"
-							class="btn btn-success"
-							@click="downloadCompiledFile">
-							Download
-						</button>
-
-						<button
-							type="button"
-							class="btn btn-outline-secondary"
-							@click="handleModalClose">
-							Close
-						</button>
-					</div>
-				</div>
-			</div>
-		</ClientOnly>
 	</div>
 </template>
 
 <script setup lang="ts">
-	import { ref, onMounted } from "vue";
+	import { ref } from "vue";
 
-	import { vueCompiler, reactCompiler } from "../../../compiler";
-	import CompileFeedback from "./CompileFeedBack.vue";
-	import { useCanvasElemsStore, useImageLibraryStore } from "~/store";
+	import { vueCompiler, reactCompiler, htmlCompiler } from "../../../compiler";
+	import EntireCanvasExport from "./EntireCanvasExp.vue";
+	import { initDownload } from "./initDownload";
+	import {
+		useCanvasElemsStore,
+		useImageLibraryStore,
+		useAppActionStore,
+	} from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
+	import type { CanvasElem } from "~/types";
+	import SingleBlockExport from "./SingleBlockExport.vue";
 
-	// --- Local state -------------------------------------------------------
-
-	const selectedFramework = ref("vue");
-	const isCompiling = ref(false); // controls modal visibility
-	const isDownloadReady = ref(false); // controls Download/Close visibility inside modal
-	const excludeRootFromExport = ref(false); // controls whether app-root is excluded from exported HTML
-
-	const compiledFileName = ref(""); // filename/extension to use on download
+	const canvasFramework = ref<"tw" | "bs5">("bs5");
 
 	const canvasElemsStore = useCanvasElemsStore();
 	const imageLibraryStore = useImageLibraryStore();
 
-	// tw vs bs5 canvas — determined client-side only, from the current route
-	const canvasFramework = ref<"tw" | "bs5">("bs5");
+	const exportFormats = ["HTML", "Vue", "React"] as const;
 
-	// --- Lifecycle -----------------------------------------------------------
+	type allowedExports = (typeof exportFormats)[number];
 
-	onMounted(function () {
-		canvasFramework.value = window.location.pathname.includes("/canvas/tw")
-			? "tw"
-			: "bs5";
-	});
+	// currently selected format, shared between both export flows
+	const selectedExportFormat = ref<allowedExports>("Vue");
 
-	// --- Compilation ---------------------------------------------------------
+	// HTML only, unchecked = fragment, checked = full-page
+	const isFullPageExport = ref(false);
+	// block chosen from SingleBlockExport for the singleBlock flow
+	const choosenBlockToExport = ref<CanvasElem | null>(null);
+	// true while a single-block export is running, feeds the modal's spinner
+	const isSingleExportBtnClicked = ref(false);
 
-	/**
-	 * Runs the compile process for whichever framework is selected,
-	 * returning both the file content and the correct filename/extension
-	 * for that framework's output. Passes the current image library
-	 * snapshot through so any userImg/userBgImg references resolve to
-	 * real relative filenames instead of raw base64. Reads
-	 * excludeRootFromExport fresh every time it's called - so calling
-	 * this again later (e.g. right before download) picks up whatever
-	 * the checkbox is set to AT THAT MOMENT, not whatever it was when
-	 * Go was first clicked.
-	 */
-	function compileForSelectedFramework(): {
-		content: string;
-		fileName: string;
-	} {
-		const appRoot = canvasElemsStore.elems.find(function (elem) {
-			return elem.id === "app-root";
-		});
-
-		if (!appRoot) {
-			console.log("app-root was not found. Returning early.");
-			throw new Error("app-root was not found.");
-		}
-
-		appRoot.excludeRootFromExport = excludeRootFromExport.value;
-
-		if (selectedFramework.value === "vue") {
-			return {
-				content: vueCompiler().createVueFile(
-					canvasElemsStore.elems,
-					imageLibraryStore.getImages
-				),
-				fileName: "DragzyExport.vue",
-			};
-		}
-
-		if (selectedFramework.value === "react") {
-			return {
-				content: reactCompiler().createReactFile(
-					canvasElemsStore.elems,
-					imageLibraryStore.getImages
-				),
-				fileName: "DragzyExport.tsx",
-			};
-		}
-
-		throw new Error(`Unsupported framework: ${selectedFramework.value}`);
-	}
-
-	/**
-	 * Handles the Go button click: runs the compiler once up front just
-	 * to validate everything works (catches errors early, before the
-	 * user waits through CompileFeedback's whole message sequence for
-	 * nothing) and opens the modal. The content built HERE is NOT what
-	 * gets downloaded - downloadCompiledFile recompiles fresh at click
-	 * time instead, so the checkbox's final state is always respected.
-	 */
-	function handleCompileClick(): void {
-		if (isCompiling.value) {
-			console.log("Compile already in progress. Returning early.");
-			return;
-		}
-
-		isCompiling.value = true;
-		isDownloadReady.value = false;
+	function handleSingleBlockExport(data: {
+		choosenFormat: string;
+		elemBlock: CanvasElem;
+		isFullPageExport: boolean;
+	}) {
+		//this is selectedFormat affects its global and affects the entire compile if not changed by the user
+		selectedExportFormat.value = data.choosenFormat as allowedExports;
+		isFullPageExport.value = data.isFullPageExport;
+		choosenBlockToExport.value = data.elemBlock;
+		isSingleExportBtnClicked.value = true;
 
 		try {
-			const { fileName } = compileForSelectedFramework();
+			const output = compiler({
+				exportMode: "singleBlock",
+				outputType: selectedExportFormat.value,
+				elem: choosenBlockToExport.value,
+				pageType: isFullPageExport.value ? "full-page" : "fragment",
+			});
 
-			compiledFileName.value = fileName;
-		} catch (error) {
-			console.error("Compilation failed:", error);
+			if (output) {
+				const { exportData, filename } = output;
 
-			isCompiling.value = false;
+				initDownload(exportData, filename);
+				// close only on success so the user can retry on failure
+				useAppActionStore().setActiveAction("create");
+			}
+		} catch (error: any) {
+			console.error("Single block export failed:", error);
+		} finally {
+			isSingleExportBtnClicked.value = false;
 		}
 	}
 
-	// --- Modal / download flow -----------------------------------------------
+	// true while the entire-canvas export modal is open
+	const shouldShowPreExportMsg = ref(false);
 
-	/**
-	 * Runs when CompileFeedback finishes its message sequence.
-	 * Compilation has already been validated at this point, so
-	 * both Download and Close can now appear in the modal.
-	 */
-	function handleCompileComplete(): void {
-		isDownloadReady.value = true;
-	}
-
-	/**
-	 * Downloads the compiled file and closes the modal. Recompiles
-	 * RIGHT HERE, at the moment of the click - not using whatever was
-	 * built back when Go was pressed - so excludeRootFromExport's
-	 * current checkbox value (which the user may have only just now
-	 * toggled, since this is the first point it's even visible) is
-	 * exactly what ends up in the downloaded file. The anchor is
-	 * attached to the DOM before .click() (some browsers ignore
-	 * .click() on detached elements) and the object URL is revoked
-	 * on a delay so the download has time to actually start before
-	 * the URL is invalidated.
-	 */
-	function downloadCompiledFile(): void {
-		if (!isDownloadReady.value) {
-			console.log("Download is not ready. Returning early.");
-			return;
-		}
-
-		let content: string;
-		let fileName: string;
-
+	function handleEntireCanvasExport(data: {
+		rootElem: CanvasElem;
+		includeRootInExport: boolean;
+		isFullPageExport: boolean;
+	}) {
 		try {
-			const result = compileForSelectedFramework();
-			content = result.content;
-			fileName = result.fileName;
-		} catch (error) {
-			console.error("Compilation failed at download time:", error);
-			return;
+			// root exclusion is Vue/React only, HTML always keeps the root
+			data.rootElem.excludeRootFromExport =
+				selectedExportFormat.value !== "HTML" && !data.includeRootInExport;
+
+			const output = compiler({
+				exportMode: "entire",
+				outputType: selectedExportFormat.value,
+				elem: data.rootElem,
+				pageType: data.isFullPageExport ? "full-page" : "fragment",
+			});
+
+			if (output) {
+				initDownload(output.exportData, output.filename);
+				// close only on success so the user can retry on failure
+				shouldShowPreExportMsg.value = false;
+			}
+		} catch (error: any) {
+			console.error("an error occured", error);
 		}
-
-		const blob = new Blob([content], { type: "text/plain" });
-		const url = URL.createObjectURL(blob);
-
-		const anchor = document.createElement("a");
-		anchor.href = url;
-		anchor.download = fileName;
-
-		document.body.appendChild(anchor);
-		anchor.click();
-		document.body.removeChild(anchor);
-
-		setTimeout(function () {
-			URL.revokeObjectURL(url);
-		}, 100);
-
-		isCompiling.value = false;
-		isDownloadReady.value = false;
 	}
 
-	/**
-	 * Closes the modal without downloading — only reachable once
-	 * compilation has finished (Close sits next to Download). Resets
-	 * state the same way a completed download would, so a later Go
-	 * click starts clean.
-	 */
-	function handleModalClose(): void {
-		isCompiling.value = false;
-		isDownloadReady.value = false;
+	type compileData = {
+		outputType: allowedExports;
+		exportMode?: "singleBlock" | "entire";
+		elem: CanvasElem;
+		pageType?: "full-page" | "fragment";
+	};
+
+	// format picks the compiler, both flows call this the same way
+	function compiler({
+		//exportMode kept as default exports
+		exportMode = "entire",
+		outputType,
+		elem,
+		pageType,
+	}: compileData) {
+		if (outputType === "Vue") {
+			const exportData = vueCompiler().createVueFile(
+				[elem],
+				imageLibraryStore.getImages
+			);
+			return { exportData, filename: "d2x.vue" };
+		}
+		if (outputType === "React") {
+			const exportData = reactCompiler().createReactFile(
+				[elem],
+				imageLibraryStore.getImages
+			);
+			return { exportData, filename: "d2x.jsx" };
+		}
+		if (outputType === "HTML") {
+			const exportData = htmlCompiler({
+				canvasElemsArr: [elem],
+				cssFramework: canvasFramework.value,
+				images: imageLibraryStore.getImages,
+				// fallback, both callers already pass pageType
+				pageType: pageType ?? "fragment",
+			});
+			return { exportData, filename: "d2x.html" };
+		} else {
+			throw new Error(`unknown export format supplied`);
+		}
 	}
 </script>
 
-<style scoped>
-	/* Fullscreen dimmed overlay for the compile modal */
-	.compile-modal-backdrop {
-		position: fixed;
-		inset: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1050;
-	}
-
-	/* The actual modal card */
-	.compile-modal {
-		background-color: white;
-		border-radius: 0.5rem;
-		padding: 1.5rem 2rem;
-		max-width: 500px;
-		width: 90%;
-		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
-	}
-</style>
+<style scoped></style>

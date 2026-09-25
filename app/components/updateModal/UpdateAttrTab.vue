@@ -74,7 +74,7 @@
 
 	// the actual selected elem's data (props, customStyles, elemType)
 	const selectedElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	// the list of attr NAMES to show for THIS elem's type.

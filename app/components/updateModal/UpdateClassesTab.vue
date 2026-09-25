@@ -36,7 +36,7 @@
 	const canvasElemsStore = useCanvasElemsStore();
 
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	//classes shown sorted alphabetically, per the requirement

@@ -1,7 +1,9 @@
 import type { CanvasElem } from "~/types";
 import { escapeAttr, escapeText, selfClosingTags } from "./utils";
+import { APP_ROOT_ID } from "~/store/elementStore/utils";
 
 interface NormalizedTag {
+	id?: string;
 	tagName: string;
 	isSelfClosingTag: boolean;
 	attributes: Record<string, string>;
@@ -269,7 +271,7 @@ const normalizer = function () {
 		element: NormalizedTag,
 		indentLevel: number = 0
 	): string {
-		if (element.excludeRootFromExport) {
+		if (element.excludeRootFromExport && element.id === APP_ROOT_ID) {
 			return element.children
 				.map(function (childElement) {
 					return parseHtml(childElement, indentLevel);

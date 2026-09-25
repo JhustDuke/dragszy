@@ -110,7 +110,7 @@
 	}>();
 
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	const isImgActive = computed(function () {

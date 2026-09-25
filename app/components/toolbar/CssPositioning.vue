@@ -3,7 +3,7 @@
 		v-if="appActionStore.getActiveAction === 'position'"
 		class="d-flex flex-wrap gap-1 mt-1">
 		<div
-			:disabled="canvasElemsStore.activeElem"
+			:disabled="canvasElemsStore.getActiveElem"
 			id="positioning">
 			<span
 				class="badge border grey darken-2 active"
@@ -75,7 +75,7 @@
 	);
 
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem;
+		return canvasElemsStore.getActiveElem;
 	});
 
 	/**

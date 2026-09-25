@@ -1,39 +1,42 @@
 <template>
-	<!-- self-closing elems (img, etc.) can't hold children - render via SelfClosingTags -->
-	<SelfClosingTags
-		v-if="isSelfClosing"
-		ref="tagRef"
-		:newElemInfo="newElemInfo"
-		:isSelected="isSelected"
-		:activeWidth="badgeWidth"
-		:activeHeight="badgeHeight"
-		:isHoveredWhileDragging="isHoveredWhileDragging"
-		:isLastEdited="isLastEdited"
-		:resize="resize"
-		:onMouseMove="onMouseMove"
-		:onMouseDown="onMouseDown"
-		:onClick="handleElemClick"
-		:onDelete="deleteNode" />
+	<ClientOnly>
+		<!-- self-closing elems (img, etc.) can't hold children - render via SelfClosingTags -->
+		<SelfClosingTags
+			v-if="isSelfClosing"
+			ref="tagRef"
+			:newElemInfo="newElemInfo"
+			:isSelected="isSelected"
+			:activeWidth="badgeWidth"
+			:activeHeight="badgeHeight"
+			:isHoveredWhileDragging="isHoveredWhileDragging"
+			:isLastEdited="isLastEdited"
+			:resize="resize"
+			:onMouseMove="onMouseMove"
+			:onMouseDown="onMouseDown"
+			:onClick="handleElemClick"
+			:onDelete="deleteNode" />
 
-	<!-- everything else (div, button, span, form, etc.) - render via NonSelfClosingTags -->
-	<NonSelfClosingTags
-		v-else
-		ref="tagRef"
-		:newElemInfo="newElemInfo"
-		:isSelected="isSelected"
-		:activeWidth="badgeWidth"
-		:activeHeight="badgeHeight"
-		:isHoveredWhileDragging="isHoveredWhileDragging"
-		:isLastEdited="isLastEdited"
-		:resize="resize"
-		:onMouseMove="onMouseMove"
-		:onMouseDown="onMouseDown"
-		:onClick="handleElemClick"
-		:onDelete="deleteNode" />
+		<!-- everything else (div, button, span, form, etc.) - render via NonSelfClosingTags -->
+		<NonSelfClosingTags
+			v-else
+			ref="tagRef"
+			:newElemInfo="newElemInfo"
+			:isSelected="isSelected"
+			:activeWidth="badgeWidth"
+			:activeHeight="badgeHeight"
+			:isHoveredWhileDragging="isHoveredWhileDragging"
+			:isLastEdited="isLastEdited"
+			:resize="resize"
+			:onMouseMove="onMouseMove"
+			:onMouseDown="onMouseDown"
+			:onClick="handleElemClick"
+			:onDelete="deleteNode" />
+	</ClientOnly>
 </template>
 
 <script setup lang="ts">
 	import { computed, ref, watch, nextTick } from "vue";
+	import { ClientOnly } from "#components";
 	import type { CanvasElem } from "../../types";
 	import { useCanvasElemsStore, useAppActionStore } from "../../store";
 	import { useHistoryStore } from "../../store/historyStore";

@@ -39,7 +39,7 @@
 	const canvasElemsStore = useCanvasElemsStore();
 
 	const activeElem = computed(function () {
-		return canvasElemsStore.activeElem as CanvasElem | null;
+		return canvasElemsStore.getActiveElem as CanvasElem | null;
 	});
 
 	function generateOptionId(): string {

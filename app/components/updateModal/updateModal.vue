@@ -89,7 +89,7 @@
 			{ title: "ID", component: CustomIdTab },
 		];
 
-		if (canvasElemsStore.activeElem?.elemType === "select") {
+		if (canvasElemsStore.getActiveElem?.elemType === "select") {
 			baseTabs.push({ title: "Options", component: SelectOptionsEditor });
 		}
 
@@ -98,8 +98,8 @@
 
 	const hasCustomStyle = computed(function () {
 		if (
-			canvasElemsStore.activeElem?.customStyles &&
-			Object.keys(canvasElemsStore.activeElem.customStyles).length > 0
+			canvasElemsStore.getActiveElem?.customStyles &&
+			Object.keys(canvasElemsStore.getActiveElem.customStyles).length > 0
 		) {
 			return true;
 		}

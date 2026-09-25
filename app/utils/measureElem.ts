@@ -7,6 +7,7 @@ export function measureElem(
 	id: string,
 	onMeasured: (width: number, height: number) => void
 ): void {
+	if (typeof document === "undefined") return;
 	const node = document.getElementById(id);
 	if (!node) return;
 

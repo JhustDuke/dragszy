@@ -34,7 +34,13 @@
 		},
 	});
 
-	const Optionlabels: AppAction[] = ["create", "resize", "presets", "imports"];
+	const Optionlabels: AppAction[] = [
+		"create",
+		"resize",
+		"presets",
+		"imports",
+		"export",
+	];
 
 	function handleKeyDown(event: KeyboardEvent): void {
 		const target = event.target as HTMLElement;
@@ -64,6 +70,10 @@
 
 		if (event.key === "i") {
 			selectedAction.value = "imports";
+			return;
+		}
+		if (event.key === "e") {
+			selectedAction.value = "export";
 			return;
 		}
 	}

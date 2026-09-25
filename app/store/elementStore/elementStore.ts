@@ -33,7 +33,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 			elems: [createAppRoot()] as CanvasElem[],
 			currentlyDragged: null as HTMLElement | null,
 			currentlyHovered: null as HTMLElement | null,
-			activeElemId: null as string | null,
+			activeElemId: APP_ROOT_ID as string | null,
 			isDragging: false as boolean,
 			isEditModalOpen: false as boolean,
 
@@ -45,11 +45,10 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 	},
 
 	getters: {
-		activeElem: function (state): Readonly<CanvasElem> | null {
-			if (!state.activeElemId) return null;
-
+		getActiveElem: function (state): Readonly<CanvasElem> | null {
 			return (
-				findElemAndContainer(state.elems, state.activeElemId)?.foundElem ?? null
+				findElemAndContainer(state.elems, state.activeElemId as string)!
+					.foundElem ?? null
 			);
 		},
 	},
@@ -67,7 +66,7 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				defaultText: elemData.defaults.text,
 				defaultClasses: elemData.defaults.classes,
 				defaultAttributes: elemData.defaults.attributes,
-				presetClasses: appActionStore.getSelectedPresetClasses,
+				presetClasses: [...appActionStore.getSelectedPresetClasses],
 				presetCustomStyles: appActionStore.getSelectedPreseCustomStyles,
 			});
 

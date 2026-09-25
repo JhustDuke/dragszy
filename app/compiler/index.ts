@@ -1,4 +1,5 @@
 export * from "./compileVue";
-export * from "./parseHtmlToDragzy";
+export * from "./parseHtmlToD2X";
 export * from "./utils";
-export * from './compileReact'
+export * from "./compileReact";
+export * from "./parseD2XtoHTML";
