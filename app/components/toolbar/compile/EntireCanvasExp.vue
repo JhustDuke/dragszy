@@ -114,7 +114,7 @@
 
 	const messages = [
 		"Your project is compiling...",
-		"Images will not be included in the exported file. Relative image paths will be preserved, for example: ./image.png",
+		"Images will not be included in the exported file. Relative image paths will be preserved, for example: ./image.png keep images in public dir ",
 		`Your exported project uses ${frameworkName}.`,
 		"Font Awesome 4.7.3+ is used. Be sure to include Font Awesome in your index.html.",
 		"All elems with id 'dragzy-' would not be included in the exported file",

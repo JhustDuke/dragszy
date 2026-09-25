@@ -1,6 +1,6 @@
 <template>
 	<div
-		style="z-index: 1500"
+		style="z-index: 1000"
 		class="text-center"
 		id="quick-toolbar">
 		<!-- app action row -->
@@ -24,6 +24,13 @@
 				">
 				{{ ctrl }}
 			</span>
+
+			<!-- vibecoding / AI assistant, TODO: wire up openVibecoding -->
+			<span
+				class="ctrl fa fa-android"
+				:class="sharedSpanClasses"
+				@mouseenter="showAndHideToolTip(hints.aiHint, { top: 30, left: 100 })"
+				@click="openVibecoding"></span>
 		</div>
 
 		<!-- css row -->
@@ -140,17 +147,17 @@
 		}
 	);
 
-	// c = create, r = resize, i = imports.
-	// p = presets
-	// d = duplicate
-	const appActionsControls = ["c", "r", "i", "p", "d"] as const;
+	// c = create, p = presets, e = export, r = resize, i = imports.
+	// d = duplicate, kept last since it's a utility not a switchable action
+	const appActionsControls = ["c", "p", "e", "r", "i", "d"] as const;
 	type appActionInitials = (typeof appActionsControls)[number];
 
 	const actionHints: Record<appActionInitials, string> = {
 		c: hints.createHint,
+		p: hints.presetHint,
+		e: hints.exportHint, // TODO: add exportHint to hints
 		r: hints.resizeHint,
 		i: hints.importHint,
-		p: hints.presetHint,
 		d: hints.duplicateHint,
 	};
 
@@ -165,14 +172,17 @@
 			case "c":
 				return currentAppAction.value === "create";
 
+			case "p":
+				return currentAppAction.value === "presets";
+
+			case "e":
+				return currentAppAction.value === "export";
+
 			case "r":
 				return currentAppAction.value === "resize";
 
 			case "i":
 				return currentAppAction.value === "imports";
-
-			case "p":
-				return currentAppAction.value === "presets";
 
 			default:
 				return false;
@@ -189,16 +199,20 @@
 				appActionStore.setActiveAction("create");
 				break;
 
+			case "p":
+				appActionStore.setActiveAction("presets");
+				break;
+
+			case "e":
+				appActionStore.setActiveAction("export");
+				break;
+
 			case "r":
 				appActionStore.setActiveAction("resize");
 				break;
 
 			case "i":
 				appActionStore.setActiveAction("imports");
-				break;
-
-			case "p":
-				appActionStore.setActiveAction("presets");
 				break;
 
 			case "d":
@@ -266,6 +280,11 @@
 	//the same isFromInlineTab trigger mechanism
 	function openLibraryForSrc(): void {
 		imageLibraryStore.isFromInlineTab.shouldShow = true;
+	}
+
+	// TODO: wire up vibecoding/AI assistant flow
+	function openVibecoding(): void {
+		console.log("Vibecoding not implemented yet");
 	}
 
 	function openUpdateModal() {
