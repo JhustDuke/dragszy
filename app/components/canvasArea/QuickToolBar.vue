@@ -1,6 +1,5 @@
 <template>
 	<div
-		style="z-index: 1000"
 		class="text-center"
 		id="quick-toolbar">
 		<!-- app action row -->
