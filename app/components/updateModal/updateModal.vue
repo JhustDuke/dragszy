@@ -82,10 +82,11 @@
 	//elem - every other elem type sees the original five tabs, unchanged
 	const tabs = computed(function () {
 		const baseTabs = [
-			{ title: "Text", component: TextContentTab },
 			{ title: "Classes", component: ClassesTab },
-			{ title: "Atrrs", component: PerElemAttr },
 			{ title: "Inline Styles", component: InlineStylesTab },
+			{ title: "Text", component: TextContentTab },
+			{ title: "Atrrs", component: PerElemAttr },
+
 			{ title: "ID", component: CustomIdTab },
 		];
 
