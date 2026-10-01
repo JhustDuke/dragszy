@@ -4,3 +4,4 @@ export * from "./elementStore/elementStore";
 export * from "./historyStore";
 export * from "./dbStore";
 export * from "./imageStore";
+export * from "./aiStore";

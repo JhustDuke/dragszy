@@ -1,0 +1,53 @@
+		const frameworkHintText = computed(function () {
+		if (props.framework === "bs5") {
+			return "This project uses Bootstrap 5";
+		}
+
+		return "This project uses Tailwind";
+	});
+	
+	
+	const isQuotaVisible = ref(false);
+
+	const QUOTA_VISIBLE_MILLISECONDS = 4000;
+	//placeholder text, to be replaced by the ai store quota
+	const quotaText = ref("12 of 50 requests left");
+
+	let quotaHideTimerId: ReturnType<typeof setTimeout> | null = null;
+function handleApplyClick(message: ChatMessage) {
+		//later: create the elems from the message html via the elem store
+		console.log("Apply message:", message);
+	}
+	function handleCheckQuotaClick() {
+		//later: check quota through the ai store
+		isQuotaVisible.value = true;
+
+		//restart the hide timer if clicked again
+		if (quotaHideTimerId !== null) {
+			clearTimeout(quotaHideTimerId);
+		}
+
+		quotaHideTimerId = setTimeout(function () {
+			isQuotaVisible.value = false;
+		}, QUOTA_VISIBLE_MILLISECONDS);
+	}
+
+	function handleMinimizeClick() {
+		//later: set isMinimized in the ai store
+	}
+
+	function handleCloseClick() {
+		//later: close the panel
+	}
+
+
+ 	function handleToggleMessage(message: ChatMessage) {
+		message.isTextExpanded = !message.isTextExpanded;
+	}
+
+
+ 	onBeforeUnmount(function () {
+		if (quotaHideTimerId !== null) {
+			clearTimeout(quotaHideTimerId);
+		}
+	});

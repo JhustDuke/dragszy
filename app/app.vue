@@ -42,6 +42,11 @@
 			Placeholder footer text — Dragzy
 		</footer>
 
+		<AskAiModal
+			framework="bs5"
+			:activeElement="canvasElemsStore.getActiveElem!" />
+
+		<!-- this component handles persistence store showing -->
 		<RestoreOrNewPrompt />
 		<ToggleView />
 	</div>
@@ -54,6 +59,7 @@
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
 	import RestoreOrNewPrompt from "./components/indexdb/RestorePrompt.vue";
 	import { usePreviewHtml } from "./composables";
+	import AskAiModal from "./components/ai/AskAiPanel.vue";
 
 	import {
 		useViewportStore,

@@ -64,3 +64,19 @@ export const supportedElemTypes = [
 ] as const satisfies (keyof HTMLElementTagNameMap)[];
 
 export type SupportedElemType = (typeof supportedElemTypes)[number];
+
+export interface ChatMessage {
+	tracking_id: number;
+	sender: "user" | "ai";
+	message: string;
+}
+
+export interface AiRequestFormat {
+	userPrompt: string;
+	userMarkup: string;
+}
+
+export interface AiResponseFormat {
+	aiResponse: string;
+	aiMarkup: string;
+}
