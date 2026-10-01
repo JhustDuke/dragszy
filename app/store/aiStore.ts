@@ -7,6 +7,7 @@ export const useAiStore = defineStore("ai", {
 			chatMessages: [] as ChatMessage[],
 			isAiLoading: false,
 			isAiModalMinimized: false,
+			isAiModalOpen: false,
 
 			//set only if the reply lands while minimized e.g. "success"
 			responseNotice: null as "success" | "failure" | null,
@@ -38,6 +39,10 @@ export const useAiStore = defineStore("ai", {
 		},
 		setModalRestored: function () {
 			this.isAiModalMinimized = false;
+			this.responseNotice = null;
+		},
+		setCloseModal: function () {
+			this.isAiModalOpen = false;
 			this.responseNotice = null;
 		},
 	},

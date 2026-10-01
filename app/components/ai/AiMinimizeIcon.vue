@@ -2,14 +2,14 @@
 	<div
 		v-if="aiStore.isAiModalMinimized"
 		class="position-fixed"
-		style="bottom: 20px; right: 20px; z-index: 1050"
+		style="bottom: 100px; right: 20px; z-index: 1050"
 		@mousedown.stop>
 		<button
-			class="btn btn-primary rounded-circle shadow position-relative"
+			class="rounded-circle shadow position-relative"
 			title="Restore Ask AI"
 			aria-label="Restore Ask AI"
 			@click="aiStore.setModalRestored()">
-			<i class="fa fa-comment"></i>
+			<i class="fa fa-android"></i>
 
 			<!-- red dot, shown when a reply arrived while minimized -->
 			<span

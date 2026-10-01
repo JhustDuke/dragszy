@@ -9,7 +9,7 @@
 			<ToolBar class="d-none d-md-block d-sm-block" />
 		</nav>
 
-		<section class="flex-grow-1">
+		<section class="flex-grow-1 mt-3">
 			<!-- Desktop: unchanged, still the real interactive canvas -->
 			<div
 				style="min-height: 5000px; max-width: 1400px; margin: 0 auto"
@@ -49,6 +49,7 @@
 		<!-- this component handles persistence store showing -->
 		<RestoreOrNewPrompt />
 		<ToggleView />
+		<AiMinimizedIcon />
 	</div>
 </template>
 
@@ -60,6 +61,7 @@
 	import RestoreOrNewPrompt from "./components/indexdb/RestorePrompt.vue";
 	import { usePreviewHtml } from "./composables";
 	import AskAiModal from "./components/ai/AskAiPanel.vue";
+	import AiMinimizedIcon from "./components/ai/AiMinimizeIcon.vue";
 
 	import {
 		useViewportStore,

@@ -29,7 +29,7 @@
 				class="ctrl fa fa-android"
 				:class="sharedSpanClasses"
 				@mouseenter="showAndHideToolTip(hints.aiHint, { top: 30, left: 100 })"
-				@click="openVibecoding"></span>
+				@click="useAiStore().isAiModalOpen = true"></span>
 		</div>
 
 		<!-- css row -->
@@ -91,6 +91,7 @@
 		useCanvasElemsStore,
 		useAppActionStore,
 		useImageLibraryStore,
+		useAiStore,
 	} from "~/store";
 	import { showAndHideToolTip, hints } from "#imports";
 	import type { AppAction } from "~/types";
@@ -279,11 +280,6 @@
 	//the same isFromInlineTab trigger mechanism
 	function openLibraryForSrc(): void {
 		imageLibraryStore.isFromInlineTab.shouldShow = true;
-	}
-
-	// TODO: wire up vibecoding/AI assistant flow
-	function openVibecoding(): void {
-		console.log("Vibecoding not implemented yet");
 	}
 
 	function openUpdateModal() {

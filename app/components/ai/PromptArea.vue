@@ -4,7 +4,7 @@
 		<span
 			class="badge bg-secondary mb-1 d-block text-truncate"
 			style="max-width: 45%; overflow: hidden">
-			{{ activeElement.textContent || activeElement.elemType }}
+			{{ activeElement.id || activeElement.children }}
 		</span>
 		<br />
 
@@ -32,7 +32,6 @@
 	const promptText = ref("");
 
 	function emitUserPrompt() {
-		console.log("blured emitted");
 		emit("user-prompt", promptText.value);
 	}
 </script>

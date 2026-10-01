@@ -1,5 +1,5 @@
 export * from "./compileVue";
-export * from "./parseHtmlToD2X";
+export * from "./parseHtmlToCanvasElem";
 export * from "./utils";
 export * from "./compileReact";
-export * from "./parseD2XtoHTML";
+export * from "./parseCanvasToHTML";

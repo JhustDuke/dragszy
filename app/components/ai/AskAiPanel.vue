@@ -1,6 +1,7 @@
 <template>
 	<Teleport to="body">
 		<div
+			v-if="aiStore.isAiModalOpen"
 			class="d-flex justify-content-center position-fixed align-items-center w-100 h-100"
 			:class="{ 'd-none': aiStore.isAiModalMinimized }"
 			style="top: 0; left: 0; z-index: 1050"
@@ -14,6 +15,7 @@
 					class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
 					<span class="fw-bold">Ask AI</span>
 
+					<!-- miminmize -->
 					<div class="d-flex gap-1">
 						<button
 							class="btn btn-sm btn-light"
@@ -22,10 +24,11 @@
 							<i class="fa fa-minus"></i>
 						</button>
 
+						<!-- close -->
 						<button
 							class="btn btn-sm btn-light"
 							title="Close"
-							click="handleCloseClick">
+							@click="aiStore.setCloseModal()">
 							<i class="fa fa-times"></i>
 						</button>
 					</div>
@@ -61,6 +64,7 @@
 	import ChatArea from "./ChatArea.vue";
 	import PromptArea from "./PromptArea.vue";
 	import ChatFooter from "./ChatFooter.vue";
+	import { htmlCompiler } from "~/compiler";
 
 	const props = defineProps<{
 		framework: "bs5" | "tailwind";
