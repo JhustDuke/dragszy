@@ -31,7 +31,8 @@ export const useAppActionStore = defineStore("appAction", {
 				category: blockData.defaultCategory as string | null,
 				variant: blockData.defaultVariant as CanvasElem | null,
 			},
-
+			//the imported elem is activated from app.vue..
+			//which calls the addElem from preset
 			importedElems: [] as { label: string; preset: CanvasElem }[],
 			activeImportedElem: null as CanvasElem | null,
 			showImportModal: false,
