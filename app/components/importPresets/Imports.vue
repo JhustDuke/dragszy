@@ -67,7 +67,7 @@
 	function handleImportSuccess(label: string, tree: CanvasElem): void {
 		lastError.value = "";
 
-		appActionStore.addImportedElem(label, tree);
+		appActionStore.stageImportedPreset(label, tree);
 		appActionStore.setActiveImportedElem(tree);
 
 		appActionStore.showImportModal = false;

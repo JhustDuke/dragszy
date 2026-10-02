@@ -112,7 +112,10 @@ export const useAppActionStore = defineStore("appAction", {
 		setShowElemOutlines: function (value: boolean): void {
 			this.showElemOutlines = value;
 		},
-		addImportedElem: function (label: string, preset: CanvasElem): void {
+		//stages the imported preset for later placement.
+		//the preset is not added to the canvas until the user
+		//activates it and initiates placement.
+		stageImportedPreset: function (label: string, preset: CanvasElem): void {
 			this.importedElems.push({ label, preset });
 		},
 		setActiveImportedElem: function (preset: CanvasElem | null): void {
