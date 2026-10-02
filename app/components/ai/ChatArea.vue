@@ -31,7 +31,8 @@
 				v-else
 				class="d-flex justify-content-end">
 				<div
-					class="bg-light border rounded-4 px-3 py-2 text-break"
+					class="rounded-4 px-3 py-2 text-break"
+					:class="message.isError ? 'red white-text' : 'bg-light border'"
 					style="max-width: 60%">
 					<div :class="{ 'expanded-text-scroll': isMessageExpanded(message) }">
 						{{ getDisplayText(message) }}
@@ -41,13 +42,17 @@
 						<button
 							v-if="isTextTooLong(message)"
 							class="btn btn-link btn-sm p-0"
+							:class="{ 'text-white': message.isError }"
 							@click="toggleReadMoreOrLess(message.tracking_id)">
 							{{ isMessageExpanded(message) ? "Show less" : "Show more" }}
 						</button>
 
+						<!-- apply pill, only when the ai gave markup to apply -->
 						<button
-							class="btn btn-sm btn-primary ms-auto"
-							@click="emit('apply-message', message.message)">
+							v-if="!message.isError && message.markup"
+							class="btn btn-sm btn-primary rounded-pill ms-auto px-3"
+							@click="emit('apply-message', message.markup)">
+							<i class="fa fa-plus"></i>
 							Apply
 						</button>
 					</div>
@@ -73,7 +78,6 @@
 
 <script setup lang="ts">
 	import { ref } from "vue";
-
 	import type { ChatMessage } from "~/types";
 
 	defineProps<{
@@ -82,10 +86,10 @@
 	}>();
 
 	const emit = defineEmits<{
-		"apply-message": [messageText: string];
+		"apply-message": [markupToApply: string];
 	}>();
 
-	const MAX_COLLAPSED_CHARACTERS = 20;
+	const MAX_COLLAPSED_CHARACTERS = 50;
 
 	// which bubbles are open e.g. { 1727800000000: true }
 	const expandedMessageIds = ref<Record<number, boolean>>({});

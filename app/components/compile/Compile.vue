@@ -51,7 +51,7 @@
 <script setup lang="ts">
 	import { ref } from "vue";
 
-	import { vueCompiler, reactCompiler, htmlCompiler } from "../../../compiler";
+	import { vueCompiler, reactCompiler, htmlCompiler } from "../../compiler";
 	import EntireCanvasExport from "./EntireCanvasExp.vue";
 	import { initDownload } from "./initDownload";
 	import {

@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 	import ToolBarActionSelect from "./ToolBarActionSelect.vue";
-	import CompilerSelect from "./compile/Compile.vue";
+	import CompilerSelect from "../compile/Compile.vue";
 	import Presets from "../presetStyles/presets.vue";
 	import UndoRedo from "./UndoRedo.vue";
 	import saveBtn from "./SaveBtn.vue";

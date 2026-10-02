@@ -29,7 +29,7 @@
 				class="ctrl fa fa-android"
 				:class="sharedSpanClasses"
 				@mouseenter="showAndHideToolTip(hints.aiHint, { top: 30, left: 100 })"
-				@click="useAiStore().isAiModalOpen = true"></span>
+				@click="useAiStore().setModalRestored()"></span>
 		</div>
 
 		<!-- css row -->

@@ -69,6 +69,8 @@ export interface ChatMessage {
 	tracking_id: number;
 	sender: "user" | "ai";
 	message: string;
+	markup: string;
+	isError: boolean;
 }
 
 export interface AiRequestFormat {

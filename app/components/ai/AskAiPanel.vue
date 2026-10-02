@@ -49,7 +49,7 @@
 					@user-prompt="getUserPrompt" />
 
 				<ChatFooter
-					quota-text="quotaText"
+					quota-text=""
 					:is-submit-disabled="aiStore.isAiLoading"
 					@submit="handleSubmitClick" />
 			</div>
@@ -58,22 +58,21 @@
 </template>
 
 <script setup lang="ts">
-	import { ref, computed, onBeforeUnmount } from "vue";
+	import { ref, computed } from "vue";
 	import type { CanvasElem, AiResponseFormat, AiRequestFormat } from "~/types";
-	import { useAiStore } from "~/store";
+	import { useAiStore, useImageLibraryStore } from "~/store";
 	import ChatArea from "./ChatArea.vue";
 	import PromptArea from "./PromptArea.vue";
 	import ChatFooter from "./ChatFooter.vue";
 	import { htmlCompiler } from "~/compiler";
 
 	const props = defineProps<{
-		framework: "bs5" | "tailwind";
+		framework: "bs5" | "tw";
 		activeElement: CanvasElem;
 	}>();
 
-	const QUOTA_VISIBLE_MILLISECONDS = 4000;
-
 	const aiStore = useAiStore();
+	const imagesStore = useImageLibraryStore();
 
 	const frameworkHintText = computed(function () {
 		if (props.framework === "bs5") {
@@ -83,17 +82,13 @@
 	});
 
 	const userPrompt = ref("");
+
 	const getUserPrompt = function (promptText: string) {
 		userPrompt.value = promptText;
 	};
 
 	const sendPromptToAi = async function () {
 		const trimmedPrompt = userPrompt.value.trim();
-
-		const requestBody: AiRequestFormat = {
-			userPrompt: trimmedPrompt,
-			userMarkup: "",
-		};
 
 		if (!trimmedPrompt) {
 			return;
@@ -104,27 +99,43 @@
 			return;
 		}
 
-		aiStore.setUserMessage(trimmedPrompt);
-		aiStore.setAiLoading(true);
-
 		let requestOutcome: "success" | "failure" = "success";
 
+		// last compiled markup e.g. "<div class='card'>...</div>"
+		let userMarkup = "";
+
 		try {
+			userMarkup = compileSelectedElem();
+
+			const requestBody: AiRequestFormat = {
+				userPrompt: trimmedPrompt,
+				userMarkup: userMarkup,
+			};
+
+			aiStore.setUserRequest({
+				markup: requestBody.userMarkup,
+				userMessage: requestBody.userPrompt,
+			});
+			aiStore.setAiLoading(true);
+
 			const response = await $fetch<AiResponseFormat>("/api/ai/ask", {
 				method: "POST",
-				body: {
-					userPrompt: requestBody.userPrompt,
-				},
+				body: requestBody,
 			});
 
-			aiStore.setResponseMessage(response.aiResponse);
-		} catch (error) {
-			console.error("Failed to send prompt to AI:", error);
+			aiStore.setAiResponse({
+				aiMessage: response.aiResponse,
+				markup: response.aiMarkup,
+			});
+		} catch (error: any) {
 			requestOutcome = "failure";
 
-			aiStore.setResponseMessage(
-				"Sorry, something went wrong while contacting the AI."
-			);
+			aiStore.setAiResponse({
+				aiMessage: error.message || "Failed to send prompt to AI",
+				// when there's an error let the markup be the last users markup
+				markup: userMarkup,
+				isError: true,
+			});
 		} finally {
 			aiStore.setAiLoading(false);
 		}
@@ -133,6 +144,15 @@
 		if (aiStore.isAiModalMinimized) {
 			aiStore.setResponseNotice(requestOutcome);
 		}
+	};
+
+	const compileSelectedElem = function () {
+		const output = htmlCompiler({
+			canvasElemsArr: [props.activeElement],
+			cssFramework: props.framework || "bs5",
+			images: imagesStore.getImages,
+		});
+		return output;
 	};
 
 	function handleSubmitClick() {

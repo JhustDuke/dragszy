@@ -14,18 +14,36 @@ export const useAiStore = defineStore("ai", {
 		};
 	},
 	actions: {
-		setUserMessage: function (messageText: string) {
+		setUserRequest: function ({
+			userMessage,
+			markup,
+		}: {
+			userMessage: string;
+			markup: string;
+		}) {
 			this.chatMessages.push({
 				tracking_id: Date.now(),
 				sender: "user",
-				message: messageText,
+				isError: false,
+				message: userMessage,
+				markup,
 			});
 		},
-		setResponseMessage: function (messageText: string) {
+		setAiResponse: function ({
+			aiMessage,
+			markup,
+			isError = false,
+		}: {
+			aiMessage: string;
+			markup: string;
+			isError?: boolean;
+		}) {
 			this.chatMessages.push({
 				tracking_id: Date.now() + 1,
 				sender: "ai",
-				message: messageText,
+				isError,
+				message: aiMessage,
+				markup,
 			});
 		},
 		setAiLoading: function (isLoading: boolean) {
@@ -39,11 +57,13 @@ export const useAiStore = defineStore("ai", {
 		},
 		setModalRestored: function () {
 			this.isAiModalMinimized = false;
+			this.isAiModalOpen = true;
 			this.responseNotice = null;
 		},
 		setCloseModal: function () {
 			this.isAiModalOpen = false;
 			this.responseNotice = null;
+			this.isAiModalMinimized = false;
 		},
 	},
 });

@@ -11,7 +11,7 @@ export default defineEventHandler(async function (
 			// after 4 seconds, resolve with the final answer
 			resolveWithMessage({
 				aiResponse: `Mock AI response to: "${requestBody.userPrompt}"`,
-				aiMarkup: "",
+				aiMarkup: requestBody.userMarkup,
 			});
 		}, 4000);
 	});
