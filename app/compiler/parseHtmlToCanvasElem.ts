@@ -4,6 +4,9 @@ import { generateId } from "~/store/elementStore/utils/canvasElemFactory";
 
 const MAX_IMPORT_ELEMENTS = 100;
 
+// bigger cap for ai replies, passed in by the apply button
+export const MAX_AI_APPLY_ELEMENTS = 500;
+
 export interface ParseResult {
 	tree: CanvasElem | null;
 	error: string | null;
@@ -72,9 +75,27 @@ function convertNode(node: Element): CanvasElem | null {
 	const customStyles = parseInlineStyle(node.getAttribute("style"));
 
 	const props: Record<string, string> = {};
+	// exported id only e.g. id="hero" -> customId: "hero"
+	let customId: string | undefined;
+
 	for (const attr of Array.from(node.attributes)) {
 		if (attr.name === "class" || attr.name === "style") continue;
 		if (attr.name.toLowerCase().startsWith("on")) continue;
+
+		//block script urls e.g. href="javascript:alert(1)"
+		const lowerCaseValue = attr.value.trim().toLowerCase();
+		if (
+			(attr.name === "href" || attr.name === "src") &&
+			lowerCaseValue.startsWith("javascript:")
+		) {
+			continue;
+		}
+
+		if (attr.name === "id") {
+			customId = attr.value;
+			continue;
+		}
+
 		props[attr.name] = attr.value;
 	}
 
@@ -94,7 +115,7 @@ function convertNode(node: Element): CanvasElem | null {
 		}
 	}
 
-	return {
+	const convertedElem: CanvasElem = {
 		id: generateId(),
 		elemType: elemType as CanvasElem["elemType"],
 		textContent,
@@ -103,6 +124,12 @@ function convertNode(node: Element): CanvasElem | null {
 		customStyles,
 		children,
 	};
+
+	if (customId) {
+		convertedElem.customId = customId;
+	}
+
+	return convertedElem;
 }
 
 //the ONE public export - parses a raw HTML string into a single
@@ -111,7 +138,11 @@ function convertNode(node: Element): CanvasElem | null {
 //touched. rejects anything over MAX_IMPORT_ELEMENTS total nodes, since
 //that's what actually catches "uploaded a whole page" regardless of
 //how it's wrapped.
-export function parseHtmlToDragzy(htmlString: string): ParseResult {
+//the cap defaults to MAX_IMPORT_ELEMENTS, apply passes MAX_AI_APPLY_ELEMENTS
+export function parseHtmlToDragzy(
+	htmlString: string,
+	maxElements: number = MAX_IMPORT_ELEMENTS
+): ParseResult {
 	const doc = new DOMParser().parseFromString(htmlString, "text/html");
 
 	//DOMParser inserts this element when the input was too malformed to
@@ -127,19 +158,21 @@ export function parseHtmlToDragzy(htmlString: string): ParseResult {
 		return { tree: null, error: "Couldn't find any elements in that file." };
 	}
 
-	const totalElementCount = bodyChildren.reduce(function (sum, el) {
-		return sum + countElements(el);
-	}, 0);
+	let totalElementCount = 0;
 
-	if (totalElementCount > MAX_IMPORT_ELEMENTS) {
+	for (const bodyChild of bodyChildren) {
+		totalElementCount += countElements(bodyChild);
+	}
+
+	if (totalElementCount > maxElements) {
 		return {
 			tree: null,
 			error:
 				"This looks like more than one component (" +
 				totalElementCount +
 				" elements found, max " +
-				MAX_IMPORT_ELEMENTS +
-				"). Try importing just the piece you need.",
+				maxElements +
+				"). Try a smaller piece.",
 		};
 	}
 

@@ -46,10 +46,15 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 
 	getters: {
 		getActiveElem: function (state): Readonly<CanvasElem> | null {
-			return (
-				findElemAndContainer(state.elems, state.activeElemId as string)!
-					.foundElem ?? null
-			);
+			const result = state.activeElemId
+				? findElemAndContainer(state.elems, state.activeElemId)
+				: null;
+
+			if (result?.foundElem) {
+				return result.foundElem;
+			}
+
+			return state.elems[0] ?? null;
 		},
 	},
 
@@ -133,7 +138,19 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				);
 
 				if (activeResult) {
-					activeResult.foundElem.children.push(newElem);
+					const activeElem = activeResult.foundElem;
+
+					if (
+						activeElem.elemType === "img" ||
+						activeElem.elemType === "select" ||
+						activeElem.elemType === "textarea"
+					) {
+						activeResult.containingArr.push(newElem);
+						this.activeElemId = newElem.id;
+						return;
+					}
+
+					activeElem.children.push(newElem);
 					this.activeElemId = newElem.id;
 					return;
 				}

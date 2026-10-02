@@ -60,19 +60,31 @@
 <script setup lang="ts">
 	import { ref, computed } from "vue";
 	import type { CanvasElem, AiResponseFormat, AiRequestFormat } from "~/types";
-	import { useAiStore, useImageLibraryStore } from "~/store";
+	import {
+		useAiStore,
+		useImageLibraryStore,
+		useCanvasElemsStore,
+	} from "~/store";
 	import ChatArea from "./ChatArea.vue";
 	import PromptArea from "./PromptArea.vue";
 	import ChatFooter from "./ChatFooter.vue";
-	import { htmlCompiler } from "~/compiler";
+	import {
+		htmlCompiler,
+		parseHtmlToDragzy,
+		MAX_AI_APPLY_ELEMENTS,
+	} from "~/compiler";
 
 	const props = defineProps<{
 		framework: "bs5" | "tw";
 		activeElement: CanvasElem;
 	}>();
 
+	// biggest elem the user can send e.g. 100 elems
+	const MAX_ELEMS_TO_SEND = 100;
+
 	const aiStore = useAiStore();
 	const imagesStore = useImageLibraryStore();
+	const canvasStore = useCanvasElemsStore();
 
 	const frameworkHintText = computed(function () {
 		if (props.framework === "bs5") {
@@ -86,6 +98,17 @@
 	const getUserPrompt = function (promptText: string) {
 		userPrompt.value = promptText;
 	};
+
+	// counts an elem and everything nested inside it
+	function countCanvasElems(elem: CanvasElem): number {
+		let totalElems = 1;
+
+		for (const childElem of elem.children) {
+			totalElems += countCanvasElems(childElem);
+		}
+
+		return totalElems;
+	}
 
 	const sendPromptToAi = async function () {
 		const trimmedPrompt = userPrompt.value.trim();
@@ -105,6 +128,12 @@
 		let userMarkup = "";
 
 		try {
+			if (countCanvasElems(props.activeElement) > MAX_ELEMS_TO_SEND) {
+				throw new Error(
+					"That element is too large for AI. Select a smaller one."
+				);
+			}
+
 			userMarkup = compileSelectedElem();
 
 			const requestBody: AiRequestFormat = {
@@ -159,9 +188,16 @@
 		sendPromptToAi();
 	}
 
-	function handleApplyClick(messageText: string) {
-		//placeholder, apply logic goes here e.g. "make this button red"
-		console.log("apply clicked:", messageText);
+	function handleApplyClick(markupToApply: string) {
+		const parseResult = parseHtmlToDragzy(markupToApply, MAX_AI_APPLY_ELEMENTS);
+
+		if (parseResult.error || !parseResult.tree) {
+			// your toast call goes here e.g. showToast(parseResult.error)
+			console.warn("Apply failed:", parseResult.error);
+			return;
+		}
+
+		canvasStore.addElemFromPreset(parseResult.tree);
 	}
 </script>
 
