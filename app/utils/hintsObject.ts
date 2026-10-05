@@ -21,7 +21,7 @@ export const hints = {
 	importHint: 'click to imports, shortcut-press "i"',
 	presetHint: 'click to enter presets mode,shortcut-press "p" ',
 	resizeHint: 'click to enter resize mode,shortcut-press "r" ',
-	aiHint: "click to ask for help ",
+	aiHint: "click to ask for to ask ai ",
 	exportHint: "this runs an export on the ACTIVE/SELECTED BLOCK/Elem",
 	changeImageHint: "click to change this image",
 };
