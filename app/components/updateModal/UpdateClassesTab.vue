@@ -1,5 +1,9 @@
 <template>
 	<div v-if="activeElem">
+		<div>
+			element type:
+			<span class="black white-text p-1">{{ activeElem.elemType }}</span>
+		</div>
 		<label class="form-label"
 			>Classes (comma separated),press enter for quick preview</label
 		>

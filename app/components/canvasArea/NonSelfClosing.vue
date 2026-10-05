@@ -112,7 +112,9 @@
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver" />
+			:showBadge="
+				isMouseOver && useAppActionStore().getActiveAction === 'resize'
+			" />
 
 		<!-- delete button - only rendered while the mouse is directly over
 			THIS elem. mouseenter/mouseleave don't bubble, so isMouseOver

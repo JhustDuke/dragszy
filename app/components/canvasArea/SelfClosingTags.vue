@@ -59,7 +59,9 @@ needed, unlike the old global-modal + calculated-position approach. -->
 			:resize="resize"
 			:width="activeWidth"
 			:height="activeHeight"
-			:showBadge="isMouseOver" />
+			:showBadge="
+				isMouseOver && useAppActionStore().getActiveAction === 'resize'
+			" />
 
 		<!-- delete button -->
 		<button
@@ -75,7 +77,7 @@ needed, unlike the old global-modal + calculated-position approach. -->
 <script setup lang="ts">
 	import { ref } from "vue";
 	import type { CanvasElem } from "~/types";
-	import { useCanvasElemsStore } from "~/store";
+	import { useCanvasElemsStore, useAppActionStore } from "~/store";
 	import ResizeButtons from "./ResizeButtons.vue";
 	import UpdateCssModal from "../updateModal/updateModal.vue";
 	import QuickToolBar from "./QuickToolBar.vue";

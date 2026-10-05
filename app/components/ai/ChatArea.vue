@@ -26,7 +26,7 @@
 				</div>
 			</div>
 
-			<!-- ai message -->
+			<!-- ai message and error -->
 			<div
 				v-else
 				class="d-flex justify-content-end">

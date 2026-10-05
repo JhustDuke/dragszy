@@ -139,6 +139,7 @@
 			const requestBody: AiRequestFormat = {
 				userPrompt: trimmedPrompt,
 				userMarkup: userMarkup,
+				stylingFramework: props.framework,
 			};
 
 			aiStore.setUserRequest({

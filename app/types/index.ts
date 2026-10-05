@@ -76,6 +76,7 @@ export interface ChatMessage {
 export interface AiRequestFormat {
 	userPrompt: string;
 	userMarkup: string;
+	stylingFramework: string;
 }
 
 export interface AiResponseFormat {

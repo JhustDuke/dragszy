@@ -2,6 +2,10 @@ import { defineNuxtConfig } from "nuxt/config";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	modules: ["@pinia/nuxt"],
+	runtimeConfig: {
+		geminiKey: process.env.GEMINI_KEY,
+		openRouterKey: process.env.OPEN_ROUTER_KEY,
+	},
 	app: {
 		head: {
 			link: [
