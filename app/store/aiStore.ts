@@ -64,6 +64,7 @@ export const useAiStore = defineStore("ai", {
 			this.isAiModalOpen = false;
 			this.responseNotice = null;
 			this.isAiModalMinimized = false;
+			this.chatMessages = [];
 		},
 	},
 });
