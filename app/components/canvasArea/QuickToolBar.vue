@@ -322,6 +322,11 @@
 </script>
 
 <style scoped>
+	/* toolbar root: ignore text size inherited from the selected elem */
+	#quick-toolbar {
+		font-size: 20px;
+		line-height: 1;
+	}
 	.ctrl {
 		cursor: pointer;
 	}
