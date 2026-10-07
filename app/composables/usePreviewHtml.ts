@@ -13,9 +13,26 @@ export function usePreviewHtml() {
 	const imageLibraryStore = useImageLibraryStore();
 
 	const previewHtml = computed(function () {
+		const rootElem = canvasElemsStore.elems[0]!;
+
+		const copiedStore = {
+			elems: [
+				{
+					...rootElem,
+					// copy customStyles inside the root copy, so the delete never touches the live canvas
+					customStyles: { ...rootElem.customStyles },
+				},
+			],
+		};
+
+		// preview drops only the default canvas min height, a user-set value stays
+		if (copiedStore.elems[0]!.customStyles.minHeight === "5000px") {
+			delete copiedStore.elems[0]!.customStyles.minHeight;
+		}
+
 		const { buildNormalizedTag, parseHtml } = normalizer();
 
-		const normalizedTags = canvasElemsStore.elems.map(function (elem) {
+		const normalizedTags = copiedStore.elems.map(function (elem) {
 			return buildNormalizedTag(elem, imageLibraryStore.getImages, "preview");
 		});
 
