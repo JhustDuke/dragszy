@@ -42,7 +42,8 @@
 				<ChatArea
 					:messages="aiStore.chatMessages"
 					:is-loading="aiStore.isAiLoading"
-					@apply-message="handleApplyClick" />
+					@apply-message="handleApplyClick"
+					@replace-message="handleReplaceClick" />
 
 				<PromptArea
 					:active-element="activeElement"
@@ -198,8 +199,30 @@
 			return;
 		}
 
-		canvasStore.addElemFromPreset(parseResult.tree);
+		canvasStore.addElemFromAiChat(parseResult.tree);
 	}
+	function handleReplaceClick(markupToApply: string) {
+		const parseResult = parseHtmlToDragzy(markupToApply, MAX_AI_APPLY_ELEMENTS);
+
+		if (parseResult.error || !parseResult.tree) {
+			// your toast call goes here e.g. showToast(parseResult.error)
+			console.warn("replace failed:", parseResult.error);
+			return;
+		}
+
+		canvasStore.replaceCanvasElemWithAi(parseResult.tree);
+	}
+
+	/**
+	 * when i click the replace message, it gets the active elems and splice out everything from it and the new data from the ai takes over the entire element
+	 * \\\
+	 * but if i click add it just goes to the elem and add it to its containing arr
+	 *
+	 * to do this i need two store  methods addAiStyleTo store
+	 *
+	 *
+	 * and replaceStoreStyleWithAi
+	 */
 </script>
 
 <style scoped></style>

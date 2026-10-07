@@ -50,10 +50,17 @@
 						<!-- apply pill, only when the ai gave markup to apply -->
 						<button
 							v-if="!message.isError && message.markup"
-							class="btn btn-sm btn-primary rounded-pill ms-auto px-3"
+							class="btn btn-sm btn-primary rounded-pill ms-auto px-2"
 							@click="emit('apply-message', message.markup)">
 							<i class="fa fa-plus"></i>
 							Apply
+						</button>
+						<button
+							v-if="!message.isError && message.markup"
+							class="btn btn-sm btn-warning rounded-pill ms-auto px-2"
+							@click="emit('replace-message', message.markup)">
+							<i class="fa fa-refresh"></i>
+							Replace
 						</button>
 					</div>
 				</div>
@@ -87,6 +94,7 @@
 
 	const emit = defineEmits<{
 		"apply-message": [markupToApply: string];
+		"replace-message": [markupToApply: string];
 	}>();
 
 	const MAX_COLLAPSED_CHARACTERS = 50;

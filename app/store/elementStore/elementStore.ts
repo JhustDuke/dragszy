@@ -140,16 +140,6 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				if (activeResult) {
 					const activeElem = activeResult.foundElem;
 
-					if (
-						activeElem.elemType === "img" ||
-						activeElem.elemType === "select" ||
-						activeElem.elemType === "textarea"
-					) {
-						activeResult.containingArr.push(newElem);
-						this.activeElemId = newElem.id;
-						return;
-					}
-
 					activeElem.children.push(newElem);
 					this.activeElemId = newElem.id;
 					return;
@@ -335,6 +325,43 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				imageId,
 				imageData
 			);
+		},
+
+		//this is consume by the ai panel used to add elem
+		addElemFromAiChat: function (AiElem: CanvasElem) {
+			const searchResult = findElemAndContainer(this.elems, this.activeElemId!);
+			if (searchResult?.foundElem) {
+				const currentElem = searchResult.foundElem;
+
+				if (
+					currentElem.elemType === "img" ||
+					currentElem.elemType === "select" ||
+					currentElem.elemType === "textarea"
+				) {
+					searchResult.containingArr.push(AiElem);
+					this.activeElemId = AiElem.id;
+					return;
+				}
+				currentElem.children.push(AiElem);
+				this.activeElemId = AiElem.id;
+			} else {
+				console.log("elem not found");
+			}
+		},
+		replaceCanvasElemWithAi: function (AiElem: CanvasElem) {
+			const searchResult = findElemAndContainer(this.elems, this.activeElemId!);
+
+			if (searchResult?.foundElem) {
+				const currentElem = searchResult.foundElem;
+				const container = searchResult.containingArr;
+
+				const elemIndex = container.indexOf(currentElem);
+
+				container.splice(elemIndex, 1, AiElem);
+				this.activeElemId = AiElem.id;
+			} else {
+				console.log("elem not found");
+			}
 		},
 	},
 });
