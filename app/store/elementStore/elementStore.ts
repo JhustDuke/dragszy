@@ -355,6 +355,13 @@ export const useCanvasElemsStore = defineStore("canvasElems", {
 				const currentElem = searchResult.foundElem;
 				const container = searchResult.containingArr;
 
+				//root is never swapped out, only its children are replaced
+				if (currentElem.id === APP_ROOT_ID) {
+					currentElem.children = [AiElem];
+					this.activeElemId = AiElem.id;
+					return;
+				}
+
 				const elemIndex = container.indexOf(currentElem);
 
 				container.splice(elemIndex, 1, AiElem);
