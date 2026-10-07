@@ -107,10 +107,21 @@
 	function emitFormatAndCanvasElem() {
 		const selectedElemBlock = useCanvasElemsStore().getActiveElem;
 
+		const exportCopy = {
+			...selectedElemBlock,
+			customStyles: { ...selectedElemBlock?.customStyles },
+		} as CanvasElem;
+
+		if (
+			isFullPageExport.value &&
+			exportCopy.customStyles?.minHeight === "5000px"
+		) {
+			delete exportCopy.customStyles?.minHeight;
+		}
 		// no checks were needed here cos selectedElemBlock is never empty
 		emit("onExportData", {
 			choosenFormat: selectedExportFormat.value,
-			elemBlock: selectedElemBlock as CanvasElem,
+			elemBlock: exportCopy as CanvasElem,
 			isFullPageExport: isFullPageExport.value,
 		});
 	}

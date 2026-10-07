@@ -142,8 +142,12 @@
 
 		const rootElemToExport = {
 			...canvasElemsStore.elems[0]!,
+			customStyles: { ...canvasElemsStore.elems[0]?.customStyles },
 		};
 
+		if (rootElemToExport.customStyles.minHeight === "5000px") {
+			delete rootElemToExport.customStyles.minHeight;
+		}
 		// Send the fresh root and the user's export choices to the parent.
 		emit("startEntireCompile", {
 			rootElem: rootElemToExport,
