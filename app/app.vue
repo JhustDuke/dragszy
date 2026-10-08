@@ -50,6 +50,7 @@
 		<RestoreOrNewPrompt />
 		<ToggleView />
 		<AiMinimizedIcon />
+		<SmallScreenNotice />
 	</div>
 </template>
 
@@ -58,6 +59,7 @@
 	import ToolBar from "./components/toolbar/ToolBar.vue";
 	import ToggleView from "./components/toolbar/viewportToggle.vue";
 	import CanvasArea from "./components/canvasArea/CanvasArea.vue";
+	import SmallScreenNotice from "./components/canvasArea/SmallScreenNotice.vue";
 	import RestoreOrNewPrompt from "./components/indexdb/RestorePrompt.vue";
 	import { usePreviewHtml } from "./composables";
 	import AskAiModal from "./components/ai/AskAiPanel.vue";

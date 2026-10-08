@@ -63,6 +63,19 @@
 							Replace
 						</button>
 					</div>
+
+					<!-- fallback buttons, only on error bubbles -->
+					<div
+						v-if="message.isError"
+						class="d-flex gap-2 mt-2">
+						<button
+							v-for="fallbackOption in fallbackOptions"
+							:key="fallbackOption.action"
+							class="btn btn-sm btn-light rounded-pill px-2"
+							@click="goToFallbackAction(fallbackOption.action)">
+							{{ fallbackOption.label }}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -86,6 +99,7 @@
 <script setup lang="ts">
 	import { ref } from "vue";
 	import type { ChatMessage } from "~/types";
+	import { useAppActionStore, useAiStore } from "~/store";
 
 	defineProps<{
 		messages: ChatMessage[];
@@ -97,7 +111,18 @@
 		"replace-message": [markupToApply: string];
 	}>();
 
+	const appActionStore = useAppActionStore();
+	const aiStore = useAiStore();
+
 	const MAX_COLLAPSED_CHARACTERS = 50;
+
+	type FallbackAction = "create" | "presets" | "imports";
+
+	const fallbackOptions: { label: string; action: FallbackAction }[] = [
+		{ label: "Create", action: "create" },
+		{ label: "Preset", action: "presets" },
+		{ label: "Import", action: "imports" },
+	];
 
 	// which bubbles are open e.g. { 1727800000000: true }
 	const expandedMessageIds = ref<Record<number, boolean>>({});
@@ -123,6 +148,12 @@
 		expandedMessageIds.value[currentMessageId] =
 			!expandedMessageIds.value[currentMessageId];
 	};
+
+	function goToFallbackAction(chosenAction: FallbackAction) {
+		// hides the ai panel, e.g. leaves only the small icon
+		aiStore.setModalMinimized();
+		appActionStore.setActiveAction(chosenAction);
+	}
 </script>
 
 <style scoped>

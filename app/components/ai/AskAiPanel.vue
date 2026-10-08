@@ -152,6 +152,11 @@
 			const response = await $fetch<AiResponseFormat>("/api/ai/ask", {
 				method: "POST",
 				body: requestBody,
+			}).catch(function () {
+				// server failed e.g. gemini busy, so show the friendly message
+				throw new Error(
+					"AI seems overloaded at the moment. Try one of these to keep going, you've got this."
+				);
 			});
 
 			aiStore.setAiResponse({
@@ -212,17 +217,6 @@
 
 		canvasStore.replaceCanvasElemWithAi(parseResult.tree);
 	}
-
-	/**
-	 * when i click the replace message, it gets the active elems and splice out everything from it and the new data from the ai takes over the entire element
-	 * \\\
-	 * but if i click add it just goes to the elem and add it to its containing arr
-	 *
-	 * to do this i need two store  methods addAiStyleTo store
-	 *
-	 *
-	 * and replaceStoreStyleWithAi
-	 */
 </script>
 
 <style scoped></style>
