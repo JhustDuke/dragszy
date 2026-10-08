@@ -67,14 +67,20 @@
 					<!-- fallback buttons, only on error bubbles -->
 					<div
 						v-if="message.isError"
-						class="d-flex gap-2 mt-2">
-						<button
-							v-for="fallbackOption in fallbackOptions"
-							:key="fallbackOption.action"
-							class="btn btn-sm btn-light rounded-pill px-2"
-							@click="goToFallbackAction(fallbackOption.action)">
-							{{ fallbackOption.label }}
-						</button>
+						class="gap-2 mt-2">
+						<div class="yellow-text text-muted">
+							Use app's internal tools below:
+						</div>
+
+						<div>
+							<button
+								v-for="fallbackOption in fallbackOptions"
+								:key="fallbackOption.action"
+								class="btn btn-sm btn-light rounded-pill px-2 me-1"
+								@click="goToFallbackAction(fallbackOption.action)">
+								{{ fallbackOption.label }}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
