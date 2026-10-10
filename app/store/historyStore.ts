@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useCanvasElemsStore } from "~/store";
 import type { CanvasElem } from "~/types";
+import { trackAnalytics } from "~/utils";
 
 interface CanvasHistory {
 	canvasState: CanvasElem[];
@@ -51,7 +52,7 @@ export const useHistoryStore = defineStore("history", {
 			const canvasElemsStore = useCanvasElemsStore();
 			const historyStore = this;
 
-			canvasElemsStore.$onAction(function ({ name, after }) {
+			canvasElemsStore.$onAction(function ({ name, args, after }) {
 				const canvasStateBeforeAction = JSON.stringify(canvasElemsStore.elems);
 
 				after(function () {
@@ -65,6 +66,26 @@ export const useHistoryStore = defineStore("history", {
 						canvasState: JSON.parse(canvasStateBeforeAction),
 						action: getActionLabel(name),
 					});
+
+					// what was placed e.g. { tag: "div" }
+					if (name === "addElem") {
+						trackAnalytics("elem-added", { tag: args[0] as string });
+					} else if (name === "addElemFromPreset") {
+						const placedPreset = args[0] as CanvasElem;
+
+						trackAnalytics("preset-added", {
+							presetId: placedPreset.id,
+							rootTag: placedPreset.elemType,
+						});
+					} else if (name === "addElemFromAiChat") {
+						const placedAiElem = args[0] as CanvasElem;
+
+						trackAnalytics("ai-apply", { rootTag: placedAiElem.elemType });
+					} else {
+						// every other change e.g. { action: "deleteElem" }
+						trackAnalytics("canvas-action", { action: name });
+					}
+
 					historyStore.futureCanvasStates = [];
 					historyStore.lastUndoneAction = null;
 					historyStore.lastRedoneAction = null;
@@ -102,6 +123,8 @@ export const useHistoryStore = defineStore("history", {
 			const previousHistory = this.previousCanvasStates.pop();
 			if (!previousHistory) return;
 
+			trackAnalytics("undo");
+
 			this.futureCanvasStates.push({
 				canvasState: currentCanvasState,
 				action: previousHistory.action,
@@ -123,6 +146,8 @@ export const useHistoryStore = defineStore("history", {
 
 			const nextHistory = this.futureCanvasStates.pop();
 			if (!nextHistory) return;
+
+			trackAnalytics("redo");
 
 			this.previousCanvasStates.push({
 				canvasState: currentCanvasState,

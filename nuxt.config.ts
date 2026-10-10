@@ -1,7 +1,15 @@
 import { defineNuxtConfig } from "nuxt/config";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-	modules: ["@pinia/nuxt"],
+	modules: ["@pinia/nuxt", "@posthog/nuxt"],
+	posthogConfig: {
+		publicKey: process.env.NUXT_PUBLIC_POSTHOG_KEY,
+		host: process.env.NUXT_PUBLIC_POSTHOG_HOST,
+		clientConfig: {
+			// only send my own events e.g. no clicks captured automatically
+			autocapture: false,
+		},
+	},
 	runtimeConfig: {
 		geminiKey: process.env.GEMINI_KEY,
 		openRouterKey: process.env.OPEN_ROUTER_KEY,
